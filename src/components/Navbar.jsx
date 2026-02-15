@@ -19,7 +19,7 @@ function Navbar() {
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/login" className="text-sm font-medium hover:text-primary">Login</Link>
-            <Link to="/" className="btn-lighting-trail bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm">
+            <Link to="/login" className="btn-lighting-trail bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm">
               Start Free Trial
             </Link>
           </div>

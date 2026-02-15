@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 function LandingPage() {
   return (
     <>
@@ -17,9 +19,9 @@ function LandingPage() {
                 The modern tax platform built specifically for Malaysian businesses. Automate your SST compliance, EA form generation, and real-time liability tracking with enterprise-grade security.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="btn-lighting-trail bg-primary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                <Link to="/login" className="btn-lighting-trail bg-primary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
                   Start Free Trial <span className="material-icons text-base">arrow_forward</span>
-                </button>
+                </Link>
                 <button className="border border-primary/20 bg-white dark:bg-transparent px-8 py-4 rounded-lg font-bold text-lg hover:bg-primary/5 transition-all">
                   Book a Demo
                 </button>
@@ -143,9 +145,9 @@ function LandingPage() {
               <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-6">Ready to automate your taxes?</h2>
               <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto">Join hundreds of Malaysian businesses saving 20+ hours every tax season with CukaiPro.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="btn-lighting-trail-white bg-white text-primary px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all">
+                <Link to="/login" className="btn-lighting-trail-white bg-white text-primary px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center">
                   Start Your Free Trial
-                </button>
+                </Link>
                 <button className="border border-white/30 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all">
                   Contact Sales
                 </button>
