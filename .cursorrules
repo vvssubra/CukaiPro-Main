@@ -1,142 +1,568 @@
-# CukaiPro Project - Cursor AI Rules
+# CukaiPro - LHDN-Ready Malaysian Tax Platform | Cursor AI Rules
 
-## Project Overview
-CukaiPro is a modern tax management platform for Malaysian businesses built with React, Vite, and Tailwind CSS.
+## 1. PROJECT IDENTITY & CONTEXT
 
-## Code Style & Patterns
+**CukaiPro** - 15-page Malaysian Tax Compliance App (LHDN e-Invoice Ready, 2026 mandate)
 
-### React Best Practices
-- Use functional components with hooks
-- Prefer named exports for components
-- Use custom hooks for reusable logic
-- Implement proper error boundaries
-- Use React.lazy() and Suspense for code splitting
+**Stack:** React 19 (Vite 8) • Tailwind CSS v3 (Forest Green #064E3B) • React Router v7 • Supabase (PostgreSQL, SG) • Zod v4 + React Hook Form v7 • Axios • Vitest + RTL • Prettier + ESLint • Context API • JSDoc typing
 
-### State Management
-- Use Context API for global state (auth, theme)
-- Use local state (useState) for component-specific state
-- Use useReducer for complex state logic
+**Malaysian Context:** LHDN e-Invoice compliance • SST calculations • EA/CP forms
 
-### File Structure
-```
-src/
-├── components/
-│   ├── Common/       # Reusable UI components
-│   └── Auth/         # Authentication components
-├── pages/            # Page-level components
-├── hooks/            # Custom React hooks
-├── utils/            # Utility functions
-├── context/          # Context providers
-├── types/            # TypeScript definitions
-└── styles/           # Global styles
-```
+---
 
-### Naming Conventions
-- Components: PascalCase (e.g., `LoginForm.jsx`)
-- Hooks: camelCase with 'use' prefix (e.g., `useAuth.js`)
-- Utils: camelCase (e.g., `formatCurrency.js`)
-- Constants: UPPER_SNAKE_CASE (e.g., `API_BASE_URL`)
+## 2. CODE STYLE & CONVENTIONS
 
-### Component Structure
+**File Naming:**
+- Components: `PascalCase.jsx` (LoginForm, TaxCalculator)
+- Hooks: `useCamelCase.js` (useAuth, useTaxCalc)
+- Utils: `camelCase.js` (formatCurrency, logger)
+- Pages: `PascalCasePage.jsx` (DashboardPage)
+- Context: `PascalCaseContext.jsx` (AuthContext)
+- Constants: `UPPER_SNAKE_CASE`
+- Tests: `ComponentName.test.jsx`
+
+**Component Pattern:**
 ```jsx
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-function ComponentName({ prop1, prop2 }) {
-  // Hooks
+/**
+ * @param {Object} props
+ * @param {string} props.title
+ */
+function Component({ title }) {
   const [state, setState] = useState(null);
   
-  // Effects
   useEffect(() => {
-    // Effect logic
+    // Side effects
   }, []);
   
-  // Event handlers
   const handleEvent = () => {
-    // Handler logic
+    // Handler
   };
   
-  // Render
-  return (
-    <div>
-      {/* JSX */}
-    </div>
-  );
+  return <div className="p-4 bg-primary">{title}</div>;
 }
 
-ComponentName.propTypes = {
-  prop1: PropTypes.string.isRequired,
-  prop2: PropTypes.number,
+Component.propTypes = {
+  title: PropTypes.string.isRequired,
 };
 
-export default ComponentName;
+export default Component;
 ```
 
-### API Integration
-- Use axios for HTTP requests
-- Centralize API calls in service files
-- Use custom hooks for data fetching
-- Implement proper error handling
-- Show loading states
+**Import Order:** React → 3rd party → Internal (@hooks, @components) → Assets
 
-### Form Handling
-- Use react-hook-form for forms
-- Use Zod for validation schemas
-- Provide clear error messages
-- Implement debouncing for API calls
+**Requirements:**
+- ✅ JSDoc on all functions
+- ✅ PropTypes on all components
+- ❌ NO `console.log` (use `logger.debug()`)
+- ❌ NO `any` types
+- ❌ NO class components
+- ❌ NO inline styles
+- ❌ NO hardcoded colors/endpoints
 
-### Testing
-- Write tests for critical components
-- Use Vitest and React Testing Library
-- Test user interactions, not implementation
-- Mock external dependencies
+---
 
-### Performance
-- Use React.memo() for expensive components
-- Implement useMemo and useCallback where appropriate
-- Lazy load routes and heavy components
-- Optimize images and assets
+## 3. REACT PATTERNS
 
-### Security
-- Never commit API keys or secrets
-- Sanitize user inputs
-- Use HTTPS for API calls
-- Implement proper authentication
-- Store sensitive data securely
+**Functional Components Only** (arrow function or function declaration)
 
-### Styling
-- Use Tailwind CSS utility classes
-- Follow mobile-first approach
-- Support dark mode with dark: prefix
-- Keep consistent spacing and colors
-- Use semantic color names from theme
+**Custom Hooks:**
+```jsx
+// hooks/useTaxCalc.js
+export function useTaxCalc(amount) {
+  const [taxAmount, setTaxAmount] = useState(0);
+  useEffect(() => {
+    setTaxAmount(amount * 0.06); // SST 6%
+  }, [amount]);
+  return { taxAmount };
+}
+```
 
-### Error Handling
-- Use ErrorBoundary for component errors
-- Log errors to console in development
-- Show user-friendly error messages
-- Provide error recovery actions
+**State Management:**
+- Context API for global (auth, app state) - NO Redux
+- `useState` for local state
+- `useReducer` for complex state
 
-## Code Quality
-- Run prettier before committing
-- Fix all ESLint warnings
-- Write descriptive commit messages
-- Document complex logic
-- Keep functions small and focused
+**Error Boundaries:** Wrap pages/critical sections
+**Lazy Loading:** `React.lazy()` + `Suspense` for all pages
+**Memoization:** Use `React.memo()`, `useMemo`, `useCallback` only when profiling shows need
 
-## Malaysian Tax Context
-- Support SST, EA forms, LHDN requirements
-- Use RM currency format
-- Support Malaysian date formats
-- Implement LHDN e-Invoice compatibility
-- Use Malaysian fiscal year (Jan-Dec)
+---
 
-## When Generating Code
-1. Follow the existing code patterns in the project
-2. Use TypeScript types when possible (even in .jsx files via JSDoc)
-3. Implement proper loading and error states
-4. Add accessibility attributes (ARIA)
-5. Support keyboard navigation
-6. Test on mobile viewports
-7. Consider performance implications
-8. Add comments for complex business logic
+## 4. DESIGN SYSTEM RULES
+
+**Colors (NEVER hardcode hex):**
+```jsx
+// ✅ Use config tokens
+<div className="bg-primary text-white">           // #064E3B Forest Green
+<div className="bg-secondary">                     // #1E293B Slate
+<div className="bg-background-light dark:bg-background-dark">
+<div className="text-slate-custom">                // #1E293B
+
+// ❌ NEVER
+<div style={{ backgroundColor: '#064E3B' }}>
+<div className="bg-[#064E3B]">
+```
+
+**Typography:** Always use `font-display` (Inter). Weights: 300-800
+
+**Borders:** `rounded` (default), `rounded-lg`, `rounded-xl`, `rounded-full`
+
+**Dark Mode (REQUIRED):** Always add `dark:` variants
+```jsx
+<div className="bg-white dark:bg-background-dark text-gray-900 dark:text-white">
+```
+
+**Responsive (Mobile-First):** `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+```jsx
+<div className="w-full md:w-1/2 lg:w-1/3 p-4 md:p-6 lg:p-8">
+```
+
+---
+
+## 5. MALAYSIAN FORMATTING RULES (CRITICAL)
+
+**Currency:** ALWAYS `RM` prefix, 2 decimals, comma separators
+```jsx
+import { formatCurrency } from '@utils/validators';
+formatCurrency(1234.56); // "RM 1,234.56"
+
+// ❌ NEVER: $ or missing RM
+```
+
+**Dates:** ALWAYS `DD/MM/YYYY` (not MM/DD/YYYY)
+```jsx
+import { formatDate } from '@utils/validators';
+formatDate(new Date('2026-02-15')); // "15/02/2026"
+```
+
+**Phone:** `+60XX-XXXXXXX` - regex: `/^(\+?6?01)[0-46-9]-*[0-9]{7,8}$/`
+
+**IC Number:** `YYMMDD-SS-XXXX` - regex: `/^\d{6}-\d{2}-\d{4}$/`  
+Example: `900101-01-1234` (Jan 1, 1990, state 01)
+
+**TIN:** 14 digits - regex: `/^\d{14}$/`
+
+**Terms (English UI, Malaysian tax terminology):**
+- SST (not VAT/GST)
+- LHDN (Inland Revenue Board)
+- e-Invoice (LHDN 2026 mandate)
+- EA Form (employee tax)
+- CP Form (company tax)
+- Ringgit/RM (currency)
+
+---
+
+## 6. FORM & VALIDATION RULES
+
+**ALWAYS use React Hook Form + Zod:**
+```jsx
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  invoiceNumber: z.string().min(1, 'Required'),
+  amount: z.number().positive('Must be positive'),
+  tin: z.string().regex(/^\d{14}$/, 'TIN must be 14 digits'),
+});
+
+function Form() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(schema),
+  });
+  
+  const onSubmit = async (data) => {
+    // Submit logic
+  };
+  
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('invoiceNumber')} />
+      {errors.invoiceNumber && <p className="text-red-600">{errors.invoiceNumber.message}</p>}
+    </form>
+  );
+}
+```
+
+**Malaysian Validators in `utils/validators.js`:**
+- `icNumberSchema` - IC validation
+- `phoneSchema` - Malaysian phone
+- `currencySchema` - Amount validation
+- `tinSchema` - TIN validation
+
+**Error Messages:** Clear, user-friendly English with actionable guidance
+
+---
+
+## 7. API & DATA LAYER RULES
+
+**Supabase Client:**
+```jsx
+// utils/api.js
+import { createClient } from '@supabase/supabase-js';
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY // Public key only
+);
+
+// RLS-aware query
+const { data, error } = await supabase
+  .from('invoices')
+  .select('*')
+  .eq('user_id', userId); // RLS enforces access
+```
+
+**Error Handling (REQUIRED):**
+```jsx
+import { logger } from '@utils/logger';
+
+async function fetchData() {
+  try {
+    const { data, error } = await supabase.from('table').select('*');
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    logger.error('Fetch failed', error);
+    throw error; // Re-throw for caller
+  }
+}
+```
+
+**Loading States (REQUIRED):** Every async operation needs loading/error state
+```jsx
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
+
+if (loading) return <Loading />;
+if (error) return <ErrorMessage message={error} />;
+```
+
+**useApi Hook:** Use `hooks/useApi.js` for data fetching with built-in loading/error handling
+
+---
+
+## 8. FILE & FOLDER STRUCTURE RULES
+
+```
+src/
+├── components/
+│   ├── Common/      # Button, Card, Input, Loading, ErrorBoundary
+│   ├── Auth/        # LoginForm, ProtectedRoute
+│   ├── Navbar.jsx
+│   └── Sidebar.jsx
+├── pages/           # LandingPage, LoginPage, DashboardPage
+│   └── Dashboard/   # Sub-pages folder
+├── context/         # AuthContext, AppContext
+├── hooks/           # useAuth, useApi, useTaxCalc
+├── utils/           # api, logger, validators, constants
+├── types/           # JSDoc type definitions
+├── tests/           # Test setup, helpers
+└── assets/          # Images, icons
+```
+
+**Where to put new files:**
+- Page → `pages/PageName.jsx` (or `pages/Section/` folder)
+- Component → `components/ComponentName.jsx` or category folder
+- Hook → `hooks/useHookName.js`
+- Utility → `utils/utilName.js`
+- Context → `context/ContextName.jsx`
+- Validator → Add to `utils/validators.js` or co-locate
+
+**Barrel Exports:** Use `index.js` in component folders
+```jsx
+// components/Common/index.js
+export { Button } from './Button';
+export { Card } from './Card';
+```
+
+**Test Co-location:** `Component.jsx` + `Component.test.jsx` side-by-side
+
+**Path Aliases:** Use `@components`, `@pages`, `@hooks`, `@utils`, `@context`, `@types`
+
+---
+
+## 9. SECURITY RULES
+
+**Environment Variables (REQUIRED):**
+```bash
+# .env (NEVER commit)
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJxxx...  # Public anon key ONLY
+
+# ❌ NEVER commit: service role keys, DB passwords, API secrets, private keys
+```
+
+**XSS Prevention:**
+```jsx
+// ✅ React auto-escapes
+<p>{userInput}</p>
+
+// ❌ Avoid dangerouslySetInnerHTML unless sanitized with DOMPurify
+```
+
+**Input Sanitization:** Always validate with Zod before DB operations
+
+**Supabase RLS:** All tables MUST have Row Level Security policies enabled. Never query without user context.
+
+---
+
+## 10. TESTING RULES
+
+**Test Files:** `ComponentName.test.jsx` (co-located with component or in `tests/`)
+
+**What to Test:**
+- ✅ User interactions, prop variations, error states, API mocks
+- ❌ Internal state, implementation details, 3rd party internals
+
+**React Testing Library Pattern:**
+```jsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
+describe('InvoiceForm', () => {
+  it('should submit with valid data', async () => {
+    const onSubmit = vi.fn();
+    render(<InvoiceForm onSubmit={onSubmit} />);
+    
+    fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: '1000' } });
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ amount: 1000 }));
+    });
+  });
+});
+```
+
+**Mock Supabase:**
+```jsx
+vi.mock('@utils/api', () => ({
+  supabase: {
+    from: vi.fn(() => ({ select: vi.fn(() => Promise.resolve({ data: [], error: null })) })),
+  },
+}));
+```
+
+**Coverage:** 70%+ on critical paths, 100% on validators/formatters
+
+---
+
+## 11. GIT & PR RULES
+
+**Commit Format (Conventional Commits):**
+```
+<type>(<scope>): <subject>
+
+Types: feat, fix, docs, style, refactor, test, chore
+Examples:
+  feat(invoice): add LHDN e-invoice generation
+  fix(auth): resolve session timeout
+  test(validators): add IC validation tests
+```
+
+**Branch Naming:**
+```
+feature/<name>    # New features
+bugfix/<name>     # Bug fixes
+hotfix/<name>     # Production hotfixes
+refactor/<name>   # Code refactoring
+docs/<name>       # Documentation
+```
+
+**PR Description Template:**
+```markdown
+## Description
+Brief description
+
+## Type
+- [ ] Bug fix / [ ] Feature / [ ] Breaking / [ ] Docs
+
+## Testing
+- [ ] Tests added/updated
+- [ ] Manual testing done
+- [ ] Mobile tested
+
+## Screenshots (if UI)
+[Add screenshots]
+
+## Checklist
+- [ ] Follows style guidelines
+- [ ] No console.log
+- [ ] Tests passing
+- [ ] Dark mode tested
+```
+
+---
+
+## 12. PERFORMANCE RULES
+
+**Code Splitting:** Lazy load ALL pages
+```jsx
+import { lazy, Suspense } from 'react';
+const DashboardPage = lazy(() => import('@pages/DashboardPage'));
+
+<Suspense fallback={<Loading />}>
+  <DashboardPage />
+</Suspense>
+```
+
+**Image Optimization:**
+- Use WebP format
+- Provide `srcset` for responsive images
+- Lazy load below-the-fold images
+- Compress before committing
+
+**Bundle Size:**
+- Run `npm run build` regularly
+- Vendor chunk < 500KB (Vite splits React, forms, vendor automatically)
+- Dynamic import heavy libs
+
+**Lazy Loading Strategy:** Pages, charts, editors, heavy components
+
+---
+
+## 13. ACCESSIBILITY RULES
+
+**ARIA Labels (REQUIRED):**
+```jsx
+<button aria-label="Close menu"><CloseIcon /></button>
+<input aria-label="Invoice number" aria-describedby="invoice-help" />
+<p id="invoice-help">Enter 10-digit invoice number</p>
+```
+
+**Keyboard Navigation:**
+- All interactive elements keyboard accessible
+- Implement `onKeyDown` for custom interactions
+- Maintain tab order
+- Show `:focus` indicators
+
+```jsx
+<div
+  role="button"
+  tabIndex={0}
+  onClick={handleClick}
+  onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+>
+  Click me
+</div>
+```
+
+**Semantic HTML:** Use `<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>` instead of generic divs
+
+**Color Contrast:** WCAG AA (4.5:1). Primary #064E3B on white = 8.24:1 ✅
+
+**Form Accessibility:** Label all inputs, use `<fieldset>` + `<legend>`, `aria-invalid` for errors
+
+---
+
+## 14. COMMON MISTAKES TO AVOID
+
+**React Anti-Patterns:**
+```jsx
+// ❌ Mutating state directly
+state.items.push(newItem);
+// ✅ Immutable updates
+setState({ ...state, items: [...state.items, newItem] });
+
+// ❌ Missing useEffect dependencies
+useEffect(() => fetchData(userId), []); // userId missing!
+// ✅ Include all deps
+useEffect(() => fetchData(userId), [userId]);
+
+// ❌ Async directly in useEffect
+useEffect(async () => { await fetch(); }, []);
+// ✅ Wrap in IIFE
+useEffect(() => { (async () => { await fetch(); })(); }, []);
+
+// ❌ Inline object in JSX (new object every render)
+<Component data={{ name: 'test' }} />
+// ✅ Memoize or define outside
+const data = useMemo(() => ({ name: 'test' }), []);
+<Component data={data} />
+```
+
+**Tailwind Mistakes:**
+```jsx
+// ❌ Hardcoded colors
+<div className="bg-[#064E3B]">
+// ✅ Use tokens
+<div className="bg-primary">
+
+// ❌ Arbitrary values when standard exists
+<div className="p-[17px]">
+// ✅ Standard spacing
+<div className="p-4">
+```
+
+**Supabase Mistakes:**
+```jsx
+// ❌ Not checking errors
+const { data } = await supabase.from('table').select();
+// ✅ Always check
+const { data, error } = await supabase.from('table').select();
+if (error) throw error;
+
+// ❌ Service role key in frontend (NEVER!)
+// ✅ Only anon key
+```
+
+**Malaysian Format Mistakes:**
+```jsx
+// ❌ US date format
+date.toLocaleDateString('en-US'); // "2/15/2026"
+// ✅ Malaysian format
+formatDate(date); // "15/02/2026"
+
+// ❌ Missing RM
+<p>${amount}</p>
+// ✅ RM prefix
+<p>{formatCurrency(amount)}</p> // "RM 1,234.56"
+```
+
+**Performance Mistakes:**
+```jsx
+// ❌ Heavy computation in render
+const result = expensiveCalc(data); // Runs every render
+// ✅ Memoize
+const result = useMemo(() => expensiveCalc(data), [data]);
+```
+
+**Security Mistakes:**
+```jsx
+// ❌ Committing secrets
+const KEY = 'sk_live_xxxxx';
+// ✅ Environment variables
+const KEY = import.meta.env.VITE_API_KEY;
+
+// ❌ No validation
+const amount = parseFloat(req.body.amount);
+// ✅ Validate with Zod
+const amount = currencySchema.parse(req.body.amount);
+```
+
+---
+
+## QUICK REFERENCE CHECKLIST
+
+**Before committing:**
+- [ ] No `console.log` (use `logger.debug()`)
+- [ ] Colors use Tailwind tokens (no hex)
+- [ ] Malaysian formats: `RM` currency, `DD/MM/YYYY` dates
+- [ ] PropTypes + JSDoc on all components/functions
+- [ ] Forms use React Hook Form + Zod
+- [ ] Loading states for async operations
+- [ ] Error handling with try-catch + logger
+- [ ] Dark mode support (`dark:` prefix)
+- [ ] Responsive (mobile-first)
+- [ ] ARIA labels on interactive elements
+- [ ] Tests added/updated
+- [ ] No hardcoded endpoints/secrets
+- [ ] Prettier + ESLint passing
+- [ ] Conventional commit format
+
+---
+
+**CukaiPro** | Built with ❤️ in Kuala Lumpur, Malaysia 🇲🇾
