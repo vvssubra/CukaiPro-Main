@@ -8,11 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "#064E3B",    // Forest Green
-        "secondary": "#1E293B",  // Slate
+        "primary": "#064E3B",       // Forest Green (brand)
+        "primary-stitch": "#064c39", // Stitch design variant
+        "secondary": "#1E293B",     // Slate
         "background-light": "#f6f8f7",
         "background-dark": "#10221d",
-        "slate-custom": "#1E293B", // Alias for secondary
+        "slate-custom": "#1E293B",
       },
       fontFamily: {
         "display": ["Inter", "sans-serif"],
