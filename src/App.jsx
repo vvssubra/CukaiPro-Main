@@ -1,8 +1,16 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { AppProvider } from './context/AppContext';
+import ErrorBoundary from './components/Common/ErrorBoundary';
+import Loading from './components/Common/Loading';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Navbar from './components/Navbar';
-import LandingPage from './pages/LandingPage';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
+
+// Lazy load pages for code splitting
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 
 function AppLayout() {
   const location = useLocation();
@@ -11,22 +19,39 @@ function AppLayout() {
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-slate-custom dark:text-gray-100 antialiased min-h-screen">
       {!isDashboard && <Navbar />}
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
+      <Suspense fallback={<Loading fullScreen />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </div>
   );
 }
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/*" element={<AppLayout />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppProvider>
+          <AuthProvider>
+            <Suspense fallback={<Loading fullScreen />}>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/*" element={<AppLayout />} />
+              </Routes>
+            </Suspense>
+          </AuthProvider>
+        </AppProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
