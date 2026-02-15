@@ -18,7 +18,7 @@ function App() {
             </div>
             <div className="flex items-center space-x-4">
               <a className="text-sm font-medium hover:text-primary" href="#">Login</a>
-              <a className="bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm" href="#">
+              <a className="btn-lighting-trail bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm" href="#">
                 Start Free Trial
               </a>
             </div>
@@ -42,7 +42,7 @@ function App() {
                 The modern tax platform built specifically for Malaysian businesses. Automate your SST compliance, EA form generation, and real-time liability tracking with enterprise-grade security.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="bg-primary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                <button className="btn-lighting-trail bg-primary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
                   Start Free Trial <span className="material-icons text-base">arrow_forward</span>
                 </button>
                 <button className="border border-primary/20 bg-white dark:bg-transparent px-8 py-4 rounded-lg font-bold text-lg hover:bg-primary/5 transition-all">
@@ -171,7 +171,7 @@ function App() {
               <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-6">Ready to automate your taxes?</h2>
               <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto">Join hundreds of Malaysian businesses saving 20+ hours every tax season with CukaiPro.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="bg-white text-primary px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all">
+                <button className="btn-lighting-trail-white bg-white text-primary px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all">
                   Start Your Free Trial
                 </button>
                 <button className="border border-white/30 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all">
@@ -229,7 +229,7 @@ function App() {
             </div>
           </div>
           <div className="pt-8 border-t border-primary/5 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-custom/40">
-            <p>© 2024 CukaiPro Sdn Bhd. All rights reserved.</p>
+            <p>© 2026 CukaiPro Sdn Bhd. All rights reserved.</p>
             <div className="flex gap-6">
               <a className="hover:text-primary" href="#"><span className="material-icons text-lg">public</span></a>
               <a className="hover:text-primary" href="#"><span className="material-icons text-lg">alternate_email</span></a>

@@ -11,3 +11,32 @@
     min-height: 100vh;
   }
 }
+
+@layer components {
+  .btn-lighting-trail {
+    position: relative;
+    animation: lighting-glow 2.5s ease-in-out infinite;
+  }
+  .btn-lighting-trail-white {
+    position: relative;
+    animation: lighting-glow-white 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes lighting-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(6, 78, 59, 0.6), 0 0 20px rgba(6, 78, 59, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(6, 78, 59, 0.9), 0 0 40px rgba(6, 78, 59, 0.6);
+  }
+}
+
+@keyframes lighting-glow-white {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(255, 255, 255, 0.6);
+  }
+}
