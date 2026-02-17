@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CukaiPro - Invoice List &amp; LHDN Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#064c39",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221d",
+                        "slate-custom": "#1E293B",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-custom min-h-screen">
+<!-- Navigation Header -->
+<header class="bg-white dark:bg-background-dark border-b border-primary/10 px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="text-white material-icons-outlined text-sm">account_balance_wallet</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-primary">CukaiPro</span>
+</div>
+<nav class="hidden md:flex ml-8 space-x-6 text-sm font-medium text-slate-custom/60">
+<a class="hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-primary font-semibold" href="#">Invoices</a>
+<a class="hover:text-primary transition-colors" href="#">LHDN Sync</a>
+<a class="hover:text-primary transition-colors" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-custom/60 hover:text-primary transition-colors">
+<span class="material-icons-outlined">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Corporate professional user profile headshot photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV4Xa9-KKm20ix7ML5-RCMRJ5VOrir3foPWZR70AmWT8PgS5yIzZkfrJplsfD8wUceBa78IjtXIjFE133pzSpdwRwXeAp8z8R7Ra8xWwm_S86IiNTkYABE8lgiW8cJJlTHdrZmBmOzlzUNF-6HzMxNkQA7a41zFVohbfu6HxYkWF-uwvlpjlicgoYnGHIL-WFq7z-I8Bgsp5qV0bUXmcUioIJ_ut5-c65A4IhrGazoFDvvvQ33-QWlTaPKBw392qah3gAIsLXkmkk"/>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-8">
+<!-- Page Title Section -->
+<div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-2xl font-bold text-slate-custom dark:text-white">Invoices</h1>
+<p class="text-sm text-slate-custom/60 dark:text-slate-custom/40">Manage your Malaysian SME tax compliance and billing.</p>
+</div>
+<button class="flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary/90 transition-all font-medium text-sm">
+<span class="material-icons-outlined text-[20px]">add</span>
+                Create New Invoice
+            </button>
+</div>
+<!-- Search and Filter Section -->
+<div class="flex flex-col md:flex-row gap-4 mb-6">
+<div class="relative flex-grow">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-custom/40">
+<span class="material-icons-outlined">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-background-dark border border-slate-custom/10 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-sm" placeholder="Search by client, invoice number, or amount..." type="text"/>
+</div>
+<button class="flex items-center justify-center gap-2 bg-white dark:bg-background-dark border border-slate-custom/10 dark:border-white/10 px-4 py-2.5 rounded-lg text-slate-custom/70 hover:bg-slate-custom/5 transition-all text-sm font-medium">
+<span class="material-icons-outlined text-[20px] text-primary">tune</span>
+                Filter
+            </button>
+<button class="flex items-center justify-center gap-2 bg-white dark:bg-background-dark border border-slate-custom/10 dark:border-white/10 px-4 py-2.5 rounded-lg text-slate-custom/70 hover:bg-slate-custom/5 transition-all text-sm font-medium">
+<span class="material-icons-outlined text-[20px]">download_for_offline</span>
+                Export CSV
+            </button>
+</div>
+<!-- Main Table Card -->
+<div class="bg-white dark:bg-background-dark border border-slate-custom/10 dark:border-white/10 rounded-lg shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-slate-custom/5 dark:bg-white/5 text-slate-custom/60 dark:text-white/60 text-xs font-semibold uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4 border-b border-slate-custom/10 dark:border-white/10">Date</th>
+<th class="px-6 py-4 border-b border-slate-custom/10 dark:border-white/10">Client</th>
+<th class="px-6 py-4 border-b border-slate-custom/10 dark:border-white/10">Invoice ID</th>
+<th class="px-6 py-4 border-b border-slate-custom/10 dark:border-white/10 text-right">Amount (MYR)</th>
+<th class="px-6 py-4 border-b border-slate-custom/10 dark:border-white/10">LHDN Status</th>
+<th class="px-6 py-4 border-b border-slate-custom/10 dark:border-white/10 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-custom/10 dark:divide-white/10">
+<!-- Valid Entry -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium">24 Oct 2023</td>
+<td class="px-6 py-4 text-sm">
+<div class="font-medium text-slate-custom dark:text-white">TechMaju Sdn Bhd</div>
+<div class="text-xs text-slate-custom/50">Services &amp; Consulting</div>
+</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-custom/60">#INV-2023-0891</td>
+<td class="px-6 py-4 text-sm text-right font-semibold">12,450.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1.5"></span>
+                                    Valid
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-3 text-slate-custom/40 group-hover:text-slate-custom">
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">file_download</span></button>
+</div>
+</td>
+</tr>
+<!-- Pending Entry -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium">23 Oct 2023</td>
+<td class="px-6 py-4 text-sm text-slate-custom dark:text-white">Global Logistics MY</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-custom/60">#INV-2023-0892</td>
+<td class="px-6 py-4 text-sm text-right font-semibold">4,200.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-custom/10 text-slate-custom">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-custom mr-1.5"></span>
+                                    Pending
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-3 text-slate-custom/40 group-hover:text-slate-custom">
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">file_download</span></button>
+</div>
+</td>
+</tr>
+<!-- Rejected Entry -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium">21 Oct 2023</td>
+<td class="px-6 py-4 text-sm text-slate-custom dark:text-white">Bina Builders Group</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-custom/60">#INV-2023-0875</td>
+<td class="px-6 py-4 text-sm text-right font-semibold">28,900.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+<span class="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span>
+                                    Rejected
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-3 text-slate-custom/40 group-hover:text-slate-custom">
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">file_download</span></button>
+</div>
+</td>
+</tr>
+<!-- Valid Entry -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium">18 Oct 2023</td>
+<td class="px-6 py-4 text-sm text-slate-custom dark:text-white">Selesa Furnishings</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-custom/60">#INV-2023-0864</td>
+<td class="px-6 py-4 text-sm text-right font-semibold">1,850.25</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1.5"></span>
+                                    Valid
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-3 text-slate-custom/40 group-hover:text-slate-custom">
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">file_download</span></button>
+</div>
+</td>
+</tr>
+<!-- Valid Entry -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium">15 Oct 2023</td>
+<td class="px-6 py-4 text-sm text-slate-custom dark:text-white">Kuala Lumpur Marketing</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-custom/60">#INV-2023-0850</td>
+<td class="px-6 py-4 text-sm text-right font-semibold">9,400.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1.5"></span>
+                                    Valid
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-3 text-slate-custom/40 group-hover:text-slate-custom">
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-icons-outlined text-[20px]">file_download</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Section -->
+<div class="px-6 py-4 flex items-center justify-between bg-slate-custom/5 dark:bg-white/5 border-t border-slate-custom/10 dark:border-white/10">
+<span class="text-xs text-slate-custom/60">Showing 1 to 5 of 48 entries</span>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded border border-slate-custom/10 dark:border-white/10 text-slate-custom/60 hover:bg-white transition-all disabled:opacity-50" disabled="">
+<span class="material-icons-outlined text-sm leading-none">chevron_left</span>
+</button>
+<button class="px-3 py-1 text-xs font-medium rounded bg-primary text-white">1</button>
+<button class="px-3 py-1 text-xs font-medium rounded hover:bg-white dark:hover:bg-background-dark transition-all">2</button>
+<button class="px-3 py-1 text-xs font-medium rounded hover:bg-white dark:hover:bg-background-dark transition-all">3</button>
+<span class="text-xs text-slate-custom/40">...</span>
+<button class="px-3 py-1 text-xs font-medium rounded hover:bg-white dark:hover:bg-background-dark transition-all">10</button>
+<button class="p-1.5 rounded border border-slate-custom/10 dark:border-white/10 text-slate-custom/60 hover:bg-white transition-all">
+<span class="material-icons-outlined text-sm leading-none">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Status Summary Footer -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-primary/5 border border-primary/10 p-4 rounded-xl flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-icons-outlined">verified</span>
+</div>
+<div>
+<div class="text-xs text-slate-custom/60 uppercase font-semibold">Tax Validated</div>
+<div class="text-xl font-bold text-primary">RM 142,500.00</div>
+</div>
+</div>
+<div class="bg-slate-custom/5 border border-slate-custom/10 p-4 rounded-xl flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-slate-custom/10 flex items-center justify-center text-slate-custom">
+<span class="material-icons-outlined">pending_actions</span>
+</div>
+<div>
+<div class="text-xs text-slate-custom/60 uppercase font-semibold">Processing</div>
+<div class="text-xl font-bold text-slate-custom">RM 4,200.00</div>
+</div>
+</div>
+<div class="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+<span class="material-icons-outlined">report_problem</span>
+</div>
+<div>
+<div class="text-xs text-slate-custom/60 uppercase font-semibold">Action Required</div>
+<div class="text-xl font-bold text-red-600">RM 28,900.00</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Map Contextual Location Helper (Invisible for UI but follows rules) -->
+<div class="hidden" data-location="Kuala Lumpur" style=""></div>
+</body></html>

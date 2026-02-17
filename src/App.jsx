@@ -11,6 +11,7 @@ import Navbar from './components/Navbar';
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const InvoiceListPage = lazy(() => import('./pages/Invoices'));
 
 function AppLayout() {
   const location = useLocation();
@@ -30,6 +31,16 @@ function AppLayout() {
               </ProtectedRoute>
             }
           />
+          {/* NEW: Add this route for /dashboard/invoices */}
+          <Route
+            path="/dashboard/invoices"
+            element={
+              <ProtectedRoute>
+                <InvoiceListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/invoices" element={<InvoiceListPage />} />
         </Routes>
       </Suspense>
     </div>

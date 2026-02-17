@@ -17,23 +17,60 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-// Malaysian IC number validation
+// Malaysian Tax Identification Number (14 digits)
+/** @type {import('zod').ZodString} */
+export const tinSchema = z
+  .string()
+  .length(14, 'TIN must be exactly 14 digits')
+  .regex(/^\d{14}$/, 'TIN must contain only numbers');
+
+// Malaysian IC number validation (format: YYMMDD-SS-XXXX)
+/** @type {import('zod').ZodString} */
 export const icNumberSchema = z
   .string()
-  .regex(/^\d{6}-\d{2}-\d{4}$/, 'Please enter a valid IC number (e.g., 900101-01-1234)');
+  .regex(/^\d{6}-\d{2}-\d{4}$/, 'IC Number must be in format YYMMDD-SS-XXXX');
 
-// Malaysian phone number validation
+// Malaysian phone number validation (format: +60XX-XXXXXXX)
+/** @type {import('zod').ZodString} */
 export const phoneSchema = z
   .string()
-  .regex(/^(\+?6?01)[0-46-9]-*[0-9]{7,8}$/, 'Please enter a valid Malaysian phone number');
+  .regex(/^\+60\d{2}-\d{7,8}$/, 'Phone must be in format +60XX-XXXXXXX');
 
-// Currency amount validation
+// Business Registration Number (12-20 characters)
+/** @type {import('zod').ZodString} */
+export const brnSchema = z
+  .string()
+  .min(12, 'BRN must be 12-20 characters')
+  .max(20, 'BRN must be 12-20 characters');
+
+// Currency amount validation (RM, max 2 decimal places)
+/** @type {import('zod').ZodNumber} */
 export const currencySchema = z
   .number()
-  .positive('Amount must be positive')
-  .max(999999999.99, 'Amount is too large');
+  .positive('Amount must be greater than 0')
+  .max(999999999.99)
+  .refine(
+    (val) => (val.toString().split('.')[1] || '').length <= 2,
+    'Amount cannot have more than 2 decimal places'
+  );
 
-// Tax ID validation (Malaysian business registration)
+// Date validation (format: DD/MM/YYYY)
+/** @type {import('zod').ZodString} */
+export const dateSchema = z
+  .string()
+  .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Date must be in DD/MM/YYYY format');
+
+// Invoice form validation schema
+/** @type {import('zod').ZodObject} */
+export const invoiceSchema = z.object({
+  clientName: z.string().min(2).max(100),
+  tin: tinSchema,
+  amount: currencySchema,
+  invoiceDate: dateSchema,
+  notes: z.string().optional(),
+});
+
+// Tax ID validation (Malaysian business registration, 12 digits)
 export const taxIdSchema = z
   .string()
   .regex(/^[0-9]{12}$/, 'Tax ID must be 12 digits');
@@ -46,23 +83,33 @@ export const validators = {
   phone: (value) => phoneSchema.safeParse(value).success,
   currency: (value) => currencySchema.safeParse(value).success,
   taxId: (value) => taxIdSchema.safeParse(value).success,
+  tin: (value) => tinSchema.safeParse(value).success,
+  brn: (value) => brnSchema.safeParse(value).success,
 };
 
-// Format currency in Malaysian Ringgit
+/**
+ * Formats a number as Malaysian Ringgit currency.
+ * @param {number} amount - The amount to format
+ * @returns {string} Formatted string e.g. "RM 1,234.56"
+ */
 export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('ms-MY', {
-    style: 'currency',
-    currency: 'MYR',
-  }).format(amount);
+  return `RM ${amount.toLocaleString('en-MY', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 };
 
-// Format date in Malaysian format
+/**
+ * Converts a Date or date string to DD/MM/YYYY format.
+ * @param {Date|string} date - The date to format
+ * @returns {string} Date string in DD/MM/YYYY format
+ */
 export const formatDate = (date) => {
-  return new Intl.DateTimeFormat('ms-MY', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date(date));
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 // Validate form with Zod schema
