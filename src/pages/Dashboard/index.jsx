@@ -1,6 +1,81 @@
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
+import { useInvoices } from '../../hooks/useInvoices';
+import { formatCurrency, formatDate } from '../../utils/validators';
+
+const EXPENSE_ICON_COLORS = [
+  'bg-blue-500/10 text-blue-500',
+  'bg-purple-500/10 text-purple-500',
+  'bg-orange-500/10 text-orange-500',
+  'bg-emerald-500/10 text-emerald-500',
+  'bg-amber-500/10 text-amber-500',
+];
+
+/** Icon color from first letter of client name. */
+function getIconColorClass(name) {
+  if (!name || !name.length) return EXPENSE_ICON_COLORS[0];
+  const i = (name.charCodeAt(0) || 0) % EXPENSE_ICON_COLORS.length;
+  return EXPENSE_ICON_COLORS[i];
+}
+
+/** LHDN status badge: pending→amber, validated→emerald, submitted→blue, draft→slate. */
+function getStatusBadgeClass(status) {
+  const s = (status || 'draft').toLowerCase();
+  if (s === 'pending') return 'bg-amber-500/10 text-amber-500';
+  if (s === 'validated' || s === 'paid') return 'bg-emerald-500/10 text-emerald-500';
+  if (s === 'submitted' || s === 'sent') return 'bg-blue-500/10 text-blue-500';
+  return 'bg-slate-500/10 text-slate-500 dark:bg-slate-400/10 text-slate-400';
+}
+
+function getStatusLabel(status) {
+  const s = (status || 'draft').toLowerCase();
+  if (s === 'pending') return 'Pending';
+  if (s === 'validated' || s === 'paid') return 'Verified';
+  if (s === 'submitted' || s === 'sent') return 'Submitted';
+  return 'Draft';
+}
+
+/** Relative time e.g. "2 hours ago". */
+function getRelativeTime(isoString) {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const now = new Date();
+  const sec = Math.floor((now - date) / 1000);
+  if (sec < 60) return 'Just now';
+  if (sec < 3600) return `${Math.floor(sec / 60)} min ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)} hours ago`;
+  if (sec < 604800) return `${Math.floor(sec / 86400)} days ago`;
+  return formatDate(date);
+}
+
+/** Parse DD/MM/YYYY for sorting. */
+function parseInvoiceDate(d) {
+  if (!d) return 0;
+  if (typeof d === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
+    const [day, month, year] = d.split('/').map(Number);
+    return new Date(year, month - 1, day).getTime();
+  }
+  return new Date(d).getTime();
+}
 
 function Dashboard() {
+  const { invoices, loading } = useInvoices();
+
+  const totalSst = useMemo(() => {
+    return invoices.reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0);
+  }, [invoices]);
+
+  const recentExpenses = useMemo(() => {
+    return [...invoices]
+      .sort((a, b) => parseInvoiceDate(b.invoice_date) - parseInvoiceDate(a.invoice_date))
+      .slice(0, 3);
+  }, [invoices]);
+
+  const recentActivity = useMemo(() => {
+    return invoices.slice(0, 5);
+  }, [invoices]);
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex">
       <Sidebar />
@@ -39,7 +114,13 @@ function Dashboard() {
                 Action Required: SST Filing
               </div>
               <h2 className="text-white/70 mt-6 text-lg font-medium">Total SST Payable</h2>
-              <div className="text-white text-5xl font-bold mt-2 tracking-tight">RM 12,450.00</div>
+              {loading ? (
+                <div className="text-white/80 text-2xl mt-2">Loading...</div>
+              ) : (
+                <div className="text-white text-5xl font-bold mt-2 tracking-tight">
+                  {formatCurrency(totalSst)}
+                </div>
+              )}
               <p className="text-white/60 text-sm mt-4 flex items-center gap-2">
                 <span className="material-icons text-sm">schedule</span>
                 SST-02 Due in 12 days (June 15, 2024)
@@ -90,49 +171,59 @@ function Dashboard() {
           <div className="col-span-12 lg:col-span-7 row-span-2 bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
               <h3 className="font-bold dark:text-white">Recent Tax-Deductible Expenses</h3>
-              <button className="text-primary dark:text-emerald-400 text-xs font-bold hover:underline">View All</button>
+              <Link
+                to="/dashboard/invoices"
+                className="text-primary dark:text-emerald-400 text-xs font-bold hover:underline"
+              >
+                View All
+              </Link>
             </div>
             <div className="flex-1 overflow-y-auto">
               <div className="divide-y divide-slate-200 dark:divide-slate-700/50">
-                <div className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                    <span className="material-icons text-xl">apartment</span>
+                {loading && recentExpenses.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                    Loading...
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold dark:text-white">Office Rental (May)</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Property &amp; Utilities • 12 May 2024</p>
+                ) : recentExpenses.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                    No invoices yet
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold dark:text-white">-RM 4,500.00</p>
-                    <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500">Verified</span>
-                  </div>
-                </div>
-                <div className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
-                    <span className="material-icons text-xl">cloud</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold dark:text-white">Adobe Creative Cloud</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Software Subscription • 10 May 2024</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold dark:text-white">-RM 245.00</p>
-                    <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-500">Pending Receipt</span>
-                  </div>
-                </div>
-                <div className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                    <span className="material-icons text-xl">electric_bolt</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold dark:text-white">TNB Electricity Bill</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Utilities • 08 May 2024</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold dark:text-white">-RM 1,203.40</p>
-                    <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500">Verified</span>
-                  </div>
-                </div>
+                ) : (
+                  recentExpenses.map((invoice) => {
+                    const dateStr = invoice.invoice_date
+                      ? (typeof invoice.invoice_date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(invoice.invoice_date)
+                        ? invoice.invoice_date
+                        : formatDate(invoice.invoice_date))
+                      : '—';
+                    const amount = Number(invoice.amount) || 0;
+                    const amountFormatted = amount > 0 ? `-${formatCurrency(amount)}` : formatCurrency(0);
+                    const status = invoice.lhdn_status || invoice.status;
+                    return (
+                      <div
+                        key={invoice.id}
+                        className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                      >
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getIconColorClass(invoice.client_name)}`}>
+                          <span className="material-icons text-xl">description</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold dark:text-white">
+                            {invoice.client_name || 'Unknown Client'}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Invoice • {dateStr}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold dark:text-white">{amountFormatted}</p>
+                          <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${getStatusBadgeClass(status)}`}>
+                            {getStatusLabel(status)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -143,53 +234,35 @@ function Dashboard() {
               <h3 className="font-bold dark:text-white">Staff Activity</h3>
             </div>
             <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-              <div className="flex gap-4">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
-                    <img
-                      alt="Sarah"
-                      className="w-full h-full object-cover"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCJdSTgzN6sI6rMiTsd-uRjLMqXaZbhRI2ofWA04G-Iv-VZGhlsqyJx58eYJ4HGBPAnnJTKX0Uh6OSEEq33GyYlxMc4GcgYsVuXwEkVJuI17Sns7Aa4pL7p-b4kO0uoMWwvLftAO5-Cp2ggimaC4llnNtEyKEuHAWwcLxeN3kRLbxtC3xeSZyZEqiYCafMbVp-VizuWlR0IxP-DXVSZKJ9Ky9jJ0WqHa7liJZTlCG1zlOVp_45LDnLZ6r5hYCwBvYnnEDuYPa5Vos"
-                    />
+              {loading && recentActivity.length === 0 ? (
+                <div className="text-sm text-slate-500 dark:text-slate-400">Loading...</div>
+              ) : recentActivity.length === 0 ? (
+                <div className="text-sm text-slate-500 dark:text-slate-400">No recent activity</div>
+              ) : (
+                recentActivity.map((invoice) => (
+                  <div key={invoice.id} className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="material-icons text-primary dark:text-emerald-400 text-sm">description</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        {getRelativeTime(invoice.created_at)}
+                      </p>
+                      <p className="text-sm dark:text-slate-200 leading-tight">
+                        Invoice created for <span className="text-primary dark:text-emerald-400 font-medium">{invoice.client_name || 'Unknown Client'}</span>.
+                      </p>
+                    </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-custom rounded-full"></div>
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">2 hours ago</p>
-                  <p className="text-sm dark:text-slate-200 leading-tight">
-                    <span className="font-bold text-slate-900 dark:text-white">Sarah Lee</span> uploaded 12 new invoices for <span className="text-primary dark:text-emerald-400 font-medium">Q2 Expenses</span>.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="material-icons text-primary dark:text-emerald-400 text-sm">sync</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">5 hours ago</p>
-                  <p className="text-sm dark:text-slate-200 leading-tight">
-                    <span className="font-bold text-slate-900 dark:text-white">System</span> successfully synced with <span className="font-medium">MyTax LHDN Portal</span>.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
-                  <img
-                    alt="Michael"
-                    className="w-full h-full object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6CJZBx2V8L4hZzUSZde4b1X-ndpRBwx6AyyaosgS9IcmneKnuVTj4rfUX5S-Hy1nVcWAhcINkACT1v06uNEGBJGTV66lhI3Mo1YvuJRXG7ILgROwbAdycVW5psU2pXUvJLDGL_g1sI3dPTgJLpQUyCgQww9yJomX17IKonw2KuaV8R81Vfl-xC8kItAn8T6w2GPuKVGE7d0_w-uflPGK-CZ9WOW3r-FiMvU6neshFwkffEmnH9KJ-OsgD218uec-lXLTG4UyLARU"
-                  />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Yesterday</p>
-                  <p className="text-sm dark:text-slate-200 leading-tight">
-                    <span className="font-bold text-slate-900 dark:text-white">Michael Tan</span> updated tax category for <span className="italic">&quot;Hardware Purchase&quot;</span>.
-                  </p>
-                </div>
-              </div>
+                ))
+              )}
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 text-center rounded-b-xl">
-              <button className="text-xs font-bold text-slate-500 hover:text-primary transition-colors">Show Full Audit Log</button>
+              <Link
+                to="/dashboard/invoices"
+                className="text-xs font-bold text-slate-500 hover:text-primary transition-colors"
+              >
+                Show Full Audit Log
+              </Link>
             </div>
           </div>
 
