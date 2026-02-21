@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../utils/logger';
+import { useOrganization } from '../context/OrganizationContext';
 
 /**
  * Custom hook for managing invoices with Supabase.
- * Provides CRUD operations for the invoices table with loading and error states.
+ * All operations are scoped to the current organization.
  *
  * @returns {{
  *   invoices: Array<object>,
@@ -16,21 +17,21 @@ import { logger } from '../utils/logger';
  * }}
  */
 export function useInvoices() {
+  const { currentOrganization } = useOrganization();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Fetches all invoices from Supabase, ordered by created_at descending.
-   * @returns {Promise<void>}
-   */
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
+    if (!currentOrganization) return;
+
     setLoading(true);
     setError(null);
     try {
       const { data, error: fetchError } = await supabase
         .from('invoices')
         .select('*')
+        .eq('organization_id', currentOrganization.id)
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -48,83 +49,91 @@ export function useInvoices() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentOrganization]);
 
-  /**
-   * Creates a new invoice in Supabase.
-   * @param {object} invoiceData - Invoice data with clientName, tin, amount, invoiceDate, notes
-   * @returns {Promise<{ success: boolean; data?: object; error?: string }>}
-   */
-  const createInvoice = async (invoiceData) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error: insertError } = await supabase
-        .from('invoices')
-        .insert({
-          client_name: invoiceData.clientName,
-          tin: invoiceData.tin,
-          amount: invoiceData.amount,
-          invoice_date: invoiceData.invoiceDate,
-          notes: invoiceData.notes ?? null,
-          status: 'draft',
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        logger.error('Failed to create invoice', insertError);
-        setError(insertError.message);
-        return { success: false, error: insertError.message };
+  const createInvoice = useCallback(
+    async (invoiceData) => {
+      if (!currentOrganization) {
+        setError('No organization selected');
+        return { success: false, error: 'No organization selected' };
       }
 
-      setInvoices((prev) => [data, ...prev]);
-      return { success: true, data };
-    } catch (err) {
-      const errMessage = err instanceof Error ? err.message : 'Failed to create invoice';
-      logger.error('Unexpected error creating invoice', err);
-      setError(errMessage);
-      return { success: false, error: errMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: insertError } = await supabase
+          .from('invoices')
+          .insert({
+            organization_id: currentOrganization.id,
+            client_name: invoiceData.clientName,
+            tin: invoiceData.tin,
+            amount: invoiceData.amount,
+            invoice_date: invoiceData.invoiceDate,
+            notes: invoiceData.notes ?? null,
+            status: 'draft',
+          })
+          .select()
+          .single();
 
-  /**
-   * Deletes an invoice by ID.
-   * @param {string} id - The invoice ID to delete
-   * @returns {Promise<{ success: boolean; error?: string }>}
-   */
-  const deleteInvoice = async (id) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { error: deleteError } = await supabase
-        .from('invoices')
-        .delete()
-        .eq('id', id);
+        if (insertError) {
+          logger.error('Failed to create invoice', insertError);
+          setError(insertError.message);
+          return { success: false, error: insertError.message };
+        }
 
-      if (deleteError) {
-        logger.error('Failed to delete invoice', deleteError);
-        setError(deleteError.message);
-        return { success: false, error: deleteError.message };
+        setInvoices((prev) => [data, ...prev]);
+        return { success: true, data };
+      } catch (err) {
+        const errMessage = err instanceof Error ? err.message : 'Failed to create invoice';
+        logger.error('Unexpected error creating invoice', err);
+        setError(errMessage);
+        return { success: false, error: errMessage };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentOrganization]
+  );
+
+  const deleteInvoice = useCallback(
+    async (id) => {
+      if (!currentOrganization) {
+        setError('No organization selected');
+        return { success: false, error: 'No organization selected' };
       }
 
-      setInvoices((prev) => prev.filter((inv) => inv.id !== id));
-      return { success: true };
-    } catch (err) {
-      const errMessage = err instanceof Error ? err.message : 'Failed to delete invoice';
-      logger.error('Unexpected error deleting invoice', err);
-      setError(errMessage);
-      return { success: false, error: errMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLoading(true);
+      setError(null);
+      try {
+        const { error: deleteError } = await supabase
+          .from('invoices')
+          .delete()
+          .eq('id', id)
+          .eq('organization_id', currentOrganization.id);
+
+        if (deleteError) {
+          logger.error('Failed to delete invoice', deleteError);
+          setError(deleteError.message);
+          return { success: false, error: deleteError.message };
+        }
+
+        setInvoices((prev) => prev.filter((inv) => inv.id !== id));
+        return { success: true };
+      } catch (err) {
+        const errMessage = err instanceof Error ? err.message : 'Failed to delete invoice';
+        logger.error('Unexpected error deleting invoice', err);
+        setError(errMessage);
+        return { success: false, error: errMessage };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentOrganization]
+  );
 
   useEffect(() => {
     fetchInvoices();
-  }, []);
+  }, [fetchInvoices]);
 
   return {
     invoices,

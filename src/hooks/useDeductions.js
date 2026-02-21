@@ -1,58 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../utils/logger';
+import { useOrganization } from '../context/OrganizationContext';
 import { getCategoryById } from '../data/taxCategories';
 
 const STORAGE_BUCKET = 'deduction-receipts';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-/** Placeholder UUID for demo when no Supabase auth user. */
-const PLACEHOLDER_USER_ID = '00000000-0000-0000-0000-000000000001';
-
-/**
- * Get current user ID (Supabase auth or placeholder for demo).
- * Uses Supabase auth user ID (UUID) for tax_deductions.user_id compatibility.
- * @returns {Promise<string>}
- */
-async function getUserId() {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.id) return user.id;
-  } catch (_) {}
-  return PLACEHOLDER_USER_ID;
-}
-
-/**
- * Compute claimable amount from amount and category.
- * @param {number} amount
- * @param {object} category
- * @returns {number}
- */
-function computeClaimable(amount, category) {
-  if (!category) return amount;
-  if (category.claimable) return (amount * category.claimable) / 100;
-  if (category.initial != null && category.annual != null) {
-    const initial = (amount * category.initial) / 100;
-    const annual = (amount * category.annual) / 100;
-    return initial + annual;
-  }
-  if (category.maxClaim != null) return Math.min(amount, category.maxClaim);
-  return amount;
-}
-
 /**
  * Upload receipt to Supabase Storage.
  * @param {File} file
- * @param {string} userId
+ * @param {string} orgId
  * @returns {Promise<{ path?: string, error?: string }>}
  */
-export async function uploadReceipt(file, userId) {
+export async function uploadReceipt(file, orgId) {
   if (file.size > MAX_FILE_SIZE) {
     return { error: 'File size must be 5MB or less.' };
   }
   const ext = file.name.split('.').pop() || 'bin';
   const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-  const path = `${userId}/${filename}`;
+  const path = `${orgId}/${filename}`;
   try {
     const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, {
       cacheControl: '3600',
@@ -79,186 +46,219 @@ export function getReceiptUrl(path) {
 
 /**
  * Hook: fetch, add, update, delete tax deductions with receipt upload.
+ * All operations are scoped to the current organization.
  */
 export function useDeductions() {
+  const { currentOrganization } = useOrganization();
   const [deductions, setDeductions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDeductions = useCallback(async (taxYear) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const userId = await getUserId();
-      const { data, error: fetchError } = await supabase
-        .from('tax_deductions')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('tax_year', taxYear)
-        .order('deduction_date', { ascending: false });
+  const fetchDeductions = useCallback(
+    async (taxYear) => {
+      if (!currentOrganization) return;
 
-      if (fetchError) {
-        logger.error('Failed to fetch deductions', fetchError);
-        logger.error('User ID:', userId, 'Tax Year:', taxYear);
-        setError(fetchError.message);
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('tax_deductions')
+          .select('*')
+          .eq('organization_id', currentOrganization.id)
+          .eq('tax_year', taxYear)
+          .order('deduction_date', { ascending: false });
+
+        if (fetchError) {
+          logger.error('Failed to fetch deductions', fetchError);
+          setError(fetchError.message);
+          setDeductions([]);
+          return;
+        }
+        setDeductions(data ?? []);
+      } catch (err) {
+        logger.error('Unexpected error fetching deductions', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch deductions');
         setDeductions([]);
-        return;
+      } finally {
+        setLoading(false);
       }
-      setDeductions(data ?? []);
-    } catch (err) {
-      logger.error('Unexpected error fetching deductions', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch deductions');
-      setDeductions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [currentOrganization]
+  );
 
-  const addDeduction = useCallback(async (formData, file = null) => {
-    setLoading(true);
-    setError(null);
-    const userId = await getUserId();
-    try {
-      let receiptUrl = '';
-      let receiptFilename = '';
-      let hasReceipt = false;
+  const addDeduction = useCallback(
+    async (formData, file = null) => {
+      if (!currentOrganization) {
+        setError('No organization selected');
+        return { success: false, error: 'No organization selected' };
+      }
 
-      if (file) {
-        const up = await uploadReceipt(file, userId);
-        if (up.error) {
-          setError(up.error);
-          setLoading(false);
-          return { success: false, error: up.error };
+      setLoading(true);
+      setError(null);
+      try {
+        let receiptUrl = '';
+        let receiptFilename = '';
+        let hasReceipt = false;
+
+        if (file) {
+          const up = await uploadReceipt(file, currentOrganization.id);
+          if (up.error) {
+            setError(up.error);
+            setLoading(false);
+            return { success: false, error: up.error };
+          }
+          receiptUrl = getReceiptUrl(up.path);
+          receiptFilename = file.name;
+          hasReceipt = true;
         }
-        receiptUrl = getReceiptUrl(up.path);
-        receiptFilename = file.name;
-        hasReceipt = true;
-      }
 
-      const category = getCategoryById(formData.category_id);
-      const amount = Number(formData.amount) || 0;
-      const claimablePercentage = category?.claimable ?? (category?.initial != null ? category.initial + (category?.annual || 0) : 100);
+        const category = getCategoryById(formData.category_id);
+        const amount = Number(formData.amount) || 0;
+        const claimablePercentage =
+          category?.claimable ?? (category?.initial != null ? category.initial + (category?.annual || 0) : 100);
 
-      const row = {
-        user_id: userId,
-        category_id: formData.category_id,
-        category_name: (category?.name) || formData.category_id,
-        category_type: (category?.type) || 'business',
-        amount,
-        claimable_percentage: claimablePercentage,
-        deduction_date: formData.deduction_date,
-        description: formData.description || null,
-        tax_year: Number(formData.tax_year),
-        receipt_url: receiptUrl || null,
-        receipt_filename: receiptFilename || null,
-        has_receipt: hasReceipt,
-        status: formData.status || 'pending',
-      };
+        const row = {
+          organization_id: currentOrganization.id,
+          category_id: formData.category_id,
+          category_name: (category?.name) || formData.category_id,
+          category_type: (category?.type) || 'business',
+          amount,
+          claimable_percentage: claimablePercentage,
+          deduction_date: formData.deduction_date,
+          description: formData.description || null,
+          tax_year: Number(formData.tax_year),
+          receipt_url: receiptUrl || null,
+          receipt_filename: receiptFilename || null,
+          has_receipt: hasReceipt,
+          status: formData.status || 'pending',
+        };
 
-      const { data: inserted, error: insertError } = await supabase
-        .from('tax_deductions')
-        .insert(row)
-        .select()
-        .single();
+        const { data: inserted, error: insertError } = await supabase
+          .from('tax_deductions')
+          .insert(row)
+          .select()
+          .single();
 
-      if (insertError) {
-        setError(insertError.message);
-        return { success: false, error: insertError.message };
-      }
-      setDeductions((prev) => [inserted, ...prev]);
-      return { success: true, data: inserted };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to add deduction';
-      setError(msg);
-      return { success: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const updateDeduction = useCallback(async (id, formData, file = null) => {
-    setLoading(true);
-    setError(null);
-    const userId = await getUserId();
-    try {
-      const existing = deductions.find((d) => d.id === id);
-      let receiptUrl = existing?.receipt_url || '';
-      let receiptFilename = existing?.receipt_filename || '';
-      let hasReceipt = existing?.has_receipt || false;
-
-      if (file) {
-        const up = await uploadReceipt(file, userId);
-        if (up.error) {
-          setError(up.error);
-          setLoading(false);
-          return { success: false, error: up.error };
+        if (insertError) {
+          setError(insertError.message);
+          return { success: false, error: insertError.message };
         }
-        receiptUrl = getReceiptUrl(up.path);
-        receiptFilename = file.name;
-        hasReceipt = true;
+        setDeductions((prev) => [inserted, ...prev]);
+        return { success: true, data: inserted };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to add deduction';
+        setError(msg);
+        return { success: false, error: msg };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentOrganization]
+  );
+
+  const updateDeduction = useCallback(
+    async (id, formData, file = null) => {
+      if (!currentOrganization) {
+        setError('No organization selected');
+        return { success: false, error: 'No organization selected' };
       }
 
-      const category = getCategoryById(formData.category_id);
-      const amount = Number(formData.amount) || 0;
-      const claimablePercentage = category?.claimable ?? (category?.initial != null ? category.initial + (category?.annual || 0) : 100);
+      setLoading(true);
+      setError(null);
+      try {
+        const existing = deductions.find((d) => d.id === id);
+        let receiptUrl = existing?.receipt_url || '';
+        let receiptFilename = existing?.receipt_filename || '';
+        let hasReceipt = existing?.has_receipt || false;
 
-      const updates = {
-        category_id: formData.category_id,
-        category_name: (category?.name) || formData.category_id,
-        category_type: (category?.type) || 'business',
-        amount,
-        claimable_percentage: claimablePercentage,
-        deduction_date: formData.deduction_date,
-        description: formData.description || null,
-        receipt_url: receiptUrl || null,
-        receipt_filename: receiptFilename || null,
-        has_receipt: hasReceipt,
-        status: formData.status || 'pending',
-      };
+        if (file) {
+          const up = await uploadReceipt(file, currentOrganization.id);
+          if (up.error) {
+            setError(up.error);
+            setLoading(false);
+            return { success: false, error: up.error };
+          }
+          receiptUrl = getReceiptUrl(up.path);
+          receiptFilename = file.name;
+          hasReceipt = true;
+        }
 
-      const { data: updated, error: updateError } = await supabase
-        .from('tax_deductions')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+        const category = getCategoryById(formData.category_id);
+        const amount = Number(formData.amount) || 0;
+        const claimablePercentage =
+          category?.claimable ?? (category?.initial != null ? category.initial + (category?.annual || 0) : 100);
 
-      if (updateError) {
-        setError(updateError.message);
-        return { success: false, error: updateError.message };
+        const updates = {
+          category_id: formData.category_id,
+          category_name: (category?.name) || formData.category_id,
+          category_type: (category?.type) || 'business',
+          amount,
+          claimable_percentage: claimablePercentage,
+          deduction_date: formData.deduction_date,
+          description: formData.description || null,
+          receipt_url: receiptUrl || null,
+          receipt_filename: receiptFilename || null,
+          has_receipt: hasReceipt,
+          status: formData.status || 'pending',
+        };
+
+        const { data: updated, error: updateError } = await supabase
+          .from('tax_deductions')
+          .update(updates)
+          .eq('id', id)
+          .eq('organization_id', currentOrganization.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          setError(updateError.message);
+          return { success: false, error: updateError.message };
+        }
+        setDeductions((prev) => prev.map((d) => (d.id === id ? updated : d)));
+        return { success: true, data: updated };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to update deduction';
+        setError(msg);
+        return { success: false, error: msg };
+      } finally {
+        setLoading(false);
       }
-      setDeductions((prev) => prev.map((d) => (d.id === id ? updated : d)));
-      return { success: true, data: updated };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to update deduction';
-      setError(msg);
-      return { success: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  }, [deductions]);
+    },
+    [currentOrganization, deductions]
+  );
 
-  const deleteDeduction = useCallback(async (id) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const d = deductions.find((x) => x.id === id);
-      const path = d?.receipt_url ? null : null; // Storage path from URL if stored; anon may not have delete
-      const { error: deleteError } = await supabase.from('tax_deductions').delete().eq('id', id);
-      if (deleteError) {
-        setError(deleteError.message);
-        return { success: false, error: deleteError.message };
+  const deleteDeduction = useCallback(
+    async (id) => {
+      if (!currentOrganization) {
+        setError('No organization selected');
+        return { success: false, error: 'No organization selected' };
       }
-      setDeductions((prev) => prev.filter((x) => x.id !== id));
-      return { success: true };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete deduction';
-      setError(msg);
-      return { success: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  }, [deductions]);
+
+      setLoading(true);
+      setError(null);
+      try {
+        const { error: deleteError } = await supabase
+          .from('tax_deductions')
+          .delete()
+          .eq('id', id)
+          .eq('organization_id', currentOrganization.id);
+
+        if (deleteError) {
+          setError(deleteError.message);
+          return { success: false, error: deleteError.message };
+        }
+        setDeductions((prev) => prev.filter((x) => x.id !== id));
+        return { success: true };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to delete deduction';
+        setError(msg);
+        return { success: false, error: msg };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentOrganization]
+  );
 
   return {
     deductions,
