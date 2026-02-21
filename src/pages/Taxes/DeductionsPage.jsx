@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Sidebar from '../../components/Sidebar';
 import { useOrganization } from '../../context/OrganizationContext';
+import { useToast } from '../../context/ToastContext';
 import { useDeductions } from '../../hooks/useDeductions';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateTotalDeductions, estimateTaxSavings } from '../../hooks/useTaxCalculation';
@@ -57,6 +58,7 @@ function DeductionsPage() {
 
   const debouncedSearch = useDebounce(searchQuery, 500);
   const { hasPermission } = useOrganization();
+  const toast = useToast();
   const { deductions, loading, error, fetchDeductions, addDeduction, updateDeduction, deleteDeduction } = useDeductions();
 
   const canAddDeduction = hasPermission('add_deductions') || hasPermission('manage_deductions') || hasPermission('all');
@@ -139,11 +141,13 @@ function DeductionsPage() {
       if (result.success) {
         setAddModalOpen(false);
         setEditDeduction(null);
-        alert(editDeduction ? 'Deduction updated.' : 'Deduction added.');
+        toast.success(editDeduction ? 'Deduction updated.' : 'Deduction added.');
+      } else {
+        toast.error(result.error || 'Save failed.');
       }
       return result;
     },
-    [editDeduction, addDeduction, updateDeduction]
+    [editDeduction, addDeduction, updateDeduction, toast]
   );
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -152,9 +156,10 @@ function DeductionsPage() {
     const result = await deleteDeduction(deductionToDelete.id);
     setDeletingId(null);
     setDeductionToDelete(null);
-    if (result.success) alert('Deduction deleted.');
+    if (result.success) toast.success('Deduction deleted.');
+    else toast.error(result.error || 'Delete failed.');
     return result;
-  }, [deductionToDelete, deleteDeduction]);
+  }, [deductionToDelete, deleteDeduction, toast]);
 
   const toggleCategory = (id) => {
     setExpandedCategories((prev) => {

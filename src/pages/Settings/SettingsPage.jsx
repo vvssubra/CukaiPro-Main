@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useOrganization } from '../../context/OrganizationContext';
+import { useToast } from '../../context/ToastContext';
 import { useTeamMembers } from '../../hooks/useTeamMembers';
 import { useInvitations } from '../../hooks/useInvitations';
 
@@ -14,6 +15,7 @@ const ROLE_LABELS = {
 
 function TeamTab() {
   const { currentOrganization, membershipRole, canInviteMembers } = useOrganization();
+  const toast = useToast();
   const { members, loading, error, fetchMembers, removeMember, canRemoveMembers, canChangeRoles } = useTeamMembers();
   const { invitations, loading: invLoading, fetchInvitations, sendInvitation, cancelInvitation, canInviteMembers: canInv } = useInvitations();
   const [inviteEmail, setInviteEmail] = useState('');
@@ -39,10 +41,14 @@ function TeamTab() {
 
     if (result.success) {
       const token = result.data?.token ?? result.token ?? '';
-      setInviteSuccess(token ? `Invitation sent to ${inviteEmail}. Share: ${window.location.origin}/invite/${token}` : `Invitation sent to ${inviteEmail}.`);
+      const msg = token ? `Invitation sent to ${inviteEmail}. Share: ${window.location.origin}/invite/${token}` : `Invitation sent to ${inviteEmail}.`;
+      setInviteSuccess(msg);
+      toast.success(`Invitation sent to ${inviteEmail}`);
       setInviteEmail('');
     } else {
-      setInviteError(result.error || 'Failed to send invitation');
+      const err = result.error || 'Failed to send invitation';
+      setInviteError(err);
+      toast.error(err);
     }
   };
 
