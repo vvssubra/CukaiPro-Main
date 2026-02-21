@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import { AuthProvider } from './context/AuthContext';
 import { OrganizationProvider } from './context/OrganizationContext';
 import { AppProvider } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
-import ErrorBoundary from './components/Common/ErrorBoundary';
+import ErrorBoundary, { ErrorFallback } from './components/Common/ErrorBoundary';
 import Loading from './components/Common/Loading';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Navbar from './components/Navbar';
@@ -14,7 +15,7 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const SignupPage = lazy(() => import('./pages/Auth/SignupPage'));
-const OrganizationSetup = lazy(() => import('./pages/Onboarding/OrganizationSetup'));
+const OnboardingWizard = lazy(() => import('./pages/Onboarding/OnboardingWizard'));
 const InvoiceListPage = lazy(() => import('./pages/Invoices'));
 const TaxesPage = lazy(() => import('./pages/Taxes/TaxesPage'));
 const DeductionsPage = lazy(() => import('./pages/Taxes/DeductionsPage'));
@@ -24,6 +25,7 @@ const SSTFilingPage = lazy(() => import('./pages/Taxes/SSTFilingPage'));
 const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const AcceptInvitePage = lazy(() => import('./pages/Auth/AcceptInvitePage'));
 const ReportsPage = lazy(() => import('./pages/Reports/ReportsPage'));
+const HelpPage = lazy(() => import('./pages/Help/HelpPage'));
 
 function AppLayout() {
   const location = useLocation();
@@ -135,6 +137,16 @@ function AppLayout() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard/help"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <HelpPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Suspense>
     </div>
@@ -143,7 +155,7 @@ function AppLayout() {
 
 function App() {
   return (
-    <ErrorBoundary>
+    <Sentry.ErrorBoundary fallback={({ error, resetError }) => <ErrorFallback error={error} onReset={resetError} />}>
       <BrowserRouter>
         <AppProvider>
           <AuthProvider>
@@ -153,7 +165,7 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/onboarding" element={<OrganizationSetup />} />
+                  <Route path="/onboarding" element={<OnboardingWizard />} />
                   <Route path="/invite/:token" element={<AcceptInvitePage />} />
                   <Route path="/*" element={<AppLayout />} />
                 </Routes>
@@ -163,7 +175,7 @@ function App() {
           </AuthProvider>
         </AppProvider>
       </BrowserRouter>
-    </ErrorBoundary>
+    </Sentry.ErrorBoundary>
   );
 }
 

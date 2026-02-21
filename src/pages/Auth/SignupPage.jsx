@@ -45,7 +45,6 @@ export default function SignupPage() {
       fullName: '',
       email: '',
       password: '',
-      businessName: '',
     },
   });
 
@@ -60,38 +59,8 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Step 1: Create auth user (and user_profile in AuthContext)
-      const authData = await signUp(data.email, data.password, data.fullName);
-      if (!authData?.user?.id) throw new Error('Account created but user data missing');
-
-      const userId = authData.user.id;
-
-      // Step 2: Create organization with the authenticated user
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .insert({
-          business_name: data.businessName.trim(),
-          created_by: userId,
-        })
-        .select()
-        .single();
-
-      if (orgError) throw orgError;
-
-      // Step 3: Add user as owner
-      const { error: memberError } = await supabase.from('organization_members').insert({
-        organization_id: orgData.id,
-        user_id: userId,
-        role: 'owner',
-        status: 'active',
-        invitation_accepted_at: new Date().toISOString(),
-      });
-
-      if (memberError) throw memberError;
-
-      // Step 4: Reload org list with new user id (auth context may not have updated yet)
-      await reloadOrganizations(userId);
-      navigate('/dashboard', { replace: true });
+      await signUp(data.email, data.password, data.fullName);
+      navigate('/onboarding', { replace: true });
     } catch (err) {
       console.error('Signup error:', err);
       setError(err?.message || 'Failed to create account. Please try again.');
@@ -156,15 +125,6 @@ export default function SignupPage() {
                   type="password"
                   placeholder="••••••••"
                   error={errors.password?.message}
-                  required
-                  fullWidth
-                />
-
-                <Input
-                  {...register('businessName')}
-                  label="Business name"
-                  placeholder="My Sdn Bhd"
-                  error={errors.businessName?.message}
                   required
                   fullWidth
                 />

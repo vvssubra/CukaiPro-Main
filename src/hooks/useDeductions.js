@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../utils/logger';
 import { useOrganization } from '../context/OrganizationContext';
+import { insertAuditLog } from '../utils/auditLog';
 import { getCategoryById } from '../data/taxCategories';
 
 const STORAGE_BUCKET = 'deduction-receipts';
@@ -156,6 +157,13 @@ export function useDeductions() {
           setError(insertError.message);
           return { success: false, error: insertError.message };
         }
+        insertAuditLog({
+          entityType: 'deduction',
+          entityId: inserted.id,
+          action: 'create',
+          newData: inserted,
+          organizationId: currentOrganization.id,
+        }).catch(() => {});
         setDeductions((prev) => [inserted, ...prev]);
         return { success: true, data: inserted };
       } catch (err) {
@@ -227,6 +235,14 @@ export function useDeductions() {
           setError(updateError.message);
           return { success: false, error: updateError.message };
         }
+        insertAuditLog({
+          entityType: 'deduction',
+          entityId: id,
+          action: 'update',
+          oldData: existing ?? null,
+          newData: updated,
+          organizationId: currentOrganization.id,
+        }).catch(() => {});
         setDeductions((prev) => prev.map((d) => (d.id === id ? updated : d)));
         return { success: true, data: updated };
       } catch (err) {
@@ -250,6 +266,7 @@ export function useDeductions() {
       setLoading(true);
       setError(null);
       try {
+        const existing = deductions.find((d) => d.id === id);
         const { error: deleteError } = await supabase
           .from('tax_deductions')
           .delete()
@@ -260,6 +277,13 @@ export function useDeductions() {
           setError(deleteError.message);
           return { success: false, error: deleteError.message };
         }
+        insertAuditLog({
+          entityType: 'deduction',
+          entityId: id,
+          action: 'delete',
+          oldData: existing ?? null,
+          organizationId: currentOrganization.id,
+        }).catch(() => {});
         setDeductions((prev) => prev.filter((x) => x.id !== id));
         return { success: true };
       } catch (err) {
@@ -270,7 +294,7 @@ export function useDeductions() {
         setLoading(false);
       }
     },
-    [currentOrganization]
+    [currentOrganization, deductions]
   );
 
   return {
@@ -282,4 +306,61 @@ export function useDeductions() {
     updateDeduction,
     deleteDeduction,
   };
+}
+
+/**
+ * Hook: fetch deductions for multiple tax years (e.g. for YoY comparison).
+ * @param {number[]} years - e.g. [2024, 2023]
+ * @returns {{ deductionsByYear: Record<number, Array>, loading: boolean, error: string|null, fetchDeductionsForYears: (years: number[]) => Promise<void> }}
+ */
+export function useDeductionsForYears(years = []) {
+  const { currentOrganization } = useOrganization();
+  const [deductionsByYear, setDeductionsByYear] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchDeductionsForYears = useCallback(
+    async (yearsToFetch) => {
+      if (!currentOrganization || !yearsToFetch?.length) return;
+
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('tax_deductions')
+          .select('*')
+          .eq('organization_id', currentOrganization.id)
+          .in('tax_year', yearsToFetch)
+          .order('deduction_date', { ascending: false });
+
+        if (fetchError) {
+          logger.error('Failed to fetch deductions for years', fetchError);
+          setError(fetchError.message);
+          setDeductionsByYear({});
+          return;
+        }
+
+        const byYear = {};
+        yearsToFetch.forEach((y) => (byYear[y] = []));
+        (data ?? []).forEach((d) => {
+          const y = Number(d.tax_year);
+          if (byYear[y] != null) byYear[y].push(d);
+        });
+        setDeductionsByYear(byYear);
+      } catch (err) {
+        logger.error('Unexpected error fetching deductions for years', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch deductions');
+        setDeductionsByYear({});
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentOrganization]
+  );
+
+  useEffect(() => {
+    if (years?.length) fetchDeductionsForYears(years);
+  }, [fetchDeductionsForYears, years]);
+
+  return { deductionsByYear, loading, error, fetchDeductionsForYears };
 }

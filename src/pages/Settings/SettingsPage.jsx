@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useOrganization } from '../../context/OrganizationContext';
 import { useToast } from '../../context/ToastContext';
 import { useTeamMembers } from '../../hooks/useTeamMembers';
 import { useInvitations } from '../../hooks/useInvitations';
+import { useSubscription } from '../../hooks/useSubscription';
+import BillingTab from './BillingTab';
 
 const ROLE_LABELS = {
   owner: 'Owner',
@@ -15,6 +18,7 @@ const ROLE_LABELS = {
 
 function TeamTab() {
   const { currentOrganization, membershipRole, canInviteMembers } = useOrganization();
+  const { canAddMember: canAddMemberByPlan, memberLimitReached } = useSubscription();
   const toast = useToast();
   const { members, loading, error, fetchMembers, removeMember, canRemoveMembers, canChangeRoles } = useTeamMembers();
   const { invitations, loading: invLoading, fetchInvitations, sendInvitation, sendInviteEmail, cancelInvitation, canInviteMembers: canInv } = useInvitations();
@@ -97,7 +101,9 @@ function TeamTab() {
     await cancelInvitation(invId);
   };
 
-  const showInviteForm = canInviteMembers || canInv;
+  const canAddByPlan = canAddMemberByPlan(members.length);
+  const atMemberLimit = memberLimitReached(members.length);
+  const showInviteForm = (canInviteMembers || canInv) && canAddByPlan;
 
   return (
     <div className="space-y-8">
@@ -108,6 +114,13 @@ function TeamTab() {
         </p>
       </div>
 
+      {atMemberLimit && (
+        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
+          <p className="text-sm text-amber-800 dark:text-amber-200">
+            You&apos;ve reached the member limit for your plan. Upgrade in Billing to add more team members.
+          </p>
+        </div>
+      )}
       {showInviteForm && (
         <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6">
           <h3 className="text-lg font-semibold text-slate-custom dark:text-white mb-4">Invite team member</h3>
@@ -279,7 +292,16 @@ function OrganizationTab() {
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('team');
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const tabParam = tabFromUrl === 'billing' || searchParams.get('billing')
+    ? 'billing'
+    : tabFromUrl;
+  const [activeTab, setActiveTab] = useState(tabParam || 'team');
+
+  useEffect(() => {
+    if (tabParam === 'billing') setActiveTab('billing');
+  }, [tabParam]);
 
   return (
     <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
@@ -310,7 +332,19 @@ export default function SettingsPage() {
             >
               Organization
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('billing')}
+              className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'billing'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-custom dark:hover:text-white'
+              }`}
+            >
+              Billing
+            </button>
           </div>
+          {activeTab === 'billing' && <BillingTab />}
           {activeTab === 'team' && <TeamTab />}
           {activeTab === 'organization' && <OrganizationTab />}
         </div>

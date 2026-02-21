@@ -1,7 +1,9 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { formatCurrency, formatDate } from '../../utils/validators';
 import Button from '../../components/Common/Button';
+import AuditTimeline from '../../components/Common/AuditTimeline';
+import { useAuditLog } from '../../hooks/useAuditLog';
 
 const STATUS_BADGE_CONFIG = {
   draft: {
@@ -192,6 +194,27 @@ function ViewInvoiceModal({ isOpen, onClose, invoice }) {
                 <span className={`w-1.5 h-1.5 rounded-full ${config.dot} mr-1.5`} />
                 {statusLabel}
               </span>
+            </div>
+
+            <div className="border-t border-slate-custom/10 dark:border-white/10 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowHistory((prev) => !prev)}
+                className="flex items-center gap-2 text-sm font-medium text-slate-custom/60 dark:text-white/60 hover:text-primary dark:hover:text-emerald-400"
+              >
+                <span className="material-icons-outlined text-[18px]">history</span>
+                {showHistory ? 'Hide history' : 'View history'}
+              </button>
+              {showHistory && (
+                <div className="mt-3 p-3 rounded-lg bg-slate-custom/5 dark:bg-white/5">
+                  <AuditTimeline
+                    entries={entries}
+                    loading={historyLoading}
+                    error={historyError}
+                    emptyMessage="No changes recorded yet."
+                  />
+                </div>
+              )}
             </div>
           </div>
 

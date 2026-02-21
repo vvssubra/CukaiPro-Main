@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useEAForms, computeEASummary } from '../../hooks/useEAForms';
 import { useOrganization } from '../../context/OrganizationContext';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/validators';
+import { generateEAFormPDF } from '../../utils/eaFormPdf';
 import Loading from '../../components/Common/Loading';
 import AddEAFormModal from './AddEAFormModal';
 
@@ -17,6 +19,7 @@ function EAFormPage() {
   const [editEAForm, setEditEAForm] = useState(null);
 
   const { currentOrganization } = useOrganization();
+  const { canUseEAForms } = useSubscription();
   const toast = useToast();
   const { eaForms, loading, error, fetchEAForms, addEAForm, updateEAForm, deleteEAForm } = useEAForms();
 
@@ -69,6 +72,29 @@ function EAFormPage() {
     [deleteEAForm, toast]
   );
 
+  if (!canUseEAForms) {
+    return (
+      <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
+        <Sidebar />
+        <main className="ml-64 flex-1 p-8">
+          <div className="max-w-2xl mx-auto py-16 text-center">
+            <span className="material-icons text-6xl text-primary/60 mb-4 block">workspace_premium</span>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">EA Forms require Pro or Enterprise</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">
+              Upgrade your plan to manage employee remuneration and generate EA forms for LHDN e-Filing.
+            </p>
+            <Link
+              to="/dashboard/settings?tab=billing"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
+            >
+              Upgrade plan
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
       <Sidebar />
@@ -98,6 +124,15 @@ function EAFormPage() {
               >
                 <span className="material-icons text-[20px]">add</span>
                 Add EA Form
+              </button>
+              <button
+                type="button"
+                onClick={() => generateEAFormPDF(eaForms, taxYear)}
+                disabled={eaForms.length === 0}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="material-icons text-[20px]">download</span>
+                Download PDF
               </button>
               <Link
                 to="/dashboard/reports"
