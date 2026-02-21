@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { OrganizationProvider } from './context/OrganizationContext';
 import { AppProvider } from './context/AppContext';
+import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import Loading from './components/Common/Loading';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
@@ -20,6 +21,7 @@ const DeductionsPage = lazy(() => import('./pages/Taxes/DeductionsPage'));
 const FilingSummaryPage = lazy(() => import('./pages/Taxes/FilingSummaryPage'));
 const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const AcceptInvitePage = lazy(() => import('./pages/Auth/AcceptInvitePage'));
+const ReportsPage = lazy(() => import('./pages/Reports/ReportsPage'));
 
 function AppLayout() {
   const location = useLocation();
@@ -53,6 +55,7 @@ function AppLayout() {
           <Route path="/dashboard/deductions" element={<ProtectedRoute><DeductionsPage /></ProtectedRoute>} />
           <Route path="/dashboard/tax-filing" element={<ProtectedRoute><FilingSummaryPage /></ProtectedRoute>} />
           <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/dashboard/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
         </Routes>
       </Suspense>
     </div>
@@ -66,6 +69,7 @@ function App() {
         <AppProvider>
           <AuthProvider>
             <OrganizationProvider>
+              <ToastProvider>
               <Suspense fallback={<Loading fullScreen />}>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
@@ -75,6 +79,7 @@ function App() {
                   <Route path="/*" element={<AppLayout />} />
                 </Routes>
               </Suspense>
+              </ToastProvider>
             </OrganizationProvider>
           </AuthProvider>
         </AppProvider>

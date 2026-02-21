@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useInvitations } from '../../hooks/useInvitations';
 import { useOrganization } from '../../context/OrganizationContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function AcceptInvitePage() {
   const { token } = useParams();
@@ -10,6 +11,7 @@ export default function AcceptInvitePage() {
   const { user } = useAuth();
   const { acceptInvitation, getInvitationByToken, loading } = useInvitations();
   const { reloadOrganizations } = useOrganization();
+  const toast = useToast();
   const [invitation, setInvitation] = useState(null);
   const [error, setError] = useState('');
   const [accepting, setAccepting] = useState(false);
@@ -29,10 +31,13 @@ export default function AcceptInvitePage() {
     const result = await acceptInvitation(token);
     setAccepting(false);
     if (result.success) {
+      toast.success('Invitation accepted!');
       await reloadOrganizations(null, result.organizationId);
       navigate('/dashboard', { replace: true });
     } else {
-      setError(result.error || 'Failed to accept invitation');
+      const err = result.error || 'Failed to accept invitation';
+      setError(err);
+      toast.error(err);
     }
   };
 
