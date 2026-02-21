@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { formatCurrency, formatDate } from '../../utils/validators';
 import { TAX_CATEGORIES, CATEGORY_TYPES, getCategoryById, getClaimableLabel } from '../../data/taxCategories';
 import Button from '../../components/Common/Button';
+import AuditTimeline from '../../components/Common/AuditTimeline';
+import { useAuditLog } from '../../hooks/useAuditLog';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPT_FILES = '.pdf,.jpg,.jpeg,.png';
@@ -27,6 +29,12 @@ function AddDeductionModal({ isOpen, onClose, onSave, editDeduction, taxYear }) 
   const [filePreview, setFilePreview] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const { entries, loading: historyLoading, error: historyError } = useAuditLog(
+    editDeduction ? 'deduction' : null,
+    editDeduction?.id ?? null
+  );
 
   const category = getCategoryById(categoryId);
   const amountNum = parseFloat(amount) || 0;
@@ -251,6 +259,29 @@ function AddDeductionModal({ isOpen, onClose, onSave, editDeduction, taxYear }) 
                 <p className="text-sm font-semibold text-primary dark:text-emerald-400">
                   Claimable: {claimablePct}% = {formatCurrency(claimableAmount)}
                 </p>
+              </div>
+            )}
+
+            {editDeduction && (
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowHistory((prev) => !prev)}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-emerald-400"
+                >
+                  <span className="material-icons text-[18px]">history</span>
+                  {showHistory ? 'Hide history' : 'View history'}
+                </button>
+                {showHistory && (
+                  <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <AuditTimeline
+                      entries={entries}
+                      loading={historyLoading}
+                      error={historyError}
+                      emptyMessage="No changes recorded yet."
+                    />
+                  </div>
+                )}
               </div>
             )}
 

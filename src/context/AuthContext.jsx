@@ -124,6 +124,21 @@ export function AuthProvider({ children }) {
     if (error) throw error;
   };
 
+  const completeOnboarding = async () => {
+    if (!user?.id) return;
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ onboarding_completed_at: now })
+      .eq('id', user.id);
+    if (error) {
+      logger.error('Error completing onboarding', error);
+      throw error;
+    }
+    setProfile((prev) => (prev ? { ...prev, onboarding_completed_at: now } : prev));
+    await loadUserProfile(user.id, false);
+  };
+
   const value = {
     user,
     profile,
@@ -132,6 +147,7 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     resetPassword,
+    completeOnboarding,
     loadUserProfile,
     isAuthenticated: !!user,
     login: signIn,

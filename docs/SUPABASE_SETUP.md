@@ -17,6 +17,9 @@ In **Table Editor** (or SQL), confirm these exist:
 - `id` (uuid, primary key, same as `auth.users.id`)
 - `full_name` (text)
 - `email` (text) — optional but used by app
+- `onboarding_completed_at` (timestamptz, optional) — when the user completed the guided onboarding wizard. Null means onboarding is incomplete.
+
+Run **`supabase/migrations/20250622000000_add_onboarding_completed_at.sql`** to add this column if it does not exist.
 
 ## 3. RLS (Row Level Security)
 

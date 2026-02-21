@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../utils/logger';
 import { useOrganization } from '../context/OrganizationContext';
+import { insertAuditLog } from '../utils/auditLog';
 
 /**
  * Custom hook for managing invoices with Supabase.
@@ -81,6 +82,14 @@ export function useInvoices() {
           return { success: false, error: insertError.message };
         }
 
+        insertAuditLog({
+          entityType: 'invoice',
+          entityId: data.id,
+          action: 'create',
+          newData: data,
+          organizationId: currentOrganization.id,
+        }).catch(() => {});
+
         setInvoices((prev) => [data, ...prev]);
         return { success: true, data };
       } catch (err) {
@@ -105,6 +114,7 @@ export function useInvoices() {
       setLoading(true);
       setError(null);
       try {
+        const existing = invoices.find((inv) => inv.id === id);
         const { error: deleteError } = await supabase
           .from('invoices')
           .delete()
@@ -117,6 +127,14 @@ export function useInvoices() {
           return { success: false, error: deleteError.message };
         }
 
+        insertAuditLog({
+          entityType: 'invoice',
+          entityId: id,
+          action: 'delete',
+          oldData: existing ?? null,
+          organizationId: currentOrganization.id,
+        }).catch(() => {});
+
         setInvoices((prev) => prev.filter((inv) => inv.id !== id));
         return { success: true };
       } catch (err) {
@@ -128,7 +146,7 @@ export function useInvoices() {
         setLoading(false);
       }
     },
-    [currentOrganization]
+    [currentOrganization, invoices]
   );
 
   useEffect(() => {

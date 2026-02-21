@@ -35,6 +35,7 @@ function Sidebar() {
     },
     { path: '/dashboard/invoices', icon: 'description', label: 'Invoices' },
     { path: '/dashboard/reports', icon: 'analytics', label: 'Reports' },
+    { path: '/dashboard/help', icon: 'help_outline', label: 'Help' },
     { path: '/dashboard/settings', icon: 'settings', label: 'Settings' },
   ];
 

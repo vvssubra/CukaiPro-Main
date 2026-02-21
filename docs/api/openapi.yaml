@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: CukaiPro API
+  description: |
+    API documentation for CukaiPro, a Malaysian tax management platform.
+    The backend uses **Supabase** (PostgreSQL + PostgREST) for tables and **Edge Functions** for custom logic.
+  version: 1.0.0
+  contact:
+    name: CukaiPro
+
+servers:
+  - url: https://{project_ref}.supabase.co/rest/v1
+    description: Supabase PostgREST (replace {project_ref} with your project ID)
+  - url: https://{project_ref}.supabase.co/functions/v1
+    description: Supabase Edge Functions
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Supabase Tables
+    description: PostgREST auto-generated REST endpoints for database tables
+  - name: Edge Functions
+    description: Custom Supabase Edge Functions
+
+paths:
+  # ============ EDGE FUNCTION ============
+  /send-invite-email:
+    post:
+      tags: [Edge Functions]
+      summary: Send invite email
+      description: |
+        Sends an invitation email via Resend to the invitee. Requires caller to be owner/admin of the organization.
+        On success, updates `invitations.email_sent_at`.
+      operationId: sendInviteEmail
+      servers:
+        - url: https://{project_ref}.supabase.co/functions/v1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendInviteEmailBody'
+      responses:
+        '200':
+          description: Invite email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Invite email sent
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing or invalid authorization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized (must be owner/admin of the organization)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Invitation not found or already used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal error or RESEND_API_KEY not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Resend API failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ============ SUPABASE TABLES (PostgREST) ============
+  # Organizations, organization_members, tax_deductions, invoices, invitations, ea_forms, sst_filings
+  # PostgREST exposes: GET, POST, PATCH, DELETE on /rest/v1/{table}
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT (anon key for anonymous, or user session token)
+
+  schemas:
+    # ---- Edge Function ---- 
+    SendInviteEmailBody:
+      type: object
+      required: [to, inviteLink, invitationId]
+      properties:
+        to:
+          type: string
+          format: email
+          description: Recipient email address
+        inviteLink:
+          type: string
+          format: uri
+          description: Full invite URL (e.g. https://app.example.com/invite/{token})
+        invitationId:
+          type: string
+          format: uuid
+          description: Invitation row ID
+        orgName:
+          type: string
+          description: Organization display name (optional)
+        role:
+          type: string
+          enum: [admin, accountant, staff]
+          description: Role to show in the email (optional)
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+
+    # ---- Supabase Tables ----
+    Organization:
+      type: object
+      description: Business entity (tenant)
+      properties:
+        id: { type: string, format: uuid }
+        business_name: { type: string }
+        created_by: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    OrganizationMember:
+      type: object
+      description: Links users to organizations with role and status
+      properties:
+        id: { type: string, format: uuid }
+        organization_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        role: { type: string, enum: [owner, admin, accountant, staff] }
+        status: { type: string, enum: [active, inactive] }
+        invitation_accepted_at: { type: string, format: date-time, nullable: true }
+
+    TaxDeduction:
+      type: object
+      description: Tax deduction record (e.g. expenses for LHDN)
+      properties:
+        id: { type: string, format: uuid }
+        organization_id: { type: string, format: uuid }
+        category_id: { type: string }
+        category_name: { type: string }
+        category_type: { type: string }
+        amount: { type: number, format: float }
+        claimable_percentage: { type: number }
+        deduction_date: { type: string, format: date }
+        description: { type: string, nullable: true }
+        tax_year: { type: integer }
+        receipt_url: { type: string, nullable: true }
+        receipt_filename: { type: string, nullable: true }
+        has_receipt: { type: boolean }
+        status: { type: string }
+        created_at: { type: string, format: date-time }
+
+    Invoice:
+      type: object
+      description: Invoice record (LHDN e-Invoice compatible)
+      properties:
+        id: { type: string, format: uuid }
+        organization_id: { type: string, format: uuid }
+        client_name: { type: string }
+        tin: { type: string }
+        amount: { type: number }
+        invoice_date: { type: string, format: date }
+        notes: { type: string, nullable: true }
+        status: { type: string, enum: [draft, issued] }
+        created_at: { type: string, format: date-time }
+
+    Invitation:
+      type: object
+      description: Pending team invitation
+      properties:
+        id: { type: string, format: uuid }
+        organization_id: { type: string, format: uuid }
+        invited_by: { type: string, format: uuid }
+        email: { type: string, format: email }
+        role: { type: string, enum: [admin, accountant, staff] }
+        token: { type: string }
+        expires_at: { type: string, format: date-time }
+        status: { type: string, enum: [pending, accepted, expired, cancelled] }
+        email_sent_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    EAForm:
+      type: object
+      description: EA form (Employment Information / Borang EA) for LHDN
+      properties:
+        id: { type: string, format: uuid }
+        organization_id: { type: string, format: uuid }
+        tax_year: { type: integer }
+        employee_name: { type: string }
+        employee_ic: { type: string, nullable: true }
+        employee_tax_no: { type: string, nullable: true }
+        gross_salary: { type: number }
+        allowances: { type: number }
+        bonuses: { type: number }
+        benefits_in_kind: { type: number }
+        overtime: { type: number }
+        director_fees: { type: number }
+        commission: { type: number }
+        epf_employee: { type: number }
+        epf_employer: { type: number }
+        socso: { type: number }
+        eis: { type: number }
+        pcb: { type: number }
+        notes: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    SstFiling:
+      type: object
+      description: SST filing period and status
+      properties:
+        id: { type: string, format: uuid }
+        organization_id: { type: string, format: uuid }
+        period_start: { type: string, format: date }
+        period_end: { type: string, format: date }
+        due_date: { type: string, format: date }
+        total_amount: { type: number }
+        status: { type: string, enum: [draft, ready, submitted] }
+        submitted_at: { type: string, format: date-time, nullable: true }
+        notes: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
