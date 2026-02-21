@@ -79,3 +79,21 @@ If you see **"new row violates row-level security policy for table 'tax_deductio
 2. In **Supabase → SQL Editor**, run the script **`supabase/rls_tax_deductions.sql`** from this repo (or paste its contents and run). It creates policies so authenticated users can SELECT/INSERT/UPDATE/DELETE rows in `tax_deductions` only when they are an **active member** of that row’s `organization_id` (via `organization_members`).
 
 After running the script, try adding a tax deduction again. If you use an `invoices` table with `organization_id`, add similar RLS policies for `invoices` (same pattern: allow access only when `organization_id` is in an org the user belongs to).
+
+---
+
+## 7. Phase 3: Invitations & Team (Optional)
+
+To enable team management and invitations:
+
+1. Run **`supabase/phase3_invitations.sql`** in Supabase SQL Editor. This creates:
+   - `invitations` table (email, role, token, organization_id, etc.)
+   - RLS policies for invitations
+   - RLS policies for `user_profiles` (view org member profiles)
+   - RLS policies for `organization_members` (view members of your org)
+
+2. After running, you can:
+   - Go to Settings → Team
+   - Invite members by email and role (Admin, Accountant, Staff)
+   - Share the invite link: `/invite/{token}`
+   - Invitees sign up or log in, visit the link, and accept

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Sidebar from '../../components/Sidebar';
+import { useOrganization } from '../../context/OrganizationContext';
 import { useDeductions } from '../../hooks/useDeductions';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateTotalDeductions, estimateTaxSavings } from '../../hooks/useTaxCalculation';
@@ -55,7 +56,12 @@ function DeductionsPage() {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
 
   const debouncedSearch = useDebounce(searchQuery, 500);
+  const { hasPermission } = useOrganization();
   const { deductions, loading, error, fetchDeductions, addDeduction, updateDeduction, deleteDeduction } = useDeductions();
+
+  const canAddDeduction = hasPermission('add_deductions') || hasPermission('manage_deductions') || hasPermission('all');
+  const canEditDeduction = hasPermission('add_deductions') || hasPermission('manage_deductions') || hasPermission('view_deductions') || hasPermission('all');
+  const canDeleteDeduction = hasPermission('manage_deductions') || hasPermission('all');
 
   useEffect(() => {
     fetchDeductions(taxYear);
@@ -162,7 +168,12 @@ function DeductionsPage() {
   const displayDate = (d) => {
     const x = d.deduction_date;
     if (!x) return '—';
-    return /^\d{2}\/\d{2}\/\d{4}$/.test(x) ? x : x;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(x)) return x;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(x)) {
+      const [y, m, day] = x.split('-');
+      return `${day}/${m}/${y}`;
+    }
+    return x;
   };
 
   return (
@@ -185,14 +196,16 @@ function DeductionsPage() {
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
-              <button
-                type="button"
-                onClick={() => { setEditDeduction(null); setAddModalOpen(true); }}
-                className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary/90 font-medium text-sm"
-              >
-                <span className="material-icons text-[20px]">add</span>
-                Add Deduction
-              </button>
+              {canAddDeduction && (
+                <button
+                  type="button"
+                  onClick={() => { setEditDeduction(null); setAddModalOpen(true); }}
+                  className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary/90 font-medium text-sm"
+                >
+                  <span className="material-icons text-[20px]">add</span>
+                  Add Deduction
+                </button>
+              )}
             </div>
           </div>
 
@@ -319,12 +332,16 @@ function DeductionsPage() {
                                     <span className="material-icons text-[20px]">visibility</span>
                                   </button>
                                 )}
-                                <button type="button" onClick={() => { setEditDeduction(d); setAddModalOpen(true); }} className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700" aria-label="Edit">
-                                  <span className="material-icons text-[20px]">edit</span>
-                                </button>
-                                <button type="button" onClick={() => setDeductionToDelete(d)} className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600" aria-label="Delete">
-                                  <span className="material-icons text-[20px]">delete</span>
-                                </button>
+                                {canEditDeduction && (
+                                  <button type="button" onClick={() => { setEditDeduction(d); setAddModalOpen(true); }} className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700" aria-label="Edit">
+                                    <span className="material-icons text-[20px]">edit</span>
+                                  </button>
+                                )}
+                                {canDeleteDeduction && (
+                                  <button type="button" onClick={() => setDeductionToDelete(d)} className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600" aria-label="Delete">
+                                    <span className="material-icons text-[20px]">delete</span>
+                                  </button>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -412,8 +429,8 @@ function DeductionsPage() {
                       <td className="px-6 py-4"><StatusBadge status={d.status} /></td>
                       <td className="px-6 py-4 text-right">
                         {d.has_receipt && <button type="button" onClick={() => setViewReceiptDeduction(d)} className="p-1 hover:text-primary" aria-label="View receipt"><span className="material-icons text-[20px]">visibility</span></button>}
-                        <button type="button" onClick={() => { setEditDeduction(d); setAddModalOpen(true); }} className="p-1 hover:text-primary" aria-label="Edit"><span className="material-icons text-[20px]">edit</span></button>
-                        <button type="button" onClick={() => setDeductionToDelete(d)} className="p-1 hover:text-red-600" aria-label="Delete"><span className="material-icons text-[20px]">delete</span></button>
+                        {canEditDeduction && <button type="button" onClick={() => { setEditDeduction(d); setAddModalOpen(true); }} className="p-1 hover:text-primary" aria-label="Edit"><span className="material-icons text-[20px]">edit</span></button>}
+                        {canDeleteDeduction && <button type="button" onClick={() => setDeductionToDelete(d)} className="p-1 hover:text-red-600" aria-label="Delete"><span className="material-icons text-[20px]">delete</span></button>}
                       </td>
                     </tr>
                   ))}

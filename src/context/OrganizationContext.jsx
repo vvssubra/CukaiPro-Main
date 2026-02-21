@@ -20,7 +20,7 @@ export function OrganizationProvider({ children }) {
   const [membershipRole, setMembershipRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const loadOrganizations = useCallback(async (userIdOverride = null) => {
+  const loadOrganizations = useCallback(async (userIdOverride = null, selectOrgIdOverride = null) => {
     const userId = userIdOverride ?? user?.id;
     if (!userId) {
       setOrganizations([]);
@@ -62,7 +62,7 @@ export function OrganizationProvider({ children }) {
 
       setOrganizations(orgs);
 
-      const savedOrgId = localStorage.getItem('cukaipro_current_organization_id');
+      const savedOrgId = selectOrgIdOverride ?? localStorage.getItem('cukaipro_current_organization_id');
       const orgToSelect = orgs.find((o) => o.id === savedOrgId) || orgs[0];
 
       if (orgToSelect) {
@@ -130,6 +130,23 @@ export function OrganizationProvider({ children }) {
     [user, loadOrganizations]
   );
 
+  const hasPermission = useCallback(
+    (permission) => {
+      const permissions = {
+        owner: ['all'],
+        admin: ['manage_members', 'manage_deductions', 'manage_invoices', 'invite_users', 'view_reports', 'remove_members', 'change_roles'],
+        accountant: ['view_deductions', 'verify_deductions', 'view_reports', 'view_invoices'],
+        staff: ['add_deductions', 'add_invoices', 'view_own_data', 'view_deductions'],
+      };
+      const role = membershipRole || '';
+      return permissions[role]?.includes('all') || permissions[role]?.includes(permission) || false;
+    },
+    [membershipRole]
+  );
+
+  const canInviteMembers = hasPermission('manage_members') || hasPermission('invite_users') || hasPermission('all');
+  const canRemoveMembers = hasPermission('remove_members') || hasPermission('all');
+
   const value = {
     organizations,
     currentOrganization,
@@ -138,6 +155,9 @@ export function OrganizationProvider({ children }) {
     selectOrganization,
     createOrganization,
     reloadOrganizations: loadOrganizations,
+    hasPermission,
+    canInviteMembers,
+    canRemoveMembers,
   };
 
   return (

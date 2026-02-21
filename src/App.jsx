@@ -18,6 +18,8 @@ const InvoiceListPage = lazy(() => import('./pages/Invoices'));
 const TaxesPage = lazy(() => import('./pages/Taxes/TaxesPage'));
 const DeductionsPage = lazy(() => import('./pages/Taxes/DeductionsPage'));
 const FilingSummaryPage = lazy(() => import('./pages/Taxes/FilingSummaryPage'));
+const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
+const AcceptInvitePage = lazy(() => import('./pages/Auth/AcceptInvitePage'));
 
 function AppLayout() {
   const location = useLocation();
@@ -50,6 +52,7 @@ function AppLayout() {
           <Route path="/dashboard/taxes" element={<ProtectedRoute><TaxesPage /></ProtectedRoute>} />
           <Route path="/dashboard/deductions" element={<ProtectedRoute><DeductionsPage /></ProtectedRoute>} />
           <Route path="/dashboard/tax-filing" element={<ProtectedRoute><FilingSummaryPage /></ProtectedRoute>} />
+          <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         </Routes>
       </Suspense>
     </div>
@@ -68,6 +71,7 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/signup" element={<SignupPage />} />
                   <Route path="/onboarding" element={<OrganizationSetup />} />
+                  <Route path="/invite/:token" element={<AcceptInvitePage />} />
                   <Route path="/*" element={<AppLayout />} />
                 </Routes>
               </Suspense>
