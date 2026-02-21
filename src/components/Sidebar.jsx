@@ -1,11 +1,23 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 function Sidebar() {
   const location = useLocation();
+  const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing');
+  const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
 
   const navItems = [
     { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { path: '/dashboard/taxes', icon: 'receipt_long', label: 'Taxes' },
+    {
+      key: 'taxes',
+      icon: 'receipt_long',
+      label: 'Taxes',
+      children: [
+        { path: '/dashboard/taxes', label: 'Overview' },
+        { path: '/dashboard/deductions', label: 'Deductions' },
+        { path: '/dashboard/tax-filing', label: 'Filing Summary' },
+      ],
+    },
     { path: '/dashboard/invoices', icon: 'description', label: 'Invoices' },
     { path: '/dashboard/reports', icon: 'analytics', label: 'Reports' },
     { path: '/dashboard/settings', icon: 'settings', label: 'Settings' },
@@ -23,15 +35,51 @@ function Sidebar() {
       </div>
       <nav className="flex-1 px-4 mt-4 space-y-1">
         {navItems.map((item) => {
+          if (item.children) {
+            const expanded = taxesExpanded || isTaxesSection;
+            return (
+              <div key={item.key}>
+                <button
+                  type="button"
+                  onClick={() => setTaxesExpanded(!taxesExpanded)}
+                  className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                    isTaxesSection ? 'bg-primary/20 text-white font-medium border border-primary/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="material-icons text-xl">{item.icon}</span>
+                    {item.label}
+                  </span>
+                  <span className={`material-icons text-lg transition-transform ${expanded ? 'rotate-180' : ''}`}>expand_more</span>
+                </button>
+                {expanded && (
+                  <div className="ml-4 mt-1 space-y-0.5 border-l border-slate-700 pl-3">
+                    {item.children.map((child) => {
+                      const isChildActive = location.pathname === child.path;
+                      return (
+                        <Link
+                          key={child.path}
+                          to={child.path}
+                          className={`block py-2 px-2 rounded-md text-sm ${
+                            isChildActive ? 'text-primary font-medium' : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
           const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
           return (
             <Link
               key={item.path}
               to={item.path}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-primary/20 text-white font-medium border border-primary/30'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                isActive ? 'bg-primary/20 text-white font-medium border border-primary/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`}
             >
               <span className="material-icons text-xl">{item.icon}</span>
