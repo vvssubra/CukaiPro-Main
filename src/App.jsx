@@ -12,6 +12,9 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const InvoiceListPage = lazy(() => import('./pages/Invoices'));
+const TaxesPage = lazy(() => import('./pages/Taxes/TaxesPage'));
+const DeductionsPage = lazy(() => import('./pages/Taxes/DeductionsPage'));
+const FilingSummaryPage = lazy(() => import('./pages/Taxes/FilingSummaryPage'));
 
 function AppLayout() {
   const location = useLocation();
@@ -41,6 +44,9 @@ function AppLayout() {
             }
           />
           <Route path="/invoices" element={<InvoiceListPage />} />
+          <Route path="/dashboard/taxes" element={<ProtectedRoute><TaxesPage /></ProtectedRoute>} />
+          <Route path="/dashboard/deductions" element={<ProtectedRoute><DeductionsPage /></ProtectedRoute>} />
+          <Route path="/dashboard/tax-filing" element={<ProtectedRoute><FilingSummaryPage /></ProtectedRoute>} />
         </Routes>
       </Suspense>
     </div>
