@@ -17,6 +17,14 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+// Signup form schema
+export const signupSchema = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  email: emailSchema,
+  password: passwordSchema,
+  businessName: z.string().min(2, 'Business name must be at least 2 characters'),
+});
+
 // Malaysian Tax Identification Number (14 digits)
 /** @type {import('zod').ZodString} */
 export const tinSchema = z

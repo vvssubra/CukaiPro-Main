@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import PropTypes from 'prop-types';
@@ -11,7 +11,7 @@ import Button from '../Common/Button';
 export function LoginForm({ onSuccess }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
@@ -31,19 +31,15 @@ export function LoginForm({ onSuccess }) {
     setIsLoading(true);
     setLoginError('');
 
-    const result = await login(data.email, data.password);
-
-    setIsLoading(false);
-
-    if (result.success) {
-      if (onSuccess) {
-        onSuccess();
-      }
-      // Redirect to the page they tried to visit or dashboard
+    try {
+      await signIn(data.email, data.password);
+      if (onSuccess) onSuccess();
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
-    } else {
-      setLoginError(result.error || 'Login failed. Please try again.');
+    } catch (err) {
+      setLoginError(err?.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 

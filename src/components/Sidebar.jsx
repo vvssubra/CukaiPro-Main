@@ -1,7 +1,21 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useOrganization } from '../context/OrganizationContext';
 
 function Sidebar() {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+  const { currentOrganization, membershipRole } = useOrganization();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (err) {
+      console.error('Sign out failed', err);
+    }
+  };
   const location = useLocation();
   const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing');
   const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
@@ -90,18 +104,26 @@ function Sidebar() {
       </nav>
       <div className="p-4 mt-auto border-t border-slate-700/50">
         <div className="flex items-center gap-3 p-2">
-          <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden">
-            <img
-              alt="Profile"
-              className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKhiyOPy3mF8FcX42jUEPapss-WGtqSL5GiQJ1IMPVpbTnJ1xMWCwjIgqMl-UoMbZvfBwuZUXIOKX0pvjEtItdal9Y-HxGK4wCoLWl2xcGuSqRuXVpifCT8k58F8BprlKSHLoolYcCdh7Z_rywbVl4xUlKJ4Kju58mx5lR3patTG3jRVO0DJMz9VYiLUGfqAHVfQA10fPlH9DBSBZCW4oh0DEOn69WY0GKwjSpo8sNGn8dNwzTGjZcK_MCJbA-pzAQzWnphazs9MU"
-            />
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-sm">
+            {currentOrganization?.business_name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">Azlan Shah</span>
-            <span className="text-xs text-slate-400">SME Founder</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {currentOrganization?.business_name || 'Loading...'}
+            </p>
+            <p className="text-xs text-slate-400 capitalize truncate">
+              {membershipRole || '—'}
+            </p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="mt-3 w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors flex items-center gap-2"
+        >
+          <span className="material-icons-outlined text-base">logout</span>
+          Sign out
+        </button>
       </div>
     </aside>
   );

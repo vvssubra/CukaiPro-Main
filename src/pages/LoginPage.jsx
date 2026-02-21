@@ -74,12 +74,12 @@ function LoginPage() {
               <div className="mt-8 text-center">
                 <p className="text-sm text-slate-500">
                   New to CukaiPro?{' '}
-                  <a
+                  <Link
+                    to="/signup"
                     className="text-slate-custom dark:text-primary/80 font-bold hover:underline"
-                    href="#"
                   >
                     Create an Account
-                  </a>
+                  </Link>
                 </p>
               </div>
             </div>

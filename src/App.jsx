@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { OrganizationProvider } from './context/OrganizationContext';
 import { AppProvider } from './context/AppContext';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import Loading from './components/Common/Loading';
@@ -11,6 +12,8 @@ import Navbar from './components/Navbar';
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const SignupPage = lazy(() => import('./pages/Auth/SignupPage'));
+const OrganizationSetup = lazy(() => import('./pages/Onboarding/OrganizationSetup'));
 const InvoiceListPage = lazy(() => import('./pages/Invoices'));
 const TaxesPage = lazy(() => import('./pages/Taxes/TaxesPage'));
 const DeductionsPage = lazy(() => import('./pages/Taxes/DeductionsPage'));
@@ -43,7 +46,7 @@ function AppLayout() {
               </ProtectedRoute>
             }
           />
-          <Route path="/invoices" element={<InvoiceListPage />} />
+          <Route path="/invoices" element={<ProtectedRoute><InvoiceListPage /></ProtectedRoute>} />
           <Route path="/dashboard/taxes" element={<ProtectedRoute><TaxesPage /></ProtectedRoute>} />
           <Route path="/dashboard/deductions" element={<ProtectedRoute><DeductionsPage /></ProtectedRoute>} />
           <Route path="/dashboard/tax-filing" element={<ProtectedRoute><FilingSummaryPage /></ProtectedRoute>} />
@@ -59,12 +62,16 @@ function App() {
       <BrowserRouter>
         <AppProvider>
           <AuthProvider>
-            <Suspense fallback={<Loading fullScreen />}>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/*" element={<AppLayout />} />
-              </Routes>
-            </Suspense>
+            <OrganizationProvider>
+              <Suspense fallback={<Loading fullScreen />}>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/onboarding" element={<OrganizationSetup />} />
+                  <Route path="/*" element={<AppLayout />} />
+                </Routes>
+              </Suspense>
+            </OrganizationProvider>
           </AuthProvider>
         </AppProvider>
       </BrowserRouter>
