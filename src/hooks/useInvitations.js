@@ -159,6 +159,55 @@ export function useInvitations() {
     }
   }, []);
 
+  /**
+   * Sends invite email via Supabase Edge Function (Resend).
+   * Call after sendInvitation succeeds.
+   * @param {Object} params - { invitationId, email, token, orgName, role }
+   * @returns {Promise<{ success: boolean; error?: string }>}
+   */
+  const sendInviteEmail = useCallback(
+    async ({ invitationId, email, token, orgName, role }) => {
+      if (!invitationId || !email || !token) {
+        return { success: false, error: 'Missing invitationId, email, or token' };
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('send-invite-email', {
+          body: {
+            to: email,
+            inviteLink: `${window.location.origin}/invite/${token}`,
+            orgName: orgName || currentOrganization?.business_name || 'the organization',
+            role: role || 'staff',
+            invitationId,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        if (currentOrganization) {
+          const { data: updated } = await supabase
+            .from('invitations')
+            .select('*')
+            .eq('id', invitationId)
+            .single();
+          if (updated) {
+            setInvitations((prev) =>
+              prev.map((i) => (i.id === invitationId ? { ...i, email_sent_at: updated.email_sent_at } : i))
+            );
+          }
+        }
+
+        return { success: true };
+      } catch (err) {
+        const msg = err?.message || 'Failed to send invite email';
+        logger.error('sendInviteEmail failed', err);
+        return { success: false, error: msg };
+      }
+    },
+    [currentOrganization]
+  );
+
   const getInvitationByToken = useCallback(async (token) => {
     try {
       const { data: invitation, error } = await supabase
@@ -183,6 +232,7 @@ export function useInvitations() {
     error,
     fetchInvitations,
     sendInvitation,
+    sendInviteEmail,
     cancelInvitation,
     acceptInvitation,
     getInvitationByToken,

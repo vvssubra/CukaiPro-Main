@@ -17,7 +17,7 @@ function Sidebar() {
     }
   };
   const location = useLocation();
-  const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing');
+  const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
   const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
 
   const navItems = [
@@ -28,6 +28,7 @@ function Sidebar() {
       label: 'Taxes',
       children: [
         { path: '/dashboard/taxes', label: 'Overview' },
+        { path: '/dashboard/sst-filing', label: 'SST Filing' },
         { path: '/dashboard/deductions', label: 'Deductions' },
         { path: '/dashboard/tax-filing', label: 'Filing Summary' },
       ],

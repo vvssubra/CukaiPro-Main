@@ -71,7 +71,23 @@ If login still hangs, open DevTools → **Console** and **Network** and look for
 
 ---
 
-## 6. tax_deductions and invoices (RLS)
+## 6. sst_filings (SST Filing Periods)
+
+To enable SST filing period tracking and status (draft, ready, submitted):
+
+1. Run **`supabase/sst_filings.sql`** in Supabase SQL Editor. This creates:
+   - `sst_filings` table (organization_id, period_start, period_end, due_date, total_amount, status, submitted_at, etc.)
+   - RLS policies (same pattern as tax_deductions)
+   - Trigger for `updated_at`
+
+2. The app uses `sst_filings` for:
+   - Tracking taxable periods (start/end dates, due date)
+   - Filing status: draft, ready, submitted
+   - SST-02 style exports with period summary
+
+---
+
+## 7. tax_deductions and invoices (RLS)
 
 If you see **"new row violates row-level security policy for table 'tax_deductions'"** when saving a deduction:
 
@@ -82,7 +98,7 @@ After running the script, try adding a tax deduction again. If you use an `invoi
 
 ---
 
-## 7. Phase 3: Invitations & Team (Optional)
+## 8. Phase 3: Invitations & Team (Optional)
 
 To enable team management and invitations:
 
@@ -95,5 +111,6 @@ To enable team management and invitations:
 2. After running, you can:
    - Go to Settings → Team
    - Invite members by email and role (Admin, Accountant, Staff)
-   - Share the invite link: `/invite/{token}`
+   - Invite emails are sent via the `send-invite-email` Edge Function (Resend). See [docs/INVITE_EMAIL.md](INVITE_EMAIL.md).
+   - Or share the invite link manually: `/invite/{token}`
    - Invitees sign up or log in, visit the link, and accept
