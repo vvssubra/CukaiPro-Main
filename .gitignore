@@ -35,3 +35,11 @@ coverage
 # Vitest
 .vitest
 
+# Supabase
+supabase/.temp
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache

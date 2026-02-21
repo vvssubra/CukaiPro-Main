@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS invitations (
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'expired', 'cancelled')),
   accepted_at TIMESTAMPTZ,
   accepted_by UUID REFERENCES auth.users(id),
+  email_sent_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

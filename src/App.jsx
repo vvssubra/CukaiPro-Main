@@ -19,6 +19,8 @@ const InvoiceListPage = lazy(() => import('./pages/Invoices'));
 const TaxesPage = lazy(() => import('./pages/Taxes/TaxesPage'));
 const DeductionsPage = lazy(() => import('./pages/Taxes/DeductionsPage'));
 const FilingSummaryPage = lazy(() => import('./pages/Taxes/FilingSummaryPage'));
+const EAFormPage = lazy(() => import('./pages/Taxes/EAFormPage'));
+const SSTFilingPage = lazy(() => import('./pages/Taxes/SSTFilingPage'));
 const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const AcceptInvitePage = lazy(() => import('./pages/Auth/AcceptInvitePage'));
 const ReportsPage = lazy(() => import('./pages/Reports/ReportsPage'));
@@ -37,25 +39,102 @@ function AppLayout() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <ErrorBoundary>
+                  <Dashboard />
+                </ErrorBoundary>
               </ProtectedRoute>
             }
           />
-          {/* NEW: Add this route for /dashboard/invoices */}
           <Route
             path="/dashboard/invoices"
             element={
               <ProtectedRoute>
-                <InvoiceListPage />
+                <ErrorBoundary>
+                  <InvoiceListPage />
+                </ErrorBoundary>
               </ProtectedRoute>
             }
           />
-          <Route path="/invoices" element={<ProtectedRoute><InvoiceListPage /></ProtectedRoute>} />
-          <Route path="/dashboard/taxes" element={<ProtectedRoute><TaxesPage /></ProtectedRoute>} />
-          <Route path="/dashboard/deductions" element={<ProtectedRoute><DeductionsPage /></ProtectedRoute>} />
-          <Route path="/dashboard/tax-filing" element={<ProtectedRoute><FilingSummaryPage /></ProtectedRoute>} />
-          <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-          <Route path="/dashboard/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route
+            path="/invoices"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <InvoiceListPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/taxes"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <TaxesPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/deductions"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <DeductionsPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/tax-filing"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <FilingSummaryPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/sst-filing"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <SSTFilingPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/taxes/ea-form"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <EAFormPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/settings"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <SettingsPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/reports"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <ReportsPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Suspense>
     </div>

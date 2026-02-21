@@ -17,12 +17,13 @@ function TeamTab() {
   const { currentOrganization, membershipRole, canInviteMembers } = useOrganization();
   const toast = useToast();
   const { members, loading, error, fetchMembers, removeMember, canRemoveMembers, canChangeRoles } = useTeamMembers();
-  const { invitations, loading: invLoading, fetchInvitations, sendInvitation, cancelInvitation, canInviteMembers: canInv } = useInvitations();
+  const { invitations, loading: invLoading, fetchInvitations, sendInvitation, sendInviteEmail, cancelInvitation, canInviteMembers: canInv } = useInvitations();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('staff');
   const [inviteSending, setInviteSending] = useState(false);
   const [inviteError, setInviteError] = useState('');
   const [inviteSuccess, setInviteSuccess] = useState('');
+  const [sendingEmailFor, setSendingEmailFor] = useState(null);
 
   useEffect(() => {
     fetchMembers();
@@ -41,14 +42,49 @@ function TeamTab() {
 
     if (result.success) {
       const token = result.data?.token ?? result.token ?? '';
-      const msg = token ? `Invitation sent to ${inviteEmail}. Share: ${window.location.origin}/invite/${token}` : `Invitation sent to ${inviteEmail}.`;
-      setInviteSuccess(msg);
-      toast.success(`Invitation sent to ${inviteEmail}`);
+      const invId = result.data?.id;
+      const emailAddr = inviteEmail.trim();
+
+      // Try to send invite email via Edge Function
+      const emailResult = await sendInviteEmail({
+        invitationId: invId,
+        email: emailAddr,
+        token,
+        orgName: currentOrganization?.business_name,
+        role: inviteRole,
+      });
+
+      if (emailResult.success) {
+        setInviteSuccess(`Invite sent via email to ${emailAddr}.`);
+        toast.success(`Invitation email sent to ${emailAddr}`);
+      } else {
+        setInviteSuccess(`Invitation created. Share link: ${window.location.origin}/invite/${token}`);
+        toast.success(`Invitation created — copy the link to share with ${emailAddr}`);
+      }
       setInviteEmail('');
     } else {
       const err = result.error || 'Failed to send invitation';
       setInviteError(err);
       toast.error(err);
+    }
+  };
+
+  const handleSendInviteEmail = async (inv) => {
+    if (!inv.token || !inv.email) return;
+    setSendingEmailFor(inv.id);
+    const result = await sendInviteEmail({
+      invitationId: inv.id,
+      email: inv.email,
+      token: inv.token,
+      orgName: currentOrganization?.business_name,
+      role: inv.role,
+    });
+    setSendingEmailFor(null);
+    if (result.success) {
+      toast.success(`Invite email sent to ${inv.email}`);
+      fetchInvitations();
+    } else {
+      toast.error(result.error || 'Failed to send email');
     }
   };
 
@@ -177,19 +213,39 @@ function TeamTab() {
             {invitations.map((inv) => (
               <div
                 key={inv.id}
-                className="flex items-center justify-between py-2 px-4 rounded-lg bg-slate-50 dark:bg-slate-800/50"
+                className="flex flex-wrap items-center justify-between gap-2 py-2 px-4 rounded-lg bg-slate-50 dark:bg-slate-800/50"
               >
-                <span className="text-slate-custom dark:text-white">{inv.email}</span>
-                <span className="text-sm text-slate-500">{ROLE_LABELS[inv.role] || inv.role}</span>
-                {showInviteForm && (
-                  <button
-                    type="button"
-                    onClick={() => handleCancelInvite(inv.id)}
-                    className="text-sm text-red-600 hover:underline"
-                  >
-                    Cancel
-                  </button>
-                )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <span className="text-slate-custom dark:text-white">{inv.email}</span>
+                  <span className="text-sm text-slate-500">{ROLE_LABELS[inv.role] || inv.role}</span>
+                  {inv.email_sent_at ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                      <span className="material-icons-outlined text-sm">mail</span>
+                      Invite sent via email
+                    </span>
+                  ) : null}
+                </div>
+                <div className="flex items-center gap-2">
+                  {showInviteForm && !inv.email_sent_at && (
+                    <button
+                      type="button"
+                      onClick={() => handleSendInviteEmail(inv)}
+                      disabled={sendingEmailFor === inv.id}
+                      className="text-sm text-primary hover:underline disabled:opacity-50"
+                    >
+                      {sendingEmailFor === inv.id ? 'Sending…' : 'Send invite email'}
+                    </button>
+                  )}
+                  {showInviteForm && (
+                    <button
+                      type="button"
+                      onClick={() => handleCancelInvite(inv.id)}
+                      className="text-sm text-red-600 dark:text-red-400 hover:underline"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

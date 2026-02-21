@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useDeductions } from '../../hooks/useDeductions';
 import { useTaxCalculation } from '../../hooks/useTaxCalculation';
+import { useSstFilings } from '../../hooks/useSstFilings';
 import { formatCurrency } from '../../utils/validators';
 
 const currentYear = new Date().getFullYear();
-const SST_DEADLINE = '15 June 2024';
 const INCOME_TAX_DEADLINE = '30 June 2024';
 
 function TaxesPage() {
+  const navigate = useNavigate();
   const [taxYear, setTaxYear] = useState(currentYear);
   const { invoices } = useInvoices();
+  const { nextDueDate, daysUntilNextDue, nextFilingPeriod } = useSstFilings();
   const { deductions, fetchDeductions } = useDeductions();
 
   useEffect(() => {
@@ -48,8 +50,13 @@ function TaxesPage() {
   };
 
   const handleFileSST = () => {
-    alert('SST-02 filing integration coming soon.');
+    navigate('/dashboard/sst-filing');
   };
+
+  const sstDeadlineStr =
+    nextDueDate
+      ? `${nextDueDate.getDate()} ${nextDueDate.toLocaleString('en-MY', { month: 'long' })} ${nextDueDate.getFullYear()}`
+      : nextFilingPeriod?.dueDateStr || '15th of each month';
 
   return (
     <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
@@ -62,6 +69,12 @@ function TaxesPage() {
               <p className="text-sm text-slate-500 dark:text-slate-400">Manage your SST and Income Tax filings</p>
             </div>
             <div className="flex gap-3">
+              <Link
+                to="/dashboard/sst-filing"
+                className="flex items-center gap-2 bg-white dark:bg-slate-custom border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/30 font-medium text-sm"
+              >
+                SST Filing
+              </Link>
               <Link
                 to="/dashboard/deductions"
                 className="flex items-center gap-2 bg-white dark:bg-slate-custom border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/30 font-medium text-sm"
@@ -126,8 +139,24 @@ function TaxesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Next deadline</p>
-                <p className="font-bold text-slate-900 dark:text-white">{SST_DEADLINE}</p>
-                <p className="text-xs text-amber-600 dark:text-amber-400">Approx. 12 days left</p>
+                <p className="font-bold text-slate-900 dark:text-white">{sstDeadlineStr}</p>
+                {daysUntilNextDue != null && (
+                  <p
+                    className={`text-xs ${
+                      daysUntilNextDue < 0
+                        ? 'text-red-600 dark:text-red-400'
+                        : daysUntilNextDue <= 7
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-slate-500 dark:text-slate-400'
+                    }`}
+                  >
+                    {daysUntilNextDue < 0
+                      ? 'Overdue'
+                      : daysUntilNextDue === 0
+                      ? 'Due today'
+                      : `${daysUntilNextDue} days left`}
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Status</p>
