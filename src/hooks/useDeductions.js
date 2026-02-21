@@ -7,6 +7,19 @@ import { getCategoryById } from '../data/taxCategories';
 const STORAGE_BUCKET = 'deduction-receipts';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+/** Convert DD/MM/YYYY to YYYY-MM-DD for Postgres date column */
+function toDbDate(val) {
+  if (!val) return null;
+  const s = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) {
+    const [, d, mon, y] = m;
+    return `${y}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return s;
+}
+
 /**
  * Upload receipt to Supabase Storage.
  * @param {File} file
@@ -124,7 +137,7 @@ export function useDeductions() {
           category_type: (category?.type) || 'business',
           amount,
           claimable_percentage: claimablePercentage,
-          deduction_date: formData.deduction_date,
+          deduction_date: toDbDate(formData.deduction_date),
           description: formData.description || null,
           tax_year: Number(formData.tax_year),
           receipt_url: receiptUrl || null,
@@ -194,7 +207,7 @@ export function useDeductions() {
           category_type: (category?.type) || 'business',
           amount,
           claimable_percentage: claimablePercentage,
-          deduction_date: formData.deduction_date,
+          deduction_date: toDbDate(formData.deduction_date),
           description: formData.description || null,
           receipt_url: receiptUrl || null,
           receipt_filename: receiptFilename || null,

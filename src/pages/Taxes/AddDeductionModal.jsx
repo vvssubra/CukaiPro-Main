@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { formatCurrency } from '../../utils/validators';
+import { formatCurrency, formatDate } from '../../utils/validators';
 import { TAX_CATEGORIES, CATEGORY_TYPES, getCategoryById, getClaimableLabel } from '../../data/taxCategories';
 import Button from '../../components/Common/Button';
 
@@ -60,7 +60,8 @@ function AddDeductionModal({ isOpen, onClose, onSave, editDeduction, taxYear }) 
     if (editDeduction) {
       setCategoryId(editDeduction.category_id || '');
       setAmount(String(editDeduction.amount ?? ''));
-      setDeductionDate(editDeduction.deduction_date || '');
+      const d = editDeduction.deduction_date;
+      setDeductionDate(/^\d{2}\/\d{2}\/\d{4}$/.test(d) ? d : (d ? formatDate(d) : ''));
       setDescription(editDeduction.description || '');
       setStatus(editDeduction.status || 'pending');
       setFile(null);
