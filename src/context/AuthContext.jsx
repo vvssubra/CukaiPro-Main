@@ -178,7 +178,12 @@ export function AuthProvider({ children }) {
       .eq('id', user.id);
     if (error) {
       logger.error('Error completing onboarding', error);
-      throw error;
+      // Column may be missing if migration not run; still mark complete locally so user can proceed
+      const isColumnMissing =
+        error?.message?.includes('onboarding_completed_at') ||
+        error?.code === '42703' ||
+        error?.message?.toLowerCase().includes('column');
+      if (!isColumnMissing) throw error;
     }
     setProfile((prev) => (prev ? { ...prev, onboarding_completed_at: now } : prev));
     // Reload profile in background so navigation is not blocked
