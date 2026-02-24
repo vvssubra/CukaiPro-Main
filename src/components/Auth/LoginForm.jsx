@@ -37,7 +37,14 @@ export function LoginForm({ onSuccess }) {
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
     } catch (err) {
-      setLoginError(err?.message || 'Login failed. Please try again.');
+      const msg = err?.message || 'Login failed. Please try again.';
+      if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('network')) {
+        setLoginError(
+          'Connection failed. Check: (1) Supabase project is not paused in the dashboard, (2) VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Vercel and redeployed, (3) Supabase auth URL has your Vercel domain whitelisted.'
+        );
+      } else {
+        setLoginError(msg);
+      }
     } finally {
       setIsLoading(false);
     }
