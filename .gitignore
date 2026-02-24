@@ -12,10 +12,12 @@ dist
 dist-ssr
 *.local
 
-# Environment variables
+# Environment variables (Supabase URL, anon key, etc. - never commit)
 .env
+.env.save
 .env.local
 .env.production
+.env.*.local
 
 # Editor directories and files
 .vscode/*

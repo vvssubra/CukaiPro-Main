@@ -40,7 +40,7 @@ export function LoginForm({ onSuccess }) {
       const msg = err?.message || 'Login failed. Please try again.';
       if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('network')) {
         setLoginError(
-          'Connection failed. Check: (1) Supabase project is not paused in the dashboard, (2) VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Vercel and redeployed, (3) Supabase auth URL has your Vercel domain whitelisted.'
+          'Connection failed. For Vercel: use your Vercel domain in Supabase. For local dev: add http://localhost:3001 to Supabase → Authentication → URL Configuration (Site URL or Redirect URLs). Also check project is not paused and .env is correct.'
         );
       } else {
         setLoginError(msg);
@@ -53,8 +53,16 @@ export function LoginForm({ onSuccess }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {loginError && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-2">
           <p className="text-sm text-red-800 dark:text-red-300">{loginError}</p>
+          {loginError.startsWith('Connection failed') && (
+            <p className="text-xs text-red-700 dark:text-red-400">
+              <Link to="/debug/config" className="font-medium underline hover:no-underline">
+                Open Debug config
+              </Link>
+              {' '}to verify Supabase settings and run a connection test.
+            </p>
+          )}
         </div>
       )}
 

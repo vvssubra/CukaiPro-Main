@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { testAuthConnection } from '../../lib/supabase';
 
 function safeUrlSummary(url) {
   if (!url) return { ok: false, reason: 'missing', host: '—', projectRefHint: '—' };
@@ -28,9 +29,20 @@ export default function ConfigDebugPage() {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+  const [authTest, setAuthTest] = useState({ status: 'idle', success: null, error: null });
 
   const urlInfo = useMemo(() => safeUrlSummary(url), [url]);
   const keyInfo = useMemo(() => safeKeySummary(key), [key]);
+
+  const runAuthTest = async () => {
+    setAuthTest({ status: 'running', success: null, error: null });
+    try {
+      const result = await testAuthConnection();
+      setAuthTest({ status: 'done', success: result.success, error: result.error || null });
+    } catch (err) {
+      setAuthTest({ status: 'done', success: false, error: err?.message || 'Unknown error' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark px-6 py-10">
@@ -64,7 +76,33 @@ export default function ConfigDebugPage() {
                   {keyInfo.ok ? `present (${keyInfo.kind}, len=${keyInfo.length})` : 'missing'}
                 </span>
               </div>
+              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-600">
+                <button
+                  type="button"
+                  onClick={runAuthTest}
+                  disabled={authTest.status === 'running'}
+                  className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {authTest.status === 'running' ? 'Testing…' : 'Test Auth connection'}
+                </button>
+                {authTest.status === 'done' && (
+                  <div className={`mt-2 text-sm ${authTest.success ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {authTest.success ? 'Auth reachable.' : `Failed: ${authTest.error || 'Unknown'}`}
+                  </div>
+                )}
+              </div>
             </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom p-5">
+            <h2 className="font-semibold text-slate-900 dark:text-white mb-3">If you see &quot;Failed to fetch&quot; on Sign up / Login</h2>
+            <ul className="text-sm text-slate-600 dark:text-slate-400 list-disc list-inside space-y-2">
+              <li><strong>Vercel:</strong> In Supabase → Authentication → URL Configuration, set <span className="font-mono">Site URL</span> to your Vercel domain (e.g. <span className="font-mono">https://your-app.vercel.app</span>) and add it to <span className="font-mono">Redirect URLs</span>.</li>
+              <li><strong>Local dev:</strong> Also add <span className="font-mono">http://localhost:3001</span> (or your dev port) to <span className="font-mono">Redirect URLs</span> so sign up/login works when running <span className="font-mono">npm run dev</span>.</li>
+              <li><strong>Project paused:</strong> Supabase Dashboard → Project Settings → General. Resume the project if it is paused.</li>
+              <li><strong>Env vars:</strong> On Vercel, set <span className="font-mono">VITE_SUPABASE_URL</span> and <span className="font-mono">VITE_SUPABASE_ANON_KEY</span> in Project Settings → Environment Variables, then redeploy.</li>
+              <li><strong>Network:</strong> Check firewall / VPN; ensure the Supabase host is reachable.</li>
+            </ul>
           </div>
 
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom p-5">

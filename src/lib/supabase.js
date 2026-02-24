@@ -1,14 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { supabaseUrl, supabaseAnonKey, isSupabaseConfigured } from './supabaseConfig';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  const missing = [];
-  if (!supabaseUrl) missing.push('VITE_SUPABASE_URL');
-  if (!supabaseAnonKey) missing.push('VITE_SUPABASE_ANON_KEY');
+if (!isSupabaseConfigured) {
   throw new Error(
-    `Supabase configuration error: Missing required environment variable(s): ${missing.join(', ')}. Please add them to your .env file.`
+    'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env. This module should only be imported when isSupabaseConfigured is true.'
   );
 }
 
@@ -42,6 +37,22 @@ export async function testConnection() {
     }
 
     return { success: true, count: count ?? 0 };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Unknown connection error',
+    };
+  }
+}
+
+/**
+ * Tests Supabase Auth connectivity (e.g. for signup/login "Failed to fetch").
+ * @returns {Promise<{ success: boolean; error?: string }>}
+ */
+export async function testAuthConnection() {
+  try {
+    const { error } = await supabase.auth.getSession();
+    return { success: !error, error: error?.message };
   } catch (err) {
     return {
       success: false,
