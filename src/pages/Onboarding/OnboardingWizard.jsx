@@ -33,11 +33,11 @@ function StepWelcome({ onNext }) {
   );
 }
 
-function StepOrganization({ onNext }) {
+function StepOrganization({ onNext, hasExistingOrg }) {
   const [businessName, setBusinessName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { createOrganization } = useOrganization();
+  const { createOrganization, currentOrganization } = useOrganization();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,6 +56,25 @@ function StepOrganization({ onNext }) {
       setLoading(false);
     }
   };
+
+  if (hasExistingOrg && currentOrganization?.business_name) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-custom dark:text-white mb-2">
+            Create your organization
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+            You already have an organization: <strong>{currentOrganization.business_name}</strong>. Continue to the next step.
+          </p>
+          <Button type="button" onClick={onNext} fullWidth>
+            Continue
+            <span className="material-icons-outlined text-sm ml-1">arrow_forward</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -199,7 +218,7 @@ function StepDeduction({ onNext, onSkip }) {
   );
 }
 
-function StepInvite({ onNext, onSkip }) {
+function StepInvite({ onNext, onSkip, finishing, finishError }) {
   const { sendInvitation, canInviteMembers } = useInvitations();
   const toast = useToast();
   const [email, setEmail] = useState('');
@@ -230,6 +249,8 @@ function StepInvite({ onNext, onSkip }) {
     }
   };
 
+  const isBusy = loading || finishing;
+
   return (
     <div className="space-y-6">
       <div>
@@ -239,6 +260,11 @@ function StepInvite({ onNext, onSkip }) {
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
           Add team members to collaborate on tax and invoices, or skip and invite later.
         </p>
+        {finishError && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <p className="text-sm text-red-800 dark:text-red-300">{finishError}</p>
+          </div>
+        )}
         {canInviteMembers ? (
           <form onSubmit={handleInvite} className="space-y-4">
             {error && (
@@ -267,10 +293,10 @@ function StepInvite({ onNext, onSkip }) {
               </select>
             </div>
             <div className="flex gap-3">
-              <Button type="submit" loading={loading} disabled={loading || !email.trim()}>
+              <Button type="submit" loading={loading} disabled={isBusy || !email.trim()}>
                 Send invite
               </Button>
-              <Button type="button" variant="outline" onClick={onSkip}>
+              <Button type="button" variant="outline" onClick={onSkip} loading={finishing} disabled={isBusy}>
                 Skip for now
               </Button>
             </div>
@@ -278,7 +304,7 @@ function StepInvite({ onNext, onSkip }) {
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-slate-500 dark:text-slate-400">You can invite team members from Settings → Team after setup.</p>
-            <Button type="button" onClick={onSkip} fullWidth>
+            <Button type="button" onClick={onSkip} fullWidth loading={finishing} disabled={finishing}>
               Continue to dashboard
             </Button>
           </div>
@@ -293,13 +319,20 @@ export default function OnboardingWizard() {
   const { user, profile, completeOnboarding } = useAuth();
   const { organizations, currentOrganization, loading: orgLoading } = useOrganization();
   const [step, setStep] = useState(1);
+  const [finishingOnboarding, setFinishingOnboarding] = useState(false);
+  const [finishError, setFinishError] = useState('');
 
   const handleFinish = async () => {
+    setFinishError('');
+    setFinishingOnboarding(true);
     try {
       await completeOnboarding();
       navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Failed to complete onboarding', err);
+      setFinishError(err?.message || 'Failed to complete setup. Please try again.');
+    } finally {
+      setFinishingOnboarding(false);
     }
   };
 
@@ -334,8 +367,8 @@ export default function OnboardingWizard() {
     );
   }
 
-  // If org exists but step is still 1-2, jump to step 3 (Add deduction)
-  const displayStep = currentOrganization && step < 3 ? 3 : step;
+  // Use actual step so new users see 1 → 2 (organization) → 3 → 4
+  const displayStep = step;
 
   const renderStep = () => {
     switch (displayStep) {
@@ -345,6 +378,7 @@ export default function OnboardingWizard() {
         return (
           <StepOrganization
             onNext={() => setStep(3)}
+            hasExistingOrg={!!currentOrganization}
           />
         );
       case 3:
@@ -359,6 +393,8 @@ export default function OnboardingWizard() {
           <StepInvite
             onNext={handleFinish}
             onSkip={handleFinish}
+            finishing={finishingOnboarding}
+            finishError={finishError}
           />
         );
       default:
