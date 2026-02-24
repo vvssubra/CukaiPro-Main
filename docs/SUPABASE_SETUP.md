@@ -125,3 +125,29 @@ To enable team management and invitations:
    - Invite emails are sent via the `send-invite-email` Edge Function (Resend). See [docs/INVITE_EMAIL.md](INVITE_EMAIL.md).
    - Or share the invite link manually: `/invite/{token}`
    - Invitees sign up or log in, visit the link, and accept
+
+---
+
+## 9. Bug reports (support widget)
+
+To have support widget messages saved and visible in the **Bug Reports Admin** page (`docs/bug-reports-admin.html`):
+
+1. **Tables**  
+   If `bug_reports` and `bug_report_messages` already exist in your project (Table Editor), skip to step 2. Otherwise run **`supabase/migrations/20250224100000_bug_reports.sql`** in the SQL Editor to create them and their RLS policies.
+
+2. Deploy the **support-chat** Edge Function and set its secret:
+   - `npx supabase functions deploy support-chat`
+   - In Dashboard → Edge Functions → support-chat → Secrets, add **`SUPABASE_SERVICE_ROLE_KEY`** (Project Settings → API → service_role key) so the function can insert into `bug_reports` and `bug_report_messages`.
+
+3. Open `docs/bug-reports-admin.html` in a browser to view, filter, and update status of reports.
+
+**If closing a report doesn’t persist after refresh:** the admin page uses the anon key to PATCH `bug_reports`. If the table was created without the migration, RLS may not allow anon to UPDATE. In Supabase SQL Editor run:
+
+```sql
+-- Allow admin page (anon) to update status
+drop policy if exists "anon_update_bug_reports" on public.bug_reports;
+create policy "anon_update_bug_reports" on public.bug_reports
+  for update to anon using (true) with check (true);
+```
+
+Then try changing a report’s status again and refresh; it should stay closed/resolved.

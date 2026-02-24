@@ -12,9 +12,10 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <!-- CukaiPro Support Widget: set URL to your Supabase Edge Function for support-chat -->
+    <!-- CukaiPro Support Widget: needs function URL + anon key for Supabase (injected from .env at build) -->
     <script>
       window.CUKAIPRO_SUPPORT_FUNCTION_URL = 'https://xkylwjlcablefymuzoie.supabase.co/functions/v1/support-chat';
+      window.CUKAIPRO_SUPPORT_ANON_KEY = '%VITE_SUPABASE_ANON_KEY%';
     </script>
     <script src="/support-widget.js"></script>
   </body>

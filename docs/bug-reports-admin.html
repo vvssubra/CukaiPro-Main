@@ -56,7 +56,6 @@
   .chat-thread .m small { display: block; font-size: 10px; opacity: 0.6; margin-top: 2px; }
   .select-status { padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: #fff; cursor: pointer; }
   .refresh-indicator { font-size: 11px; color: #94a3b8; margin-left: auto; }
-  .toast { position: fixed; bottom: 20px; right: 20px; background: #dc2626; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   @media (max-width: 700px) { .stats { grid-template-columns: 1fr 1fr; } .main { padding: 16px; } }
 </style>
 </head>
@@ -89,8 +88,9 @@
       <option value="low">Low</option>
     </select>
     <input type="text" id="filter-search" placeholder="Search messages..." oninput="renderTable()">
+    <input type="hidden" id="filter-status">
     <label style="font-size:13px;color:#475569;display:flex;align-items:center;gap:6px;cursor:pointer">
-      <input type="checkbox" id="show-resolved" onchange="onShowResolvedChange()"> Show resolved/closed
+      <input type="checkbox" id="show-resolved" onchange="loadReports()"> Show resolved/closed
     </label>
     <span class="filter-hint" id="filter-hint"></span>
   </div>
@@ -111,12 +111,7 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 
 let allReports = [];
 
-function onShowResolvedChange() {
-  // When toggling "Show resolved/closed", re-fetch so we have the right dataset, then render
-  loadReports();
-}
-
-// Load data — when "Show resolved/closed" is unchecked, only fetch open/in_progress so resolved stay hidden after refresh
+// Load data — on auto-refresh, preserve filter state and don't reset the table scroll
 async function loadReports(manual = false) {
   const showAll = document.getElementById("show-resolved").checked;
   const statusQ = showAll ? "" : "&status=in.(open,in_progress)";
@@ -125,29 +120,25 @@ async function loadReports(manual = false) {
   });
   allReports = await res.json();
   updateStats();
-  renderTable();
+  renderTable(); // safe — filter values are read from the dropdowns, which are NOT reset
   document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-MY', {hour:'2-digit', minute:'2-digit'});
 }
 
 function updateStats() {
-  // Stats: total and resolved count need to reflect what we'd see if we showed all (so we may need to fetch counts separately, or derive from current list)
-  const total = allReports.length;
-  const open = allReports.filter(r => r.status === 'open').length;
-  const high = allReports.filter(r => r.priority === 'high' || r.priority === 'critical').length;
-  const resolved = allReports.filter(r => r.status === 'resolved' || r.status === 'closed').length;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-open').textContent = open;
-  document.getElementById('stat-high').textContent = high;
-  document.getElementById('stat-resolved').textContent = resolved;
+  document.getElementById('stat-total').textContent = allReports.length;
+  document.getElementById('stat-open').textContent = allReports.filter(r => r.status === 'open').length;
+  document.getElementById('stat-high').textContent = allReports.filter(r => r.priority === 'high' || r.priority === 'critical').length;
+  document.getElementById('stat-resolved').textContent = allReports.filter(r => r.status === 'resolved').length;
 }
 
 function renderTable() {
+
   const priority = document.getElementById('filter-priority').value;
   const search = document.getElementById('filter-search').value.toLowerCase();
-  const showResolved = document.getElementById('show-resolved').checked;
+  const statusFilter = (document.getElementById('filter-status') || {}).value || '';
 
   let rows = allReports.filter(r => {
-    if (!showResolved && (r.status === 'resolved' || r.status === 'closed')) return false;
+    if (statusFilter && r.status !== statusFilter) return false;
     if (priority && r.priority !== priority) return false;
     if (search && !r.message?.toLowerCase().includes(search)) return false;
     return true;
@@ -161,6 +152,11 @@ function renderTable() {
   if (!rows.length) {
     document.getElementById('table-container').innerHTML = '<div class="loading">No reports found for this filter.</div>';
     return;
+  }
+
+  function pageDisplay(url) {
+    if (!url) return '—';
+    try { return new URL(url).pathname; } catch (e) { return url; }
   }
 
   const html = `<table>
@@ -178,7 +174,7 @@ function renderTable() {
           </select>
         </td>
         <td><span class="badge ${r.priority}">${r.priority}</span></td>
-        <td><div class="page-url" title="${escHtml(r.page_url||'')}">${r.page_url ? new URL(r.page_url).pathname : '—'}</div></td>
+        <td><div class="page-url" title="${escHtml(r.page_url||'')}">${pageDisplay(r.page_url)}</div></td>
         <td style="font-size:12px;color:#64748b;white-space:nowrap">${new Date(r.created_at).toLocaleDateString('en-MY', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
         <td>${r.screenshot_base64 ? `<button class="thumb-btn" onclick="showScreenshot('${r.id}')">📷 View</button>` : '<span style="color:#cbd5e1">—</span>'}</td>
         <td><button class="thumb-btn" onclick="showChat('${r.id}')">💬 ${(r.bug_report_messages||[]).length}</button></td>
@@ -189,49 +185,34 @@ function renderTable() {
   document.getElementById('table-container').innerHTML = html;
 }
 
-// Click stat cards to quickly filter (no filter-status element — use checkbox + priority)
+// Click stat cards to quickly filter
 function setFilter(val) {
-  const showResolvedEl = document.getElementById('show-resolved');
-  const priorityEl = document.getElementById('filter-priority');
-  if (val === 'resolved') {
-    showResolvedEl.checked = true;
-    priorityEl.value = '';
-  } else if (val === 'open') {
-    showResolvedEl.checked = false;
-    priorityEl.value = '';
-  } else if (val === 'high') {
-    showResolvedEl.checked = true;
-    priorityEl.value = 'high';
-  } else {
-    showResolvedEl.checked = true;
-    priorityEl.value = '';
-  }
-  loadReports();
+  document.getElementById('filter-status').value = val === 'high' ? '' : (val || '');
+  if (val === 'high') document.getElementById('filter-priority').value = 'high';
+  else document.getElementById('filter-priority').value = '';
+  if (val === 'resolved') document.getElementById('filter-status').value = 'resolved';
+  if (val === 'open') document.getElementById('filter-status').value = 'open';
+  renderTable();
 }
 
 function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function showToast(msg) {
-  const el = document.createElement('div');
-  el.className = 'toast';
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 4000);
-}
-
 async function updateStatus(id, newStatus) {
+  const r = allReports.find(r => r.id === id);
+  const previousStatus = r ? r.status : null;
+  // Update in Supabase
   const res = await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?id=eq.${id}`, {
     method: 'PATCH',
     headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
     body: JSON.stringify({ status: newStatus })
   });
   if (!res.ok) {
-    const err = await res.text();
-    showToast('Failed to update status. Check RLS policies for bug_reports.');
-    console.error('PATCH bug_reports', res.status, err);
+    if (r) r.status = previousStatus;
+    updateStats();
+    renderTable();
+    alert('Failed to save status (HTTP ' + res.status + '). If this persists, add an RLS policy so anon can UPDATE bug_reports. See docs/SUPABASE_SETUP.md section 9.');
     return;
   }
-  const r = allReports.find(r => r.id === id);
   if (r) r.status = newStatus;
   updateStats();
   renderTable();
@@ -271,7 +252,7 @@ function showChat(id) {
 
 function closeModal(e) { if (e.target.id === 'modal') document.getElementById('modal').style.display = 'none'; }
 
-// Initial state: don't show resolved/closed, so we only fetch open/in_progress
+// Reset filters on every page load
 document.getElementById('filter-priority').value = '';
 document.getElementById('filter-search').value = '';
 document.getElementById('show-resolved').checked = false;
