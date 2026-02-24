@@ -1,41 +1,43 @@
 import { Link } from 'react-router-dom';
+import ParticleWave from '../components/ParticleWave';
 
 function LandingPage() {
   return (
     <>
-      {/* Hero Section */}
-      <header className="relative pt-16 pb-24 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section - Forest Green with Particle Wave background */}
+      <header className="relative overflow-hidden pt-16 pb-24 bg-primary">
+        <ParticleWave className="z-0 pointer-events-none" dotColor="rgba(255, 255, 255, 0.3)" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-6">
-                <span className="flex h-2 w-2 rounded-full bg-primary"></span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-white/95 text-xs font-bold uppercase tracking-wider mb-6 drop-shadow-sm">
+                <span className="flex h-2 w-2 rounded-full bg-white/90"></span>
                 Now LHDN e-Invoice Compatible
               </div>
-              <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-custom dark:text-white leading-[1.1] mb-6">
-                LHDN-Ready in <span className="text-primary">Minutes</span>
+              <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-6 drop-shadow-md" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                LHDN-Ready in <span className="text-emerald-200">Minutes</span>
               </h1>
-              <p className="text-lg text-slate-custom/70 dark:text-gray-400 mb-10 max-w-2xl leading-relaxed">
+              <p className="text-lg text-white/90 mb-10 max-w-2xl leading-relaxed drop-shadow-sm" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
                 The modern tax platform built specifically for Malaysian businesses. Automate your SST compliance, EA form generation, and real-time liability tracking with enterprise-grade security.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/login" className="btn-lighting-trail bg-primary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                <Link to="/login" className="btn-lighting-trail-white bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/95 transition-all flex items-center justify-center gap-2 shadow-lg">
                   Start Free Trial <span className="material-icons text-base">arrow_forward</span>
                 </Link>
-                <button className="border border-primary/20 bg-white dark:bg-transparent px-8 py-4 rounded-lg font-bold text-lg hover:bg-primary/5 transition-all">
+                <button className="border-2 border-white/40 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all shadow-sm">
                   Book a Demo
                 </button>
               </div>
-              <p className="mt-6 text-sm text-slate-custom/50 dark:text-gray-500">
+              <p className="mt-6 text-sm text-white/70 drop-shadow-sm" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
                 No credit card required. 14-day free trial.
               </p>
             </div>
             <div className="flex-1 w-full max-w-2xl">
-              <div className="relative rounded-xl border border-primary/10 shadow-2xl bg-white dark:bg-slate-900 p-2">
+              <div className="relative rounded-xl border border-white/20 shadow-2xl bg-white/5 backdrop-blur-sm overflow-hidden p-2">
                 <img
-                  alt="Tax Dashboard Mockup"
-                  className="rounded-lg w-full h-auto grayscale-[20%]"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHapVERjO6Noosp6k5comGxhR_agziuWGEt2dd3fh39YhFf53RszsbAiL7waiC7ovaKgPTk6ioOEeUTDMHpNcbJc-qUBY0QIvsVsEudi1pU1fSH91URvuJHeAQ9TySit8Tj2PXFD40q4ty8xDuvVvI_XeGk-srHDyemZuY9hBTv6HvJ6H16YmDTqgs8ivHe46oo3I12uNctg5J6ezyF6WTp18-etAOmDuZ5pCwNhSs8-UqSc-pscIraFkhdGIABFdY30l-BcftFJA"
+                  alt="CukaiPro on dual monitors - hero section and dashboard"
+                  className="rounded-lg w-full h-auto object-cover"
+                  src="/hero-setup.png"
                 />
               </div>
             </div>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CukaiPro – Bug Reports Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1e293b; }
+  header { background: #1e40af; color: #fff; padding: 16px 28px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 28px 0; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer; transition: box-shadow 0.15s; }
+  .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .stat-card .num { font-size: 28px; font-weight: 700; }
+  .stat-card .lbl { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .stat-card.open .num { color: #2563eb; }
+  .stat-card.high .num { color: #dc2626; }
+  .stat-card.resolved .num { color: #16a34a; }
+  .stat-card.total .num { color: #7c3aed; }
+  .main { padding: 24px 28px; }
+  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filters select, .filters input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; }
+  .filters select:focus, .filters input:focus { border-color: #2563eb; }
+  .filter-hint { font-size: 12px; color: #94a3b8; margin-left: 4px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+  thead { background: #f8fafc; }
+  th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 12px 16px; font-size: 13.5px; border-top: 1px solid #f1f5f9; vertical-align: top; }
+  tr:hover td { background: #f8fafc; }
+  tr.is-resolved td { opacity: 0.5; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .badge.open { background: #dbeafe; color: #1d4ed8; }
+  .badge.in_progress { background: #fef3c7; color: #b45309; }
+  .badge.resolved { background: #dcfce7; color: #15803d; }
+  .badge.closed { background: #f1f5f9; color: #475569; }
+  .badge.low { background: #f0fdf4; color: #16a34a; }
+  .badge.medium { background: #fffbeb; color: #d97706; }
+  .badge.high { background: #fef2f2; color: #dc2626; }
+  .badge.critical { background: #7f1d1d; color: #fff; }
+  .msg-preview { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #374151; }
+  .page-url { font-size: 11px; color: #94a3b8; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .thumb-btn { background: none; border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 12px; color: #2563eb; }
+  .thumb-btn:hover { background: #eff6ff; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 12px; padding: 24px; max-width: 90vw; max-height: 90vh; overflow: auto; }
+  .modal img { max-width: 100%; border-radius: 8px; }
+  .modal h3 { margin-bottom: 16px; font-size: 16px; }
+  .modal .close-modal { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
+  .loading { text-align: center; padding: 40px; color: #64748b; font-size: 14px; }
+  .chat-thread { font-size: 13px; }
+  .chat-thread .m { padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; max-width: 85%; }
+  .chat-thread .m.user { background: #2563eb; color: #fff; margin-left: auto; }
+  .chat-thread .m.assistant { background: #f1f5f9; color: #1e293b; }
+  .chat-thread .m small { display: block; font-size: 10px; opacity: 0.6; margin-top: 2px; }
+  .select-status { padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: #fff; cursor: pointer; }
+  .refresh-indicator { font-size: 11px; color: #94a3b8; margin-left: auto; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #dc2626; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  @media (max-width: 700px) { .stats { grid-template-columns: 1fr 1fr; } .main { padding: 16px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🐛 CukaiPro – Bug Reports</h1>
+    <p>Support chat logs & issue tracker</p>
+  </div>
+  <span id="last-refresh" style="margin-left:auto;font-size:12px;opacity:0.7;"></span>
+  <button onclick="loadReports(true)" style="margin-left:12px;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;">↻ Refresh</button>
+</header>
+
+<div class="stats">
+  <div class="stat-card total" onclick="setFilter('')" title="Show all"><div class="num" id="stat-total">—</div><div class="lbl">Total Reports</div></div>
+  <div class="stat-card open" onclick="setFilter('open')" title="Show open only"><div class="num" id="stat-open">—</div><div class="lbl">Open</div></div>
+  <div class="stat-card high" onclick="setFilter('high')" title="Show high priority"><div class="num" id="stat-high">—</div><div class="lbl">High Priority</div></div>
+  <div class="stat-card resolved" onclick="setFilter('resolved')" title="Show resolved"><div class="num" id="stat-resolved">—</div><div class="lbl">Resolved</div></div>
+</div>
+
+<div class="main">
+  <div class="filters">
+
+    <select id="filter-priority" onchange="renderTable()">
+      <option value="">All Priorities</option>
+      <option value="critical">Critical</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+    </select>
+    <input type="text" id="filter-search" placeholder="Search messages..." oninput="renderTable()">
+    <label style="font-size:13px;color:#475569;display:flex;align-items:center;gap:6px;cursor:pointer">
+      <input type="checkbox" id="show-resolved" onchange="onShowResolvedChange()"> Show resolved/closed
+    </label>
+    <span class="filter-hint" id="filter-hint"></span>
+  </div>
+
+  <div id="table-container">
+    <div class="loading">Loading reports...</div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://xkylwjlcablefymuzoie.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhreWx3amxjYWJsZWZ5bXV6b2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMzY5MTAsImV4cCI6MjA4NjcxMjkxMH0.dL21t_6hk5PHIF1yJmSd0s7lmhQ2pksQj1eT4ayAMP0';
+
+let allReports = [];
+
+function onShowResolvedChange() {
+  // When toggling "Show resolved/closed", re-fetch so we have the right dataset, then render
+  loadReports();
+}
+
+// Load data — when "Show resolved/closed" is unchecked, only fetch open/in_progress so resolved stay hidden after refresh
+async function loadReports(manual = false) {
+  const showAll = document.getElementById("show-resolved").checked;
+  const statusQ = showAll ? "" : "&status=in.(open,in_progress)";
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?select=*,bug_report_messages(role,content,created_at)${statusQ}&order=created_at.desc`, {
+    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` }
+  });
+  allReports = await res.json();
+  updateStats();
+  renderTable();
+  document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-MY', {hour:'2-digit', minute:'2-digit'});
+}
+
+function updateStats() {
+  // Stats: total and resolved count need to reflect what we'd see if we showed all (so we may need to fetch counts separately, or derive from current list)
+  const total = allReports.length;
+  const open = allReports.filter(r => r.status === 'open').length;
+  const high = allReports.filter(r => r.priority === 'high' || r.priority === 'critical').length;
+  const resolved = allReports.filter(r => r.status === 'resolved' || r.status === 'closed').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-open').textContent = open;
+  document.getElementById('stat-high').textContent = high;
+  document.getElementById('stat-resolved').textContent = resolved;
+}
+
+function renderTable() {
+  const priority = document.getElementById('filter-priority').value;
+  const search = document.getElementById('filter-search').value.toLowerCase();
+  const showResolved = document.getElementById('show-resolved').checked;
+
+  let rows = allReports.filter(r => {
+    if (!showResolved && (r.status === 'resolved' || r.status === 'closed')) return false;
+    if (priority && r.priority !== priority) return false;
+    if (search && !r.message?.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const hint = document.getElementById('filter-hint');
+  hint.textContent = rows.length === allReports.length
+    ? `${rows.length} reports`
+    : `${rows.length} of ${allReports.length} reports`;
+
+  if (!rows.length) {
+    document.getElementById('table-container').innerHTML = '<div class="loading">No reports found for this filter.</div>';
+    return;
+  }
+
+  const html = `<table>
+    <thead><tr>
+      <th>#</th><th>Message</th><th>Status</th><th>Priority</th>
+      <th>Page</th><th>Date</th><th>Screenshot</th><th>Chat</th>
+    </tr></thead>
+    <tbody>${rows.map(r => `
+      <tr class="${r.status === 'resolved' || r.status === 'closed' ? 'is-resolved' : ''}">
+        <td style="color:#94a3b8;font-size:12px">${r.id.substr(0,8)}</td>
+        <td><div class="msg-preview" title="${escHtml(r.message)}">${escHtml(r.message)}</div>${r.user_email ? `<div style="font-size:11px;color:#64748b;margin-top:3px">✉ ${escHtml(r.user_email)}</div>` : ''}</td>
+        <td>
+          <select class="select-status" onchange="updateStatus('${r.id}', this.value)">
+            ${['open','in_progress','resolved','closed'].map(s => `<option value="${s}" ${r.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
+          </select>
+        </td>
+        <td><span class="badge ${r.priority}">${r.priority}</span></td>
+        <td><div class="page-url" title="${escHtml(r.page_url||'')}">${r.page_url ? new URL(r.page_url).pathname : '—'}</div></td>
+        <td style="font-size:12px;color:#64748b;white-space:nowrap">${new Date(r.created_at).toLocaleDateString('en-MY', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+        <td>${r.screenshot_base64 ? `<button class="thumb-btn" onclick="showScreenshot('${r.id}')">📷 View</button>` : '<span style="color:#cbd5e1">—</span>'}</td>
+        <td><button class="thumb-btn" onclick="showChat('${r.id}')">💬 ${(r.bug_report_messages||[]).length}</button></td>
+      </tr>
+    `).join('')}</tbody>
+  </table>`;
+
+  document.getElementById('table-container').innerHTML = html;
+}
+
+// Click stat cards to quickly filter (no filter-status element — use checkbox + priority)
+function setFilter(val) {
+  const showResolvedEl = document.getElementById('show-resolved');
+  const priorityEl = document.getElementById('filter-priority');
+  if (val === 'resolved') {
+    showResolvedEl.checked = true;
+    priorityEl.value = '';
+  } else if (val === 'open') {
+    showResolvedEl.checked = false;
+    priorityEl.value = '';
+  } else if (val === 'high') {
+    showResolvedEl.checked = true;
+    priorityEl.value = 'high';
+  } else {
+    showResolvedEl.checked = true;
+    priorityEl.value = '';
+  }
+  loadReports();
+}
+
+function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+async function updateStatus(id, newStatus) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ status: newStatus })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    showToast('Failed to update status. Check RLS policies for bug_reports.');
+    console.error('PATCH bug_reports', res.status, err);
+    return;
+  }
+  const r = allReports.find(r => r.id === id);
+  if (r) r.status = newStatus;
+  updateStats();
+  renderTable();
+}
+
+function showScreenshot(id) {
+  const r = allReports.find(r => r.id === id);
+  if (!r?.screenshot_base64) return;
+  document.getElementById('modal-content').innerHTML = `
+    <button class="close-modal" onclick="document.getElementById('modal').style.display='none'">✕</button>
+    <h3>Screenshot – ${r.id.substr(0,8)}</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:12px">${escHtml(r.page_url||'')}</p>
+    <img src="${r.screenshot_base64}" alt="Screenshot"/>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function showChat(id) {
+  const r = allReports.find(r => r.id === id);
+  if (!r) return;
+  const msgs = (r.bug_report_messages || []);
+  document.getElementById('modal-content').innerHTML = `
+    <button class="close-modal" onclick="document.getElementById('modal').style.display='none'">✕</button>
+    <h3>💬 Chat Thread – ${r.id.substr(0,8)}</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:16px">Status: <span class="badge ${r.status}">${r.status}</span> &nbsp; Priority: <span class="badge ${r.priority}">${r.priority}</span></p>
+    <div class="chat-thread" style="min-width:340px;max-width:520px">
+      ${msgs.length ? msgs.map(m => `
+        <div class="m ${m.role}">
+          ${escHtml(m.content)}
+          <small>${new Date(m.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})}</small>
+        </div>
+      `).join('') : '<p style="color:#94a3b8;font-size:13px">No messages yet.</p>'}
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal(e) { if (e.target.id === 'modal') document.getElementById('modal').style.display = 'none'; }
+
+// Initial state: don't show resolved/closed, so we only fetch open/in_progress
+document.getElementById('filter-priority').value = '';
+document.getElementById('filter-search').value = '';
+document.getElementById('show-resolved').checked = false;
+
+loadReports();
+setInterval(() => loadReports(), 30000);
+</script>
+</body>
+</html>
