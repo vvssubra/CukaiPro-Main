@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
+import { isSupabaseConfigured } from './lib/supabaseConfig';
 import { AuthProvider } from './context/AuthContext';
 import { OrganizationProvider } from './context/OrganizationContext';
 import { AppProvider } from './context/AppContext';
@@ -9,6 +10,30 @@ import ErrorBoundary, { ErrorFallback } from './components/Common/ErrorBoundary'
 import Loading from './components/Common/Loading';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Navbar from './components/Navbar';
+
+function ConfigRequired() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900 p-6">
+      <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+        <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400 mb-4">
+          <span className="material-icons-outlined text-3xl">settings</span>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Setup required</h1>
+        </div>
+        <p className="text-slate-600 dark:text-slate-300 mb-4">
+          Add your Supabase credentials so the app can connect to the database.
+        </p>
+        <ol className="list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 space-y-2 mb-6">
+          <li>Copy <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env.example</code> to <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env</code></li>
+          <li>Set <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">VITE_SUPABASE_URL</code> and <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> in <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env</code></li>
+          <li>Restart the dev server (<code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">npm run dev</code>)</li>
+        </ol>
+        <p className="text-xs text-slate-500 dark:text-slate-500">
+          Get the values from your Supabase project: Dashboard → Settings → API.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 // Lazy load pages for code splitting
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -155,6 +180,9 @@ function AppLayout() {
 }
 
 function App() {
+  if (!isSupabaseConfigured) {
+    return <ConfigRequired />;
+  }
   return (
     <Sentry.ErrorBoundary fallback={({ error, resetError }) => <ErrorFallback error={error} onReset={resetError} />}>
       <BrowserRouter>
