@@ -1,6 +1,20 @@
 import { Link } from 'react-router-dom';
 import ParticleWave from '../components/ParticleWave';
 
+// Fake company logos (image only, no text) – simple SVG shapes as data URIs
+const trustedLogoImages = [
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23064E3B"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231E293B"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230ea5e9"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%236d28d9"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%23b45309"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230f766e"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%231e40af"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%234f46e5"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23047569"/></svg>'),
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%236b21a8"/></svg>'),
+];
+
 function LandingPage() {
   return (
     <>
@@ -45,16 +59,26 @@ function LandingPage() {
         </div>
       </header>
 
-      {/* Trust Bar */}
-      <section className="py-12 border-y border-primary/5 bg-white dark:bg-background-dark/50">
+      {/* Trust Bar - Ticker with fake company logos */}
+      <section className="py-12 border-y border-primary/5 bg-white dark:bg-background-dark/50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-custom/40 mb-10">Trusted by 500+ Malaysian SMEs and Accounting Firms</p>
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale">
-            <div className="h-8 w-32 bg-slate-custom/20 rounded"></div>
-            <div className="h-8 w-40 bg-slate-custom/20 rounded"></div>
-            <div className="h-8 w-28 bg-slate-custom/20 rounded"></div>
-            <div className="h-8 w-36 bg-slate-custom/20 rounded"></div>
-            <div className="h-8 w-32 bg-slate-custom/20 rounded"></div>
+          <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-custom/40 dark:text-gray-500 mb-8">
+            Trusted by 500+ Malaysian SMEs and Accounting Firms
+          </p>
+          <div className="relative">
+            <div className="ticker-track flex items-center gap-12 shrink-0 w-max">
+              {[...trustedLogoImages, ...trustedLogoImages].map((src, i) => (
+                <div key={i} className="shrink-0" aria-hidden="true">
+                  <img
+                    src={src}
+                    alt=""
+                    className="h-10 w-auto object-contain opacity-70 grayscale hover:opacity-90 hover:grayscale-0 transition-all"
+                    width={80}
+                    height={40}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
