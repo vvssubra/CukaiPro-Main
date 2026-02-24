@@ -40,3 +40,39 @@
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(255, 255, 255, 0.6);
   }
 }
+
+/* Hero ripple: scale from center, fade out. Translate in keyframes so it doesn't conflict with Tailwind. */
+@keyframes hero-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+}
+
+.hero-ripple-anim {
+  will-change: transform, opacity;
+  animation: hero-ripple 4s ease-out infinite;
+}
+
+/* Cursor ripple: expands and fades at mouse position (grid wave effect) */
+@keyframes hero-cursor-ripple {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.hero-cursor-ripple {
+  will-change: transform, opacity;
+  animation: hero-cursor-ripple 1.6s ease-out forwards;
+  pointer-events: none;
+}
+

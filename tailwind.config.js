@@ -24,6 +24,26 @@ export default {
         "xl": "0.75rem",
         "full": "9999px",
       },
+      keyframes: {
+        "hero-ripple": {
+          "0%": { transform: "scale(0.5)", opacity: "0.7" },
+          "100%": { transform: "scale(1.5)", opacity: "0" },
+        },
+        "ripple-grid-pulse": {
+          "0%, 100%": { opacity: "0.4" },
+          "50%": { opacity: "0.9" },
+        },
+      },
+      animation: {
+        "hero-ripple": "hero-ripple 4s ease-out infinite",
+        "ripple-grid-pulse": "ripple-grid-pulse 3s ease-in-out infinite",
+      },
+      backgroundImage: {
+        "hero-grid-pattern": "linear-gradient(to right, rgb(6 78 59 / 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgb(6 78 59 / 0.08) 1px, transparent 1px)",
+      },
+      backgroundSize: {
+        "hero-grid": "48px 48px",
+      },
     },
   },
   plugins: [],
