@@ -26,6 +26,7 @@ const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const AcceptInvitePage = lazy(() => import('./pages/Auth/AcceptInvitePage'));
 const ReportsPage = lazy(() => import('./pages/Reports/ReportsPage'));
 const HelpPage = lazy(() => import('./pages/Help/HelpPage'));
+const ConfigDebugPage = lazy(() => import('./pages/Debug/ConfigDebugPage'));
 
 function AppLayout() {
   const location = useLocation();
@@ -167,6 +168,7 @@ function App() {
                   <Route path="/signup" element={<SignupPage />} />
                   <Route path="/onboarding" element={<OnboardingWizard />} />
                   <Route path="/invite/:token" element={<AcceptInvitePage />} />
+                  {import.meta.env.DEV && <Route path="/debug/config" element={<ConfigDebugPage />} />}
                   <Route path="/*" element={<AppLayout />} />
                 </Routes>
               </Suspense>

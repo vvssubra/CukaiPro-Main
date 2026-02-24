@@ -112,13 +112,14 @@ export function OrganizationProvider({ children }) {
 
       if (error) throw error;
 
-      await supabase.from('organization_members').insert({
+      const { error: memberError } = await supabase.from('organization_members').insert({
         organization_id: data.id,
         user_id: user.id,
         role: 'owner',
         status: 'active',
         invitation_accepted_at: new Date().toISOString(),
       });
+      if (memberError) throw memberError;
 
       await loadOrganizations();
       setCurrentOrganization({ ...data, userRole: 'owner' });

@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../context/AuthContext';
-import { useOrganization } from '../../context/OrganizationContext';
-import { supabase } from '../../lib/supabase';
 import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
@@ -22,16 +20,12 @@ function validateSignup(data) {
   } else if (!/[A-Z]/.test(data.password) || !/[a-z]/.test(data.password) || !/[0-9]/.test(data.password)) {
     errors.password = 'Password must contain uppercase, lowercase, and a number';
   }
-  if (!data.businessName?.trim() || data.businessName.trim().length < 2) {
-    errors.businessName = 'Business name must be at least 2 characters';
-  }
   return Object.keys(errors).length ? errors : null;
 }
 
 export default function SignupPage() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
-  const { reloadOrganizations } = useOrganization();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -130,7 +124,7 @@ export default function SignupPage() {
                 />
 
                 <Button type="submit" fullWidth loading={loading}>
-                  <span>Create account</span>
+                  <span>{loading ? 'Creating...' : 'Create account'}</span>
                   <span className="material-icons-outlined text-sm">arrow_forward</span>
                 </Button>
               </form>

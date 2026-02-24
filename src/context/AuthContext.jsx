@@ -18,6 +18,47 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const ensureUserProfile = async (sessionUser) => {
+    if (!sessionUser?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', sessionUser.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setProfile(data);
+        return;
+      }
+
+      const fullName =
+        sessionUser.user_metadata?.full_name ||
+        sessionUser.user_metadata?.fullName ||
+        '';
+      const email = sessionUser.email || '';
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('user_profiles')
+        .insert({
+          id: sessionUser.id,
+          full_name: fullName || email || 'User',
+          email,
+        })
+        .select('*')
+        .single();
+
+      if (insertError) {
+        if (insertError.code === '23505') return;
+        throw insertError;
+      }
+      setProfile(inserted ?? null);
+    } catch (err) {
+      logger.error('Error ensuring user profile', err);
+    }
+  };
+
   const loadUserProfile = async (userId, setLoadingWhenDone = true) => {
     const timeoutMs = 10000;
     try {
@@ -53,6 +94,7 @@ export function AuthProvider({ children }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         setLoading(false); // unblock UI as soon as we have a user
+        ensureUserProfile(session.user); // best-effort create if missing
         loadUserProfile(session.user.id, false); // load profile in background
       } else {
         setLoading(false);
@@ -64,6 +106,7 @@ export function AuthProvider({ children }) {
         setUser(session?.user ?? null);
         if (session?.user) {
           setLoading(false); // unblock immediately so login doesn't hang
+          ensureUserProfile(session.user);
           loadUserProfile(session.user.id, false);
         } else {
           setProfile(null);
@@ -88,9 +131,11 @@ export function AuthProvider({ children }) {
 
       if (error) throw error;
 
-      if (data.user) {
+      // Only attempt immediate profile insert when we have an authenticated user/session.
+      // For email-confirm flows, the user may not have a session yet; profile is created on first login.
+      if (data?.session?.user) {
         const { error: profileError } = await supabase.from('user_profiles').insert({
-          id: data.user.id,
+          id: data.session.user.id,
           full_name: fullName,
           email,
         });
