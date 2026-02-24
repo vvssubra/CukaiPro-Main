@@ -33,8 +33,8 @@ function StepWelcome({ onNext }) {
   );
 }
 
-function StepOrganization({ onNext, hasExistingOrg }) {
-  const [businessName, setBusinessName] = useState('');
+function StepOrganization({ onNext, hasExistingOrg, initialCompanyName = '' }) {
+  const [businessName, setBusinessName] = useState(initialCompanyName.trim());
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { createOrganization, currentOrganization } = useOrganization();
@@ -375,6 +375,7 @@ export default function OnboardingWizard() {
           <StepOrganization
             onNext={() => setStep(3)}
             hasExistingOrg={!!currentOrganization}
+            initialCompanyName={user?.user_metadata?.company_name || ''}
           />
         );
       case 3:

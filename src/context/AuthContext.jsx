@@ -118,14 +118,18 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email, password, fullName) => {
+  const signUp = async (email, password, fullName, companyName = null) => {
     setLoading(true);
     try {
+      const metadata = { full_name: fullName };
+      if (companyName && companyName.trim()) {
+        metadata.company_name = companyName.trim();
+      }
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName },
+          data: metadata,
         },
       });
 

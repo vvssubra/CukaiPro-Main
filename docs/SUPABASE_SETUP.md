@@ -99,6 +99,14 @@ If you see **"new row violates row-level security policy for table 'tax_deductio
 
 After running the script, try adding a tax deduction again. If you use an `invoices` table with `organization_id`, add similar RLS policies for `invoices` (same pattern: allow access only when `organization_id` is in an org the user belongs to).
 
+### Storage: deduction receipt uploads ("new row violates row-level security policy")
+
+If you see **"new row violates row-level security policy"** when **uploading a receipt** on the Deductions page (Add/Update deduction):
+
+1. The app uploads files to the Storage bucket **`deduction-receipts`** with path `{organization_id}/{filename}`.
+2. Run **`supabase/migrations/20250224000000_storage_deduction_receipts_rls.sql`** in Supabase → SQL Editor. It creates the bucket (if missing) and RLS policies on `storage.objects` so **authenticated org members** can INSERT (upload), SELECT (read), UPDATE, and DELETE objects under their organization folder.
+3. After running, try uploading a receipt again when adding or updating a deduction.
+
 ---
 
 ## 8. Phase 3: Invitations & Team (Optional)

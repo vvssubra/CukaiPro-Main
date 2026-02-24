@@ -10,6 +10,9 @@ function validateSignup(data) {
   if (!data.fullName?.trim() || data.fullName.trim().length < 2) {
     errors.fullName = 'Full name must be at least 2 characters';
   }
+  if (!data.companyName?.trim() || data.companyName.trim().length < 2) {
+    errors.companyName = 'Company name must be at least 2 characters';
+  }
   if (!data.email?.trim()) {
     errors.email = 'Email is required';
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
@@ -34,9 +37,10 @@ export default function SignupPage() {
     handleSubmit,
     setError: setFieldError,
     formState: { errors },
-  } = useForm({
+  } =   useForm({
     defaultValues: {
       fullName: '',
+      companyName: '',
       email: '',
       password: '',
     },
@@ -53,7 +57,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await signUp(data.email, data.password, data.fullName);
+      await signUp(data.email, data.password, data.fullName, data.companyName?.trim());
       navigate('/onboarding', { replace: true });
     } catch (err) {
       console.error('Signup error:', err);
@@ -114,6 +118,15 @@ export default function SignupPage() {
                   label="Full name"
                   placeholder="Azlan Shah"
                   error={errors.fullName?.message}
+                  required
+                  fullWidth
+                />
+
+                <Input
+                  {...register('companyName')}
+                  label="Company name"
+                  placeholder="My Sdn Bhd"
+                  error={errors.companyName?.message}
                   required
                   fullWidth
                 />
