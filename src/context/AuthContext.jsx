@@ -181,7 +181,8 @@ export function AuthProvider({ children }) {
       throw error;
     }
     setProfile((prev) => (prev ? { ...prev, onboarding_completed_at: now } : prev));
-    await loadUserProfile(user.id, false);
+    // Reload profile in background so navigation is not blocked
+    loadUserProfile(user.id, false).catch((err) => logger.error('Error reloading profile after onboarding', err));
   };
 
   const value = {
