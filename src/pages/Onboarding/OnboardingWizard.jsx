@@ -5,7 +5,7 @@ import { useOrganization } from '../../context/OrganizationContext';
 import { useDeductions } from '../../hooks/useDeductions';
 import { useInvitations } from '../../hooks/useInvitations';
 import { useToast } from '../../context/ToastContext';
-import { getCategoryById } from '../../data/taxCategories';
+import { getCategoryById, TAX_CATEGORIES, CATEGORY_TYPES } from '../../data/taxCategories';
 import Button from '../../components/Common/Button';
 import Input from '../../components/Common/Input';
 
@@ -119,14 +119,6 @@ function StepDeduction({ onNext, onSkip }) {
   const [error, setError] = useState('');
   const taxYear = new Date().getFullYear();
 
-  const businessCategories = [
-    { id: 'office_supplies', name: 'Office Supplies' },
-    { id: 'utilities', name: 'Utilities' },
-    { id: 'rent', name: 'Business Rent' },
-    { id: 'professional_fees', name: 'Professional Fees' },
-    { id: 'advertising', name: 'Advertising & Promotion' },
-  ];
-
   const handleAdd = async (e) => {
     e.preventDefault();
     setError('');
@@ -182,8 +174,12 @@ function StepDeduction({ onNext, onSkip }) {
               className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-custom dark:text-white"
             >
               <option value="">Select category</option>
-              {businessCategories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+              {CATEGORY_TYPES.map(({ value: typeValue, label }) => (
+                <optgroup key={typeValue} label={label}>
+                  {TAX_CATEGORIES.filter((c) => c.type === typeValue).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
