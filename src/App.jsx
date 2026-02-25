@@ -54,6 +54,19 @@ const HelpPage = lazy(() => import('./pages/Help/HelpPage'));
 const GuidePage = lazy(() => import('./pages/Help/GuidePage'));
 const ConfigDebugPage = lazy(() => import('./pages/Debug/ConfigDebugPage'));
 
+const EInvoicingPage = lazy(() => import('./pages/FooterPages/EInvoicingPage'));
+const PayrollTaxPage = lazy(() => import('./pages/FooterPages/PayrollTaxPage'));
+const SSTCompliancePage = lazy(() => import('./pages/FooterPages/SSTCompliancePage'));
+const IntegrationsPage = lazy(() => import('./pages/FooterPages/IntegrationsPage'));
+const AboutPage = lazy(() => import('./pages/FooterPages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/FooterPages/ContactPage'));
+const CareersPage = lazy(() => import('./pages/FooterPages/CareersPage'));
+const PrivacyPage = lazy(() => import('./pages/FooterPages/PrivacyPage'));
+const HelpCenterPage = lazy(() => import('./pages/FooterPages/HelpCenterPage'));
+const LHDNGuidelinesPage = lazy(() => import('./pages/FooterPages/LHDNGuidelinesPage'));
+const TaxCalendarPage = lazy(() => import('./pages/FooterPages/TaxCalendarPage'));
+const CommunityPage = lazy(() => import('./pages/FooterPages/CommunityPage'));
+
 function AppLayout() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
@@ -64,6 +77,18 @@ function AppLayout() {
       <Suspense fallback={<Loading fullScreen />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/e-invoicing" element={<EInvoicingPage />} />
+          <Route path="/payroll-tax" element={<PayrollTaxPage />} />
+          <Route path="/sst-compliance" element={<SSTCompliancePage />} />
+          <Route path="/integrations" element={<IntegrationsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/help" element={<HelpCenterPage />} />
+          <Route path="/lhdn-guidelines" element={<LHDNGuidelinesPage />} />
+          <Route path="/tax-calendar" element={<TaxCalendarPage />} />
+          <Route path="/community" element={<CommunityPage />} />
           <Route
             path="/dashboard"
             element={
