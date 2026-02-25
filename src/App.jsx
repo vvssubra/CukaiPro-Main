@@ -51,6 +51,7 @@ const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage'));
 const AcceptInvitePage = lazy(() => import('./pages/Auth/AcceptInvitePage'));
 const ReportsPage = lazy(() => import('./pages/Reports/ReportsPage'));
 const HelpPage = lazy(() => import('./pages/Help/HelpPage'));
+const GuidePage = lazy(() => import('./pages/Help/GuidePage'));
 const ConfigDebugPage = lazy(() => import('./pages/Debug/ConfigDebugPage'));
 
 function AppLayout() {
@@ -169,6 +170,16 @@ function AppLayout() {
               <ProtectedRoute>
                 <ErrorBoundary>
                   <HelpPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/guide"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <GuidePage />
                 </ErrorBoundary>
               </ProtectedRoute>
             }
