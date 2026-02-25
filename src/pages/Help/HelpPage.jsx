@@ -85,6 +85,24 @@ export default function HelpPage() {
             </p>
           </div>
 
+          <div className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6">
+            <h2 className="text-lg font-semibold text-slate-custom dark:text-white mb-2">
+              New to CukaiPro?
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              Follow the complete walkthrough to sign up, complete onboarding, use the dashboard, manage invoices and taxes, and invite your team.
+            </p>
+            <a
+              href="https://github.com/vvssubra/CukaiPro-Main/blob/main/docs/USER_GUIDE.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <span className="material-icons text-lg">menu_book</span>
+              Complete user guide
+            </a>
+          </div>
+
           <div className="mb-6">
             <label htmlFor="faq-search" className="sr-only">
               Search FAQs
