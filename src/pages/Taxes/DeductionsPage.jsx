@@ -10,6 +10,9 @@ import { calculateTotalDeductions, estimateTaxSavings } from '../../hooks/useTax
 import { formatCurrency } from '../../utils/validators';
 import { TAX_CATEGORIES, getCategoryById } from '../../data/taxCategories';
 import Loading from '../../components/Common/Loading';
+import EmptyState from '../../components/Common/EmptyState';
+import PageHeader from '../../components/Common/PageHeader';
+import DeductionsSkeleton from '../../components/Common/DeductionsSkeleton';
 import AddDeductionModal from './AddDeductionModal';
 import ViewReceiptModal from './ViewReceiptModal';
 import DeleteDeductionModal from './DeleteDeductionModal';
@@ -184,35 +187,35 @@ function DeductionsPage() {
   return (
     <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
       <Sidebar />
-      <main className="ml-64 flex-1 p-8">
+      <main className="ml-64 flex-1 min-h-screen">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Tax Deductions Tracker</h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Track all your tax-deductible expenses for {taxYear}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <select
-                value={taxYear}
-                onChange={(e) => setTaxYear(Number(e.target.value))}
-                className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
-              >
-                {YEARS.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-              {canAddDeduction && (
-                <button
-                  type="button"
-                  onClick={() => { setEditDeduction(null); setAddModalOpen(true); }}
-                  className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary/90 font-medium text-sm"
+          <PageHeader
+            title="Tax Deductions Tracker"
+            subtitle={`Track all your tax-deductible expenses for ${taxYear}`}
+            action={
+              <div className="flex items-center gap-3">
+                <select
+                  value={taxYear}
+                  onChange={(e) => setTaxYear(Number(e.target.value))}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none shadow-card transition-colors duration-200"
                 >
-                  <span className="material-icons text-[20px]">add</span>
-                  Add Deduction
-                </button>
-              )}
-            </div>
-          </div>
+                  {YEARS.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                {canAddDeduction && (
+                  <button
+                    type="button"
+                    onClick={() => { setEditDeduction(null); setAddModalOpen(true); }}
+                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 font-medium text-sm shadow-card hover:shadow-card-hover hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
+                  >
+                    <span className="material-icons text-[20px]">add</span>
+                    Add Deduction
+                  </button>
+                )}
+              </div>
+            }
+          />
 
           {error && (
             <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
@@ -222,9 +225,9 @@ function DeductionsPage() {
 
           {/* Summary cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="card p-6 rounded-2xl">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                   <span className="material-icons">savings</span>
                 </div>
                 <div>
@@ -234,9 +237,9 @@ function DeductionsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="card p-6 rounded-2xl">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                   <span className="material-icons">account_balance_wallet</span>
                 </div>
                 <div>
@@ -246,9 +249,9 @@ function DeductionsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="card p-6 rounded-2xl">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
                   <span className="material-icons">receipt_long</span>
                 </div>
                 <div>
@@ -260,9 +263,9 @@ function DeductionsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="card p-6 rounded-2xl">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
                   <span className="material-icons">category</span>
                 </div>
                 <div>
@@ -274,7 +277,26 @@ function DeductionsPage() {
             </div>
           </div>
 
+          {/* Empty state: no deductions for this year */}
+          {!loading && deductionsForYear.length === 0 && (
+            <div className="mb-8">
+              <EmptyState
+                icon="receipt_long"
+                title="No deductions yet for this year"
+                description="Add your first deduction to track tax-deductible expenses and claimable amounts for LHDN."
+                primaryAction={{
+                  label: 'Add deduction',
+                  onClick: () => setAddModalOpen(true),
+                  icon: 'add',
+                  disabled: !canAddDeduction,
+                }}
+              />
+            </div>
+          )}
+
           {/* Tabs: Deductions by category */}
+          {(loading || deductionsForYear.length > 0) && (
+          <>
           <div className="mb-8">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Deductions by Category</h2>
             <div className="flex gap-2 mb-4">
@@ -283,16 +305,16 @@ function DeductionsPage() {
                   key={t.value}
                   type="button"
                   onClick={() => setCategoryTab(t.value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${categoryTab === t.value ? 'bg-primary text-white' : 'bg-white dark:bg-slate-custom border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/30'}`}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 ${categoryTab === t.value ? 'bg-primary text-white shadow-card' : 'bg-white dark:bg-slate-custom border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/30'}`}
                 >
                   {t.label}
                 </button>
               ))}
             </div>
-            {loading ? (
-              <Loading size="md" text="Loading..." />
+            {loading && deductionsForYear.length === 0 ? (
+              <DeductionsSkeleton />
             ) : deductionsByCategory.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400 p-6 bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700">No deductions in this category for {taxYear}.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 p-6 card rounded-2xl">No deductions in this category for {taxYear}.</p>
             ) : (
               <div className="space-y-2">
                 {deductionsByCategory.map((cat) => {
@@ -300,7 +322,7 @@ function DeductionsPage() {
                   const icon = catInfo?.icon || 'receipt';
                   const isExpanded = expandedCategories.has(cat.category_id);
                   return (
-                    <div key={cat.category_id} className="bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div key={cat.category_id} className="card rounded-2xl overflow-hidden">
                       <button
                         type="button"
                         onClick={() => toggleCategory(cat.category_id)}
@@ -401,7 +423,7 @@ function DeductionsPage() {
               </select>
             </div>
 
-            <div className="bg-white dark:bg-slate-custom rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
+            <div className="card rounded-2xl overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase">
                   <tr>
@@ -454,6 +476,8 @@ function DeductionsPage() {
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
 
         <AddDeductionModal

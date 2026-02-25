@@ -12,14 +12,14 @@ export function Button({
   className = '',
   ...props
 }) {
-  const baseStyles = 'font-semibold rounded-lg transition-all inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles = 'font-semibold rounded-xl transition-all duration-200 inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary active:scale-[0.98]';
 
   const variants = {
-    primary: 'bg-primary text-white hover:bg-opacity-90 focus:ring-primary disabled:bg-primary/50',
-    secondary: 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600 focus:ring-slate-400',
+    primary: 'bg-primary text-white shadow-card hover:bg-primary/90 hover:shadow-card-hover hover:-translate-y-0.5 focus:ring-primary disabled:bg-primary/50 disabled:shadow-none disabled:translate-y-0',
+    secondary: 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white shadow-card hover:bg-slate-300 dark:hover:bg-slate-600 hover:shadow-card-hover focus:ring-slate-400',
     outline: 'border-2 border-primary text-primary hover:bg-primary/5 focus:ring-primary disabled:border-primary/50 disabled:text-primary/50',
     ghost: 'text-primary hover:bg-primary/5 focus:ring-primary',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400',
+    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-card hover:shadow-card-hover focus:ring-red-500 disabled:bg-red-400 disabled:shadow-none',
   };
 
   const sizes = {
@@ -44,7 +44,7 @@ export function Button({
       {...props}
     >
       {loading && (
-        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" aria-hidden />
       )}
       {children}
     </button>

@@ -8,6 +8,7 @@ import { useTeamMembers } from '../../hooks/useTeamMembers';
 import { useInvitations } from '../../hooks/useInvitations';
 import { useSubscription } from '../../hooks/useSubscription';
 import BillingTab from './BillingTab';
+import ConfirmModal from '../../components/Common/ConfirmModal';
 
 const ROLE_LABELS = {
   owner: 'Owner',
@@ -28,6 +29,8 @@ function TeamTab() {
   const [inviteError, setInviteError] = useState('');
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [sendingEmailFor, setSendingEmailFor] = useState(null);
+  const [memberToRemove, setMemberToRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -92,9 +95,17 @@ function TeamTab() {
     }
   };
 
-  const handleRemoveMember = async (memberId, memberName) => {
-    if (!window.confirm(`Remove ${memberName} from the team?`)) return;
-    await removeMember(memberId);
+  const handleRemoveMember = (memberId, memberName) => {
+    setMemberToRemove({ id: memberId, fullName: memberName });
+  };
+
+  const handleConfirmRemoveMember = async () => {
+    if (!memberToRemove) return;
+    setRemoving(true);
+    await removeMember(memberToRemove.id);
+    setRemoving(false);
+    setMemberToRemove(null);
+    toast.success(`${memberToRemove.fullName} has been removed from the team.`);
   };
 
   const handleCancelInvite = async (invId) => {
@@ -264,6 +275,18 @@ function TeamTab() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!memberToRemove}
+        onClose={() => setMemberToRemove(null)}
+        onConfirm={handleConfirmRemoveMember}
+        title="Remove team member?"
+        message={memberToRemove ? `Remove ${memberToRemove.fullName} from the team? They will lose access to this organization.` : ''}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        variant="danger"
+        loading={removing}
+      />
     </div>
   );
 }

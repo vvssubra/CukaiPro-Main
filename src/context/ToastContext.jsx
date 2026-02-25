@@ -14,9 +14,10 @@ export function ToastProvider({ children }) {
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
     const msg = formatMsg(message);
     setToasts((prev) => [...prev, { id, message: msg, type }]);
+    const duration = type === 'success' ? 5000 : 4000;
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, duration);
   }, []);
 
   const success = useCallback((msg) => addToast(msg, 'success'), [addToast]);
@@ -33,7 +34,7 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm font-medium max-w-sm ${
+            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium max-w-sm animate-slide-in-right ${
               t.type === 'success'
                 ? 'bg-emerald-600 text-white'
                 : t.type === 'error'
@@ -41,7 +42,16 @@ export function ToastProvider({ children }) {
                   : 'bg-slate-800 text-white dark:bg-slate-700'
             }`}
           >
-            {t.message}
+            {t.type === 'success' && (
+              <span className="material-icons text-lg flex-shrink-0" aria-hidden>check_circle</span>
+            )}
+            {t.type === 'error' && (
+              <span className="material-icons text-lg flex-shrink-0" aria-hidden>error</span>
+            )}
+            {t.type === 'info' && (
+              <span className="material-icons text-lg flex-shrink-0 opacity-80" aria-hidden>info</span>
+            )}
+            <span>{t.message}</span>
           </div>
         ))}
       </div>
