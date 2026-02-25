@@ -80,6 +80,10 @@ npm run dev
 
 The app will be available at `http://localhost:3000`
 
+## Documentation
+
+- **[User guide](docs/USER_GUIDE.md)** – Complete walkthrough for new users (sign up, onboarding, dashboard, invoices, taxes, reports, settings, help). Includes app screenshots; see [Screenshot checklist](docs/GUIDE_SCREENSHOTS.md) to add or refresh images.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
