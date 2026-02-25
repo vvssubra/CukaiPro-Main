@@ -206,28 +206,28 @@ function LandingPage() {
             <div>
               <h4 className="font-bold mb-6 uppercase tracking-widest text-xs">Product</h4>
               <ul className="space-y-4 text-slate-custom/70 dark:text-gray-400">
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">E-Invoicing</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Payroll Tax</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">SST Compliance</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Integrations</a></li>
+                <li><Link to="/e-invoicing" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">E-Invoicing</Link></li>
+                <li><Link to="/payroll-tax" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Payroll Tax</Link></li>
+                <li><Link to="/sst-compliance" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">SST Compliance</Link></li>
+                <li><Link to="/integrations" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Integrations</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-6 uppercase tracking-widest text-xs">Company</h4>
               <ul className="space-y-4 text-slate-custom/70 dark:text-gray-400">
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">About Us</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Contact</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Careers</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Privacy Policy</a></li>
+                <li><Link to="/about" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Contact</Link></li>
+                <li><Link to="/careers" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Careers</Link></li>
+                <li><Link to="/privacy" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Privacy Policy</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-6 uppercase tracking-widest text-xs">Support</h4>
               <ul className="space-y-4 text-slate-custom/70 dark:text-gray-400">
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Help Center</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">LHDN Guidelines</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Tax Calendar</a></li>
-                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Community</a></li>
+                <li><Link to="/help" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Help Center</Link></li>
+                <li><Link to="/lhdn-guidelines" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">LHDN Guidelines</Link></li>
+                <li><Link to="/tax-calendar" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Tax Calendar</Link></li>
+                <li><Link to="/community" className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded">Community</Link></li>
               </ul>
             </div>
           </div>
