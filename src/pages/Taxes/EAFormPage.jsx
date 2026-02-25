@@ -9,6 +9,7 @@ import { formatCurrency } from '../../utils/validators';
 import { generateEAFormPDF } from '../../utils/eaFormPdf';
 import Loading from '../../components/Common/Loading';
 import AddEAFormModal from './AddEAFormModal';
+import ConfirmModal from '../../components/Common/ConfirmModal';
 
 const currentYearForList = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => currentYearForList - i);
@@ -17,6 +18,8 @@ function EAFormPage() {
   const [taxYear, setTaxYear] = useState(currentYearForList);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editEAForm, setEditEAForm] = useState(null);
+  const [eaToDelete, setEaToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { currentOrganization } = useOrganization();
   const { canUseEAForms } = useSubscription();
@@ -63,13 +66,21 @@ function EAFormPage() {
   );
 
   const handleDelete = useCallback(
-    async (ea) => {
-      if (!window.confirm(`Remove EA form for ${ea.employee_name}?`)) return;
-      const result = await deleteEAForm(ea.id);
+    (ea) => setEaToDelete(ea),
+    []
+  );
+
+  const handleConfirmDelete = useCallback(
+    async () => {
+      if (!eaToDelete) return;
+      setDeleting(true);
+      const result = await deleteEAForm(eaToDelete.id);
+      setDeleting(false);
+      setEaToDelete(null);
       if (result.success) toast.success('EA form removed.');
       else toast.error(result.error || 'Delete failed.');
     },
-    [deleteEAForm, toast]
+    [eaToDelete, deleteEAForm, toast]
   );
 
   if (!canUseEAForms) {
@@ -277,6 +288,17 @@ function EAFormPage() {
           onSave={handleSave}
           editEAForm={editEAForm}
           taxYear={taxYear}
+        />
+        <ConfirmModal
+          isOpen={!!eaToDelete}
+          onClose={() => setEaToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          title="Remove EA form?"
+          message={eaToDelete ? `This will remove the EA form for ${eaToDelete.employee_name}. You can add it again later.` : ''}
+          confirmLabel="Remove"
+          cancelLabel="Cancel"
+          variant="danger"
+          loading={deleting}
         />
       </main>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganization } from '../../context/OrganizationContext';
@@ -317,13 +317,14 @@ export default function OnboardingWizard() {
   const [step, setStep] = useState(1);
   const [finishingOnboarding, setFinishingOnboarding] = useState(false);
   const [finishError, setFinishError] = useState('');
+  const [allSetDone, setAllSetDone] = useState(false);
 
   const handleFinish = async () => {
     setFinishError('');
     setFinishingOnboarding(true);
     try {
       await completeOnboarding();
-      navigate('/dashboard', { replace: true });
+      setAllSetDone(true);
     } catch (err) {
       console.error('Failed to complete onboarding', err);
       setFinishError(err?.message || 'Failed to complete setup. Please try again.');
@@ -363,10 +364,32 @@ export default function OnboardingWizard() {
     );
   }
 
+  // After "All set!" show, redirect to dashboard
+  useEffect(() => {
+    if (!allSetDone) return;
+    const t = setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
+    return () => clearTimeout(t);
+  }, [allSetDone, navigate]);
+
   // Use actual step so new users see 1 → 2 (organization) → 3 → 4
   const displayStep = step;
 
   const renderStep = () => {
+    if (allSetDone) {
+      return (
+        <div className="space-y-6 text-center py-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-500 animate-fade-in-up">
+            <span className="material-icons text-5xl">check_circle</span>
+          </div>
+          <h2 className="text-xl font-bold text-slate-custom dark:text-white">
+            All set!
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Taking you to your dashboard…
+          </p>
+        </div>
+      );
+    }
     switch (displayStep) {
       case 1:
         return <StepWelcome onNext={() => setStep(2)} />;
@@ -419,13 +442,15 @@ export default function OnboardingWizard() {
             <div className="flex w-full h-1 bg-slate-100 dark:bg-primary/10">
               <div
                 className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${(displayStep / TOTAL_STEPS) * 100}%` }}
+                style={{ width: allSetDone ? '100%' : `${(displayStep / TOTAL_STEPS) * 100}%` }}
               />
             </div>
             <div className="p-8 md:p-10">
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-6">
-                Step {displayStep} of {TOTAL_STEPS}
-              </p>
+              {!allSetDone && (
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-6">
+                  Step {displayStep} of {TOTAL_STEPS}
+                </p>
+              )}
               {renderStep()}
             </div>
           </div>

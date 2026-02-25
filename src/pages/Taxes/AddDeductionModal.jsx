@@ -64,6 +64,17 @@ function AddDeductionModal({ isOpen, onClose, onSave, editDeduction, taxYear }) 
   }, [isOpen, onClose]);
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isOpen && e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
     if (!isOpen) return;
     if (editDeduction) {
       setCategoryId(editDeduction.category_id || '');
@@ -149,10 +160,10 @@ function AddDeductionModal({ isOpen, onClose, onSave, editDeduction, taxYear }) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" role="dialog" aria-modal="true" aria-labelledby="add-deduction-title">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="add-deduction-title">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-slate-custom border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-slate-custom border border-slate-200 dark:border-slate-700 rounded-2xl shadow-modal max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">

@@ -10,8 +10,8 @@ export function Loading({ size = 'md', text = 'Loading...', fullScreen = false }
   const spinner = (
     <div className="flex flex-col items-center justify-center gap-4">
       <div className={`${sizeClasses[size]} relative`}>
-        <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-        <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="absolute inset-0 border-2 border-primary/20 rounded-full" />
+        <div className="absolute inset-0 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
       {text && (
         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 animate-pulse">

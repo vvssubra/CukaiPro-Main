@@ -23,24 +23,27 @@ function LandingPage() {
         <ParticleWave className="z-0 pointer-events-none" dotColor="rgba(255, 255, 255, 0.3)" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-1 text-center lg:text-left">
+            <div className="flex-1 text-center lg:text-left animate-fade-in-up">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-white/95 text-xs font-bold uppercase tracking-wider mb-6 drop-shadow-sm">
                 <span className="flex h-2 w-2 rounded-full bg-white/90"></span>
                 Now LHDN e-Invoice Compatible
               </div>
-              <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-6 drop-shadow-md" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+              <h1 className="text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-white leading-[1.1] mb-6 drop-shadow-md" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                 LHDN-Ready in <span className="text-emerald-200">Minutes</span>
               </h1>
               <p className="text-lg text-white/90 mb-10 max-w-2xl leading-relaxed drop-shadow-sm" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
                 The modern tax platform built specifically for Malaysian businesses. Automate your SST compliance, EA form generation, and real-time liability tracking with enterprise-grade security.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/login" className="btn-lighting-trail-white bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/95 transition-all flex items-center justify-center gap-2 shadow-lg">
+                <Link to="/login" className="btn-lighting-trail-white bg-white text-primary px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/95 transition-all duration-200 flex items-center justify-center gap-2 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 active:scale-[0.98]">
                   Start Free Trial <span className="material-icons text-base">arrow_forward</span>
                 </Link>
-                <button className="border-2 border-white/40 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all shadow-sm">
+                <a
+                  href="mailto:support@cukaipro.my?subject=Demo%20request%20-%20CukaiPro"
+                  className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-all duration-200 shadow-card inline-flex items-center justify-center gap-2"
+                >
                   Book a Demo
-                </button>
+                </a>
               </div>
               <p className="mt-6 text-sm text-white/70 drop-shadow-sm" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
                 No credit card required. 14-day free trial.
@@ -87,33 +90,33 @@ function LandingPage() {
       <section className="py-24 bg-white dark:bg-background-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold text-slate-custom dark:text-white mb-4">Streamline Your Compliance Workflow</h2>
-            <p className="text-slate-custom/60 dark:text-gray-400 max-w-2xl mx-auto">Everything you need to stay compliant with Malaysian tax laws without the manual paperwork.</p>
+            <h2 className="text-3xl font-display font-extrabold text-slate-custom dark:text-white mb-4">Streamline Your Compliance Workflow</h2>
+            <p className="text-slate-custom/60 dark:text-gray-400 max-w-2xl mx-auto text-base">Everything you need to stay compliant with Malaysian tax laws without the manual paperwork.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 border border-primary/10 rounded-xl hover:border-primary/30 transition-all bg-background-light/30 dark:bg-primary/5">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+            <div className="card card-hover p-8 rounded-2xl hover:border-primary/30 transition-all duration-200 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                 <span className="material-icons text-primary">analytics</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-custom dark:text-white">SST Tracking</h3>
+              <h3 className="text-xl font-display font-bold mb-3 text-slate-custom dark:text-white">SST Tracking</h3>
               <p className="text-slate-custom/70 dark:text-gray-400 leading-relaxed">
                 Automated digital journals and tax period monitoring. Never miss a submission window with smart reminders and pre-filled returns.
               </p>
             </div>
-            <div className="p-8 border border-primary/10 rounded-xl hover:border-primary/30 transition-all bg-background-light/30 dark:bg-primary/5">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+            <div className="card card-hover p-8 rounded-2xl hover:border-primary/30 transition-all duration-200 animate-fade-in-up" style={{ animationDelay: '75ms' }}>
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                 <span className="material-icons text-primary">description</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-custom dark:text-white">Automated EA Forms</h3>
+              <h3 className="text-xl font-display font-bold mb-3 text-slate-custom dark:text-white">Automated EA Forms</h3>
               <p className="text-slate-custom/70 dark:text-gray-400 leading-relaxed">
                 One-click generation for employee payroll compliance. Export thousands of EA forms instantly, ready for employee distribution.
               </p>
             </div>
-            <div className="p-8 border border-primary/10 rounded-xl hover:border-primary/30 transition-all bg-background-light/30 dark:bg-primary/5">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+            <div className="card card-hover p-8 rounded-2xl hover:border-primary/30 transition-all duration-200 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                 <span className="material-icons text-primary">speed</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-custom dark:text-white">Real-time Tax Liability</h3>
+              <h3 className="text-xl font-display font-bold mb-3 text-slate-custom dark:text-white">Real-time Tax Liability</h3>
               <p className="text-slate-custom/70 dark:text-gray-400 leading-relaxed">
                 A live dashboard showing your current tax debt and credits. Predict future cash flow needs with high-accuracy tax forecasting.
               </p>
@@ -129,12 +132,12 @@ function LandingPage() {
             <div className="flex-1 order-2 lg:order-1">
               <img
                 alt="Financial Visualization"
-                className="rounded-xl shadow-xl border border-primary/10"
+                className="rounded-2xl shadow-modal border border-slate-200 dark:border-slate-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2V4fcBwYg5hqJo5DaSJpMnuWL_C84ZqnjjY9XscGBNs2UdTi9aaK9-2wzBl9L-HL-jjvFeKraq2TSvSzUAavfiyfQrlXKufFbOyIn1C6xTwo2ZT8Am7RJVkJPwUO3Ikt5ob1c2GAFM4RTyGS-xuzMEnBJBBQUxaHesYE3fmyhFg01BjIob_XuqjVNW2rcBVsdjGziXK6NrfW2VTsY9iEXOaP-SxtMEtButfVRiUQZsb9hear8GFbD3pCizxbnov4za5Apm6sU01Y"
               />
             </div>
             <div className="flex-1 order-1 lg:order-2">
-              <h2 className="text-4xl font-extrabold text-slate-custom dark:text-white mb-6 leading-tight">Built for the Malaysian regulatory landscape.</h2>
+              <h2 className="text-4xl font-display font-extrabold text-slate-custom dark:text-white mb-6 leading-tight">Built for the Malaysian regulatory landscape.</h2>
               <ul className="space-y-6">
                 <li className="flex items-start gap-4">
                   <span className="material-icons text-primary mt-1">check_circle</span>
@@ -168,15 +171,15 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="bg-primary rounded-3xl p-12 lg:p-20 text-center relative overflow-hidden">
             <div className="relative z-10">
-              <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-6">Ready to automate your taxes?</h2>
+              <h2 className="text-3xl lg:text-5xl font-display font-extrabold text-white mb-6">Ready to automate your taxes?</h2>
               <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto">Join hundreds of Malaysian businesses saving 20+ hours every tax season with CukaiPro.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/login" className="btn-lighting-trail-white bg-white text-primary px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center">
+                <Link to="/login" className="btn-lighting-trail-white bg-white text-primary px-10 py-4 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center shadow-card hover:shadow-card-hover hover:-translate-y-0.5 active:scale-[0.98]">
                   Start Your Free Trial
                 </Link>
-                <button className="border border-white/30 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all">
+                <a href="mailto:support@cukaipro.my?subject=Contact%20Sales%20-%20CukaiPro" className="border border-white/30 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-all duration-200 inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50">
                   Contact Sales
-                </button>
+                </a>
               </div>
             </div>
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20"></div>
@@ -191,10 +194,10 @@ function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-card">
                   <span className="material-icons text-white text-xs">account_balance_wallet</span>
                 </div>
-                <span className="text-xl font-extrabold text-primary dark:text-white">CukaiPro</span>
+                <span className="text-xl font-display font-extrabold text-primary dark:text-white">CukaiPro</span>
               </div>
               <p className="text-slate-custom/60 dark:text-gray-400 leading-relaxed">
                 Simplifying Malaysian corporate taxes since 2021. Built with love in Kuala Lumpur.
@@ -203,28 +206,28 @@ function LandingPage() {
             <div>
               <h4 className="font-bold mb-6 uppercase tracking-widest text-xs">Product</h4>
               <ul className="space-y-4 text-slate-custom/70 dark:text-gray-400">
-                <li><a className="hover:text-primary" href="#">E-Invoicing</a></li>
-                <li><a className="hover:text-primary" href="#">Payroll Tax</a></li>
-                <li><a className="hover:text-primary" href="#">SST Compliance</a></li>
-                <li><a className="hover:text-primary" href="#">Integrations</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">E-Invoicing</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Payroll Tax</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">SST Compliance</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Integrations</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-6 uppercase tracking-widest text-xs">Company</h4>
               <ul className="space-y-4 text-slate-custom/70 dark:text-gray-400">
-                <li><a className="hover:text-primary" href="#">About Us</a></li>
-                <li><a className="hover:text-primary" href="#">Contact</a></li>
-                <li><a className="hover:text-primary" href="#">Careers</a></li>
-                <li><a className="hover:text-primary" href="#">Privacy Policy</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">About Us</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Contact</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Careers</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Privacy Policy</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-6 uppercase tracking-widest text-xs">Support</h4>
               <ul className="space-y-4 text-slate-custom/70 dark:text-gray-400">
-                <li><a className="hover:text-primary" href="#">Help Center</a></li>
-                <li><a className="hover:text-primary" href="#">LHDN Guidelines</a></li>
-                <li><a className="hover:text-primary" href="#">Tax Calendar</a></li>
-                <li><a className="hover:text-primary" href="#">Community</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Help Center</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">LHDN Guidelines</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Tax Calendar</a></li>
+                <li><a className="hover:text-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded" href="#">Community</a></li>
               </ul>
             </div>
           </div>

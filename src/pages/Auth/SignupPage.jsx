@@ -157,7 +157,10 @@ export default function SignupPage() {
                 </Button>
               </form>
 
-              <div className="mt-8 text-center">
+              <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                No credit card required. 14-day free trial.
+              </p>
+              <div className="mt-6 text-center">
                 <p className="text-sm text-slate-500">
                   Already have an account?{' '}
                   <Link
