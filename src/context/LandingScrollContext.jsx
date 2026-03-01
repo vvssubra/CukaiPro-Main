@@ -22,7 +22,7 @@ export function LandingScrollProvider({ sectionRefs, children }) {
 
   useEffect(() => {
     if (!sectionRefs) return;
-    updateActiveSection();
+    queueMicrotask(() => updateActiveSection());
     window.addEventListener('scroll', updateActiveSection, { passive: true });
     window.addEventListener('resize', updateActiveSection);
     return () => {

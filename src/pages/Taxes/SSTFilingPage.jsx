@@ -46,7 +46,6 @@ function SSTFilingPage() {
     nextFilingPeriod,
     nextDueDate,
     daysUntilNextDue,
-    fetchFilings,
     createOrGetFiling,
     updateFilingStatus,
     updateFilingAmount,

@@ -62,7 +62,7 @@ function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
   useEffect(() => {
     if (isOpen) {
       reset();
-      setSubmitError('');
+      queueMicrotask(() => setSubmitError(''));
     }
   }, [isOpen, reset]);
 

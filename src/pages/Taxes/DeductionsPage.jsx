@@ -74,7 +74,7 @@ function DeductionsPage() {
   const deductionsForYear = useMemo(() => deductions.filter((d) => Number(d.tax_year) === taxYear), [deductions, taxYear]);
 
   const summary = useMemo(() => {
-    const { total, byType } = calculateTotalDeductions(deductionsForYear);
+    const { total } = calculateTotalDeductions(deductionsForYear);
     const savings = estimateTaxSavings(deductionsForYear);
     const withReceipt = deductionsForYear.filter((d) => d.has_receipt).length;
     const categoriesUsed = new Set(deductionsForYear.map((d) => d.category_id)).size;
