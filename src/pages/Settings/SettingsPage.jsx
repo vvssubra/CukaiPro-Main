@@ -30,6 +30,8 @@ function TeamTab() {
   const [sendingEmailFor, setSendingEmailFor] = useState(null);
   const [memberToRemove, setMemberToRemove] = useState(null);
   const [removing, setRemoving] = useState(false);
+  const [inviteToCancel, setInviteToCancel] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -107,8 +109,24 @@ function TeamTab() {
     toast.success(`${memberToRemove.fullName} has been removed from the team.`);
   };
 
-  const handleCancelInvite = async (invId) => {
-    await cancelInvitation(invId);
+  const handleCancelInvite = (inv) => {
+    setInviteToCancel(inv);
+  };
+
+  const handleConfirmCancelInvite = async () => {
+    if (!inviteToCancel) return;
+    setCancelling(true);
+    try {
+      const result = await cancelInvitation(inviteToCancel.id);
+      if (result?.success === true) {
+        toast.success(`Invitation to ${inviteToCancel.email} has been cancelled.`);
+      } else {
+        toast.error(result?.error || 'Failed to cancel invitation');
+      }
+    } finally {
+      setCancelling(false);
+      setInviteToCancel(null);
+    }
   };
 
   const canAddByPlan = canAddMemberByPlan(members.length);
@@ -262,7 +280,7 @@ function TeamTab() {
                   {showInviteForm && (
                     <button
                       type="button"
-                      onClick={() => handleCancelInvite(inv.id)}
+                      onClick={() => handleCancelInvite(inv)}
                       className="text-sm text-red-600 dark:text-red-400 hover:underline"
                     >
                       Cancel
@@ -285,6 +303,18 @@ function TeamTab() {
         cancelLabel="Cancel"
         variant="danger"
         loading={removing}
+      />
+
+      <ConfirmModal
+        isOpen={!!inviteToCancel}
+        onClose={() => setInviteToCancel(null)}
+        onConfirm={handleConfirmCancelInvite}
+        title="Cancel invitation?"
+        message={inviteToCancel ? `Cancel the pending invitation for ${inviteToCancel.email}? They will no longer be able to use this invite link.` : ''}
+        confirmLabel="Cancel invitation"
+        cancelLabel="Keep"
+        variant="danger"
+        loading={cancelling}
       />
     </div>
   );
