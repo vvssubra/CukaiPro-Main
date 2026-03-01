@@ -11,7 +11,9 @@ function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useContext(AppContext);
   const location = useLocation();
   const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
+  const isAccountingSection = location.pathname.startsWith('/dashboard/transactions') || location.pathname.startsWith('/dashboard/accounts');
   const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
+  const [accountingExpanded, setAccountingExpanded] = useState(isAccountingSection);
 
   // On mobile: close drawer when navigating to a new page
   useEffect(() => {
@@ -46,6 +48,15 @@ function Sidebar() {
         { path: '/dashboard/tax-filing', label: 'Filing Summary' },
       ],
     },
+    {
+      key: 'accounting',
+      icon: 'account_balance',
+      label: 'Accounting',
+      children: [
+        { path: '/dashboard/transactions', label: 'Transactions' },
+        { path: '/dashboard/accounts', label: 'Chart of Accounts' },
+      ],
+    },
     { path: '/dashboard/invoices', icon: 'description', label: 'Invoices' },
     { path: '/dashboard/reports', icon: 'analytics', label: 'Reports' },
     { path: '/dashboard/help', icon: 'help_outline', label: 'Help' },
@@ -70,14 +81,17 @@ function Sidebar() {
       <nav className="flex-1 px-4 mt-4 space-y-1">
         {navItems.map((item) => {
           if (item.children) {
-            const expanded = taxesExpanded || isTaxesSection;
+            const isTaxItem = item.key === 'taxes';
+            const isAccountingItem = item.key === 'accounting';
+            const expanded = isTaxItem ? (taxesExpanded || isTaxesSection) : (accountingExpanded || isAccountingSection);
+            const isSectionActive = isTaxItem ? isTaxesSection : isAccountingSection;
             return (
               <div key={item.key}>
                 <button
                   type="button"
-                  onClick={() => setTaxesExpanded(!taxesExpanded)}
+                  onClick={() => (isTaxItem ? setTaxesExpanded(!taxesExpanded) : setAccountingExpanded(!accountingExpanded))}
                   className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 ${
-                    isTaxesSection ? 'bg-primary/20 text-white font-medium border border-primary/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    isSectionActive ? 'bg-primary/20 text-white font-medium border border-primary/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-3">
