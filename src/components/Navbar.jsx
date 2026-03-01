@@ -1,6 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useLandingScroll } from '../context/LandingScrollContext';
 
 function Navbar() {
+  const location = useLocation();
+  const activeSection = useLandingScroll();
+  const isLanding = location.pathname === '/';
+
+  const navLinkClass = (section) => {
+    const base = 'transition-colors duration-200 hover:text-primary';
+    const active = isLanding && activeSection === section ? 'text-primary font-bold dark:text-emerald-400' : '';
+    return `${base} ${active}`.trim();
+  };
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md shadow-nav">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,9 +24,19 @@ function Navbar() {
           </Link>
           <div className="hidden md:flex items-center space-x-10 text-sm font-medium">
             <Link to="/dashboard" className="hover:text-primary transition-colors duration-200">Dashboard</Link>
-            <a className="hover:text-primary transition-colors duration-200" href="#">Solutions</a>
-            <a className="hover:text-primary transition-colors duration-200" href="#">Pricing</a>
-            <a className="hover:text-primary transition-colors duration-200" href="#">Resources</a>
+            {isLanding ? (
+              <>
+                <a href="#features" className={navLinkClass('features')}>Solutions</a>
+                <a href="#highlight" className={navLinkClass('highlight')}>Resources</a>
+                <a href="#cta" className={navLinkClass('cta')}>Pricing</a>
+              </>
+            ) : (
+              <>
+                <a className="hover:text-primary transition-colors duration-200" href="/#features">Solutions</a>
+                <a className="hover:text-primary transition-colors duration-200" href="/#cta">Pricing</a>
+                <a className="hover:text-primary transition-colors duration-200" href="/#highlight">Resources</a>
+              </>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors duration-200">Login</Link>
