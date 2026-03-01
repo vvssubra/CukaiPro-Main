@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useInvoices } from '../../../hooks/useInvoices';
-import { useSstFilings } from '../../../hooks/useSstFilings';
-import { formatCurrency, formatDate } from '../../../utils/validators';
-import Loading from '../../../components/Common/Loading';
+import { useInvoices } from '../../hooks/useInvoices';
+import { useSstFilings } from '../../hooks/useSstFilings';
+import { formatCurrency, formatDate } from '../../utils/validators';
+import Loading from '../../components/Common/Loading';
 
 function toDateStr(d) {
   if (!d) return '';
