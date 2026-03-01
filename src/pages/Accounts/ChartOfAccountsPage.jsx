@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAccounts } from '../../hooks/useAccounts';
 import { formatCurrency } from '../../utils/validators';
 import Loading from '../../components/Common/Loading';
@@ -13,6 +14,7 @@ const ACCOUNT_TYPES = [
 ];
 
 function ChartOfAccountsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { accounts, loading, error, fetchAccounts, createAccount, updateAccount, deleteAccount } = useAccounts();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
@@ -21,7 +23,19 @@ function ChartOfAccountsPage() {
   const [formError, setFormError] = useState('');
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
+  const [bankAccountHint, setBankAccountHint] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (searchParams.get('focus') === 'bank') {
+      setSearchParams({}, { replace: true });
+      setFormData({ name: '', code: '', type: 'asset', opening_balance: 0, parent_id: '' });
+      setFormError('');
+      setEditingAccount(null);
+      setBankAccountHint(true);
+      setModalOpen(true);
+    }
+  }, [searchParams, setSearchParams]);
 
   const resetForm = useCallback(() => {
     setFormData({ name: '', code: '', type: 'asset', opening_balance: 0, parent_id: '' });
@@ -31,6 +45,7 @@ function ChartOfAccountsPage() {
 
   const handleOpenNew = useCallback(() => {
     resetForm();
+    setBankAccountHint(false);
     setModalOpen(true);
   }, [resetForm]);
 
@@ -49,6 +64,7 @@ function ChartOfAccountsPage() {
 
   const handleCloseModal = useCallback(() => {
     setModalOpen(false);
+    setBankAccountHint(false);
     resetForm();
   }, [resetForm]);
 
@@ -244,6 +260,9 @@ function ChartOfAccountsPage() {
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {editingAccount ? 'Edit Account' : 'New Account'}
               </h2>
+              {bankAccountHint && !editingAccount && (
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Include &quot;bank&quot; in the name so it appears in Bank Reconciliation.</p>
+              )}
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {formError && (
@@ -256,7 +275,7 @@ function ChartOfAccountsPage() {
                   value={formData.name}
                   onChange={(e) => setFormData((d) => ({ ...d, name: e.target.value }))}
                   className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="e.g. Cash"
+                  placeholder={bankAccountHint ? 'e.g. Maybank Current Account' : 'e.g. Cash'}
                 />
               </div>
               <div>
