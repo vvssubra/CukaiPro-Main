@@ -34,9 +34,7 @@ export function AuthProvider({ children }) {
       }
 
       const fullName =
-        sessionUser.user_metadata?.full_name ||
-        sessionUser.user_metadata?.fullName ||
-        '';
+        sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.fullName || '';
       const email = sessionUser.email || '';
 
       const { data: inserted, error: insertError } = await supabase
@@ -90,30 +88,36 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          setLoading(false); // unblock UI as soon as we have a user
+          ensureUserProfile(session.user); // best-effort create if missing
+          loadUserProfile(session.user.id, false); // load profile in background
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        logger.error('Failed to retrieve auth session', err);
+        setLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        setLoading(false); // unblock UI as soon as we have a user
-        ensureUserProfile(session.user); // best-effort create if missing
-        loadUserProfile(session.user.id, false); // load profile in background
+        setLoading(false); // unblock immediately so login doesn't hang
+        ensureUserProfile(session.user);
+        loadUserProfile(session.user.id, false);
       } else {
+        setProfile(null);
         setLoading(false);
       }
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setLoading(false); // unblock immediately so login doesn't hang
-          ensureUserProfile(session.user);
-          loadUserProfile(session.user.id, false);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
-      }
-    );
 
     return () => subscription.unsubscribe();
   }, []);
@@ -191,7 +195,9 @@ export function AuthProvider({ children }) {
     }
     setProfile((prev) => (prev ? { ...prev, onboarding_completed_at: now } : prev));
     // Reload profile in background so navigation is not blocked
-    loadUserProfile(user.id, false).catch((err) => logger.error('Error reloading profile after onboarding', err));
+    loadUserProfile(user.id, false).catch((err) =>
+      logger.error('Error reloading profile after onboarding', err)
+    );
   };
 
   const value = {
