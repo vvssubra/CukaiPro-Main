@@ -55,6 +55,82 @@ const CHECKLIST = [
   { title: 'Bank-Grade Security', description: 'AES-256 encryption for all your corporate financial data and employee records.' },
 ];
 
+const PRICING_PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    bestFor: 'Freelancers & Startups',
+    monthlyPrice: 0,
+    original12: 0,
+    price12: 0,
+    original24: 0,
+    price24: 0,
+    users: '1 user',
+    features: {
+      accounting: true,
+      sstFiling: true,
+      lhdnEInvoice: true,
+      eaForms: false,
+      support: 'Email support',
+      attachment: '—',
+    },
+    cta: 'Get Started Free',
+    ctaLink: '/login',
+    highlighted: false,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    bestFor: 'Growing Businesses',
+    monthlyPrice: 49,
+    original12: 588,
+    price12: 206,
+    original24: 1176,
+    price24: 294,
+    users: 'Up to 5 users',
+    features: {
+      accounting: true,
+      sstFiling: true,
+      lhdnEInvoice: true,
+      eaForms: true,
+      support: 'Email & Live Chat',
+      attachment: '5GB',
+    },
+    cta: 'Start Free Trial',
+    ctaLink: '/login',
+    highlighted: true,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    bestFor: 'Large Organizations',
+    monthlyPrice: null,
+    original12: null,
+    price12: null,
+    original24: null,
+    price24: null,
+    users: 'Unlimited',
+    features: {
+      accounting: true,
+      sstFiling: true,
+      lhdnEInvoice: true,
+      eaForms: true,
+      support: 'Priority & Phone',
+      attachment: '20GB',
+    },
+    cta: 'Contact Sales',
+    ctaLink: 'mailto:support@cukaipro.my?subject=Enterprise%20Plan%20-%20CukaiPro',
+    highlighted: false,
+  },
+];
+
+/** Billing interval: 'monthly' | '12months' | '24months' */
+const BILLING_TABS = [
+  { id: 'monthly', label: 'Monthly' },
+  { id: '12months', label: '12 Months 65% Off' },
+  { id: '24months', label: '24 Months 75% Off' },
+];
+
 const staggerContainer = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
@@ -146,13 +222,16 @@ function LandingPage() {
   const statsRef = useRef(null);
   const featuresRef = useRef(null);
   const statsSectionRef = useRef(null);
+  const pricingRef = useRef(null);
   const ctaRef = useRef(null);
   const statsInView = useInView(statsRef, { once: true, margin: '-80px' });
+  const [billingInterval, setBillingInterval] = useState('monthly');
 
   const sectionRefs = {
     features: featuresRef,
     stats: statsSectionRef,
     highlight: contentRef,
+    pricing: pricingRef,
     cta: ctaRef,
   };
 
@@ -438,6 +517,201 @@ function LandingPage() {
               ))}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Pricing Section — AutoCount-style */}
+      <section id="pricing" ref={pricingRef} className="py-28 bg-background-dark relative overflow-hidden">
+        <div className="absolute -left-60 top-1/3 h-[500px] w-[500px] rounded-full bg-emerald-600/[0.05] blur-[150px] pointer-events-none" aria-hidden="true" />
+        <div className="absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-teal-500/[0.04] blur-[120px] pointer-events-none" aria-hidden="true" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Free trial CTA — same as AutoCount */}
+          <motion.div
+            className="text-center mb-14"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer}
+          >
+            <motion.h2 variants={fadeUp} className="text-2xl sm:text-3xl font-display font-extrabold text-white mb-3">
+              Start using CukaiPro for free!
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-white/80 max-w-2xl mx-auto text-base mb-6">
+              Access all CukaiPro features for free, then decide which plan best suits your business.
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/70 mb-6">
+              <span className="flex items-center gap-1.5"><span className="material-icons text-emerald-400 text-base">check_circle</span> Cancel any time</span>
+              <span className="flex items-center gap-1.5"><span className="material-icons text-emerald-400 text-base">check_circle</span> No minimum contract</span>
+              <span className="flex items-center gap-1.5"><span className="material-icons text-emerald-400 text-base">check_circle</span> No credit card required</span>
+            </motion.div>
+            <motion.div variants={fadeUp}>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-3.5 rounded-xl transition-colors duration-200 shadow-lg shadow-emerald-500/25"
+              >
+                Start Your Free Trial <span className="material-icons text-lg">arrow_forward</span>
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* Choose Your Pricing Plan + tabs */}
+          <motion.div
+            className="mb-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer}
+          >
+            <motion.h2 variants={fadeUp} className="text-2xl sm:text-3xl font-display font-extrabold text-white mb-6 text-center">
+              Choose Your Pricing Plan
+            </motion.h2>
+            <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-2">
+              {BILLING_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setBillingInterval(tab.id)}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    billingInterval === tab.id
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                      : 'bg-white/10 text-white/80 border border-white/20 hover:bg-white/15 hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </motion.div>
+          </motion.div>
+
+          {/* Comparison table — AutoCount-style */}
+          <motion.div
+            className="overflow-x-auto rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-sm"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={scaleIn}
+          >
+            <table className="w-full min-w-[640px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-white/15">
+                  <th className="p-4 text-sm font-bold uppercase tracking-wider text-white/60 w-48 sm:w-56" />
+                  {PRICING_PLANS.map((plan) => (
+                    <th key={plan.id} className={`p-4 sm:p-6 text-center border-l border-white/10 ${plan.highlighted ? 'bg-emerald-500/10' : ''}`}>
+                      <div className="font-display font-bold text-white text-lg">{plan.name}</div>
+                      <div className="mt-2 text-white/90 font-semibold">
+                        {plan.monthlyPrice !== null ? (
+                          plan.monthlyPrice === 0 ? (
+                            <span className="text-white">Free</span>
+                          ) : billingInterval === 'monthly' ? (
+                            <>RM {plan.monthlyPrice} <span className="text-white/60 font-normal text-sm">/mo</span></>
+                          ) : billingInterval === '12months' ? (
+                            <>
+                              <span className="line-through text-white/50 mr-1">RM {plan.original12}</span>
+                              <span className="text-emerald-400">RM {plan.price12}</span>
+                              <span className="text-white/60 font-normal text-sm ml-1">/yr</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="line-through text-white/50 mr-1">RM {plan.original24}</span>
+                              <span className="text-emerald-400">RM {plan.price24}</span>
+                              <span className="text-white/60 font-normal text-sm ml-1">/2 yr</span>
+                            </>
+                          )
+                        ) : (
+                          <span className="text-white">Custom</span>
+                        )}
+                      </div>
+                      {plan.ctaLink.startsWith('mailto:') ? (
+                        <a href={plan.ctaLink} className="mt-4 inline-block w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-bold bg-white text-primary hover:bg-white/90 transition-colors">
+                          {plan.cta}
+                        </a>
+                      ) : (
+                        <Link to={plan.ctaLink} className="mt-4 inline-block w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-bold bg-white text-primary hover:bg-white/90 transition-colors text-center">
+                          {plan.cta}
+                        </Link>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  <td className="p-4 font-semibold text-white/80">Best for</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-white/70">{plan.bestFor}</td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="p-4 font-semibold text-white/80">Included users</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-white/70">{plan.users}</td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  <td className="p-4 font-bold text-white/60 uppercase tracking-wider text-xs">Tax & compliance</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10" />
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="p-4 pl-6 text-white/70">Accounting & Reports</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-center">
+                      {plan.features.accounting ? <span className="material-icons text-emerald-400 text-lg">check_circle</span> : '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="p-4 pl-6 text-white/70">SST Filing</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-center">
+                      {plan.features.sstFiling ? <span className="material-icons text-emerald-400 text-lg">check_circle</span> : '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="p-4 pl-6 text-white/70">LHDN e-Invoice</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-center">
+                      {plan.features.lhdnEInvoice ? <span className="material-icons text-emerald-400 text-lg">check_circle</span> : '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="p-4 pl-6 text-white/70">EA Forms</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-center">
+                      {plan.features.eaForms ? <span className="material-icons text-emerald-400 text-lg">check_circle</span> : '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  <td className="p-4 font-bold text-white/60 uppercase tracking-wider text-xs">Support</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-white/70">{plan.features.support}</td>
+                  ))}
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="p-4 font-semibold text-white/80">Attachment</td>
+                  {PRICING_PLANS.map((plan) => (
+                    <td key={plan.id} className="p-4 border-l border-white/10 text-white/70">{plan.features.attachment}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </motion.div>
+
+          {/* Footer disclaimer — same as AutoCount */}
+          <motion.p
+            className="text-center text-sm text-white/50 mt-6 italic"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+          >
+            Price displayed excludes SST charges. All promotion offers are subject to terms and conditions.
+          </motion.p>
         </div>
       </section>
 

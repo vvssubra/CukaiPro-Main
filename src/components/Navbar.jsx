@@ -28,12 +28,12 @@ function Navbar() {
               <>
                 <a href="#features" className={navLinkClass('features')}>Solutions</a>
                 <a href="#highlight" className={navLinkClass('highlight')}>Resources</a>
-                <a href="#cta" className={navLinkClass('cta')}>Pricing</a>
+                <a href="#pricing" className={navLinkClass('pricing')}>Pricing</a>
               </>
             ) : (
               <>
                 <a className="hover:text-primary transition-colors duration-200" href="/#features">Solutions</a>
-                <a className="hover:text-primary transition-colors duration-200" href="/#cta">Pricing</a>
+                <a className="hover:text-primary transition-colors duration-200" href="/#pricing">Pricing</a>
                 <a className="hover:text-primary transition-colors duration-200" href="/#highlight">Resources</a>
               </>
             )}

@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const LandingScrollContext = createContext(null);
 
-const SECTION_IDS = ['features', 'stats', 'highlight', 'cta'];
+const SECTION_IDS = ['features', 'stats', 'highlight', 'pricing', 'cta'];
 const SCROLL_OFFSET = 120;
 
 export function LandingScrollProvider({ sectionRefs, children }) {
