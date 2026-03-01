@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useInvoices } from '../../../hooks/useInvoices';
-import { formatCurrency, formatDate } from '../../../utils/validators';
-import Loading from '../../../components/Common/Loading';
+import { useInvoices } from '../../hooks/useInvoices';
+import { formatCurrency, formatDate } from '../../utils/validators';
+import Loading from '../../components/Common/Loading';
 
 const TAX_TYPES = [
   { value: '', label: 'All' },

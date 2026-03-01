@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useLedger } from '../../../hooks/useLedger';
-import { useAccounts } from '../../../hooks/useAccounts';
-import { useContacts } from '../../../hooks/useContacts';
-import { formatCurrency, formatDate } from '../../../utils/validators';
-import Loading from '../../../components/Common/Loading';
+import { useLedger } from '../../hooks/useLedger';
+import { useAccounts } from '../../hooks/useAccounts';
+import { useContacts } from '../../hooks/useContacts';
+import { formatCurrency, formatDate } from '../../utils/validators';
+import Loading from '../../components/Common/Loading';
 
 const LEDGER_TYPES = [
   { value: 'general', label: 'General Ledger' },

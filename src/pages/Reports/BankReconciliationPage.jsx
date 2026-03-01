@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useLedger } from '../../../hooks/useLedger';
-import { useBankStatementEntries } from '../../../hooks/useBankStatementEntries';
-import { useAccounts } from '../../../hooks/useAccounts';
-import { formatCurrency, formatDate } from '../../../utils/validators';
-import Loading from '../../../components/Common/Loading';
+import { useLedger } from '../../hooks/useLedger';
+import { useBankStatementEntries } from '../../hooks/useBankStatementEntries';
+import { useAccounts } from '../../hooks/useAccounts';
+import { formatCurrency, formatDate } from '../../utils/validators';
+import Loading from '../../components/Common/Loading';
 
 function toDateStr(d) {
   if (!d) return '';

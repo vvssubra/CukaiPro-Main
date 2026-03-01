@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useTransactions } from '../../../hooks/useTransactions';
-import { useAccounts } from '../../../hooks/useAccounts';
-import { useContacts } from '../../../hooks/useContacts';
-import { formatCurrency, formatDate } from '../../../utils/validators';
-import Loading from '../../../components/Common/Loading';
+import { useTransactions } from '../../hooks/useTransactions';
+import { useAccounts } from '../../hooks/useAccounts';
+import { useContacts } from '../../hooks/useContacts';
+import { formatCurrency, formatDate } from '../../utils/validators';
+import Loading from '../../components/Common/Loading';
 
 const TYPE_LABELS = {
   journal_entry: 'Journal Entry',

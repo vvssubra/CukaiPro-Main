@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useAccountBalances } from '../../../hooks/useAccountBalances';
-import { formatCurrency } from '../../../utils/validators';
-import { PNL_ORDER, PNL_GROUP_LABELS } from '../../../utils/accountingHelpers';
-import Loading from '../../../components/Common/Loading';
+import { useAccountBalances } from '../../hooks/useAccountBalances';
+import { formatCurrency } from '../../utils/validators';
+import { PNL_ORDER, PNL_GROUP_LABELS } from '../../utils/accountingHelpers';
+import Loading from '../../components/Common/Loading';
 
 function toDateStr(d) {
   if (!d) return '';
