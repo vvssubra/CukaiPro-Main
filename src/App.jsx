@@ -10,7 +10,8 @@ import ErrorBoundary, { ErrorFallback } from './components/Common/ErrorBoundary'
 import Loading from './components/Common/Loading';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Navbar from './components/Navbar';
-import DashboardLayout from './components/DashboardLayout';
+
+const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
 
 function ConfigRequired() {
   return (
@@ -24,9 +25,23 @@ function ConfigRequired() {
           Add your Supabase credentials so the app can connect to the database.
         </p>
         <ol className="list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 space-y-2 mb-6">
-          <li>Copy <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env.example</code> to <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env</code></li>
-          <li>Set <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">VITE_SUPABASE_URL</code> and <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> in <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env</code></li>
-          <li>Restart the dev server (<code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">npm run dev</code>)</li>
+          <li>
+            Copy <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env.example</code>{' '}
+            to <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env</code>
+          </li>
+          <li>
+            Set{' '}
+            <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">VITE_SUPABASE_URL</code>{' '}
+            and{' '}
+            <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">
+              VITE_SUPABASE_ANON_KEY
+            </code>{' '}
+            in <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">.env</code>
+          </li>
+          <li>
+            Restart the dev server (
+            <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">npm run dev</code>)
+          </li>
         </ol>
         <p className="text-xs text-slate-500 dark:text-slate-500">
           Get the values from your Supabase project: Dashboard → Settings → API.
@@ -139,23 +154,34 @@ function AppLayout() {
 
 function App() {
   return (
-    <Sentry.ErrorBoundary fallback={({ error, resetError }) => <ErrorFallback error={error} onReset={resetError} />}>
+    <Sentry.ErrorBoundary
+      fallback={({ error, resetError }) => <ErrorFallback error={error} onReset={resetError} />}
+    >
       <BrowserRouter>
         <AppProvider>
           {isSupabaseConfigured ? (
             <AuthProvider>
               <OrganizationProvider>
                 <ToastProvider>
-                <Suspense fallback={<Loading fullScreen />}>
-                  <Routes>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/signup" element={<SignupPage />} />
-                    <Route path="/onboarding" element={<OnboardingWizard />} />
-                    <Route path="/invite/:token" element={<AcceptInvitePage />} />
-                    {import.meta.env.DEV && <Route path="/debug/config" element={<ConfigDebugPage />} />}
-                    <Route path="/*" element={<AppLayout />} />
-                  </Routes>
-                </Suspense>
+                  <Suspense fallback={<Loading fullScreen />}>
+                    <Routes>
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/signup" element={<SignupPage />} />
+                      <Route path="/onboarding" element={<OnboardingWizard />} />
+                      <Route path="/invite/:token" element={<AcceptInvitePage />} />
+                      {import.meta.env.DEV && (
+                        <Route path="/debug/config" element={<ConfigDebugPage />} />
+                      )}
+                      <Route
+                        path="/*"
+                        element={
+                          <ErrorBoundary>
+                            <AppLayout />
+                          </ErrorBoundary>
+                        }
+                      />
+                    </Routes>
+                  </Suspense>
                 </ToastProvider>
               </OrganizationProvider>
             </AuthProvider>
@@ -168,8 +194,17 @@ function App() {
                   <Route path="/onboarding" element={<ConfigRequired />} />
                   <Route path="/invite/:token" element={<ConfigRequired />} />
                   <Route path="/dashboard/*" element={<ConfigRequired />} />
-                  {import.meta.env.DEV && <Route path="/debug/config" element={<ConfigDebugPage />} />}
-                  <Route path="/*" element={<AppLayout />} />
+                  {import.meta.env.DEV && (
+                    <Route path="/debug/config" element={<ConfigDebugPage />} />
+                  )}
+                  <Route
+                    path="/*"
+                    element={
+                      <ErrorBoundary>
+                        <AppLayout />
+                      </ErrorBoundary>
+                    }
+                  />
                 </Routes>
               </Suspense>
             </ToastProvider>
