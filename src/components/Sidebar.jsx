@@ -11,7 +11,7 @@ function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useContext(AppContext);
   const location = useLocation();
   const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
-  const isAccountingSection = location.pathname.startsWith('/dashboard/transactions') || location.pathname.startsWith('/dashboard/accounts');
+  const isAccountingSection = location.pathname.startsWith('/dashboard/transactions') || location.pathname.startsWith('/dashboard/accounts') || location.pathname.startsWith('/dashboard/reports/bank-reconciliation');
   const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
   const [accountingExpanded, setAccountingExpanded] = useState(isAccountingSection);
 
@@ -55,6 +55,7 @@ function Sidebar() {
       children: [
         { path: '/dashboard/transactions', label: 'Transactions' },
         { path: '/dashboard/accounts', label: 'Chart of Accounts' },
+        { path: '/dashboard/reports/bank-reconciliation', label: 'Bank Reconciliation' },
       ],
     },
     { path: '/dashboard/invoices', icon: 'description', label: 'Invoices' },
@@ -82,7 +83,6 @@ function Sidebar() {
         {navItems.map((item) => {
           if (item.children) {
             const isTaxItem = item.key === 'taxes';
-            const isAccountingItem = item.key === 'accounting';
             const expanded = isTaxItem ? (taxesExpanded || isTaxesSection) : (accountingExpanded || isAccountingSection);
             const isSectionActive = isTaxItem ? isTaxesSection : isAccountingSection;
             return (

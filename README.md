@@ -83,6 +83,7 @@ The app will be available at `http://localhost:3000`
 ## Documentation
 
 - **[User guide](docs/USER_GUIDE.md)** – Complete walkthrough for new users (sign up, onboarding, dashboard, invoices, taxes, reports, settings, help). Includes app screenshots; see [Screenshot checklist](docs/GUIDE_SCREENSHOTS.md) to add or refresh images.
+- **[Accounting setup](docs/ACCOUNTING_SETUP.md)** – If you deploy to a live Supabase project, run the accounting migration (SQL) so Chart of Accounts, Transactions, and Bank Reconciliation work. Required when you see "table not found" errors for `accounts` or `transactions`.
 
 ## Available Scripts
 

@@ -27,7 +27,7 @@ function SSTProcessorPage() {
   const [activeTab, setActiveTab] = useState('sales');
 
   const { invoices, loading } = useInvoices();
-  const { filings } = useSstFilings();
+  const { filings: _filings } = useSstFilings();
 
   const salesRows = useMemo(() => {
     return (invoices || [])

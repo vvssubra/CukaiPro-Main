@@ -52,7 +52,7 @@ export function balancesAsAt(accounts, linesWithDate, asOfDate) {
     const d = line.transaction_date ? new Date(line.transaction_date) : null;
     if (!d || d > asOf) return;
     const accountId = line.account_id;
-    if (!result.hasOwnProperty(accountId)) result[accountId] = 0;
+    if (!Object.hasOwn(result, accountId)) result[accountId] = 0;
     result[accountId] += Number(line.debit) || 0;
     result[accountId] -= Number(line.credit) || 0;
   });

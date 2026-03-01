@@ -29,7 +29,7 @@ function BankReconciliationPage() {
     dateTo: statementDate || undefined,
   });
 
-  const { entries: statementEntries, loading: entriesLoading, addEntry, reconcileEntry } = useBankStatementEntries({
+  const { entries: statementEntries, loading: entriesLoading, addEntry: _addEntry, reconcileEntry: _reconcileEntry } = useBankStatementEntries({
     accountId: accountId || undefined,
     statementDate: statementDate || undefined,
   });

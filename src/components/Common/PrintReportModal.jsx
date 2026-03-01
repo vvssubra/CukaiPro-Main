@@ -4,7 +4,7 @@ import { useState } from 'react';
  * Modal for print options: orientation, copies (optional), then trigger window.print().
  * Use when the user clicks "Print" on a report page.
  */
-function PrintReportModal({ isOpen, onClose, title = 'Print Report', reportTitle = 'Report', onPrint }) {
+function PrintReportModal({ isOpen, onClose, title = 'Print Report', onPrint }) {
   const [orientation, setOrientation] = useState('portrait');
 
   const handlePrint = () => {
