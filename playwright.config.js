@@ -1,3 +1,4 @@
+/* global process */
 // @ts-check
 // https://playwright.dev/docs/test-configuration
 

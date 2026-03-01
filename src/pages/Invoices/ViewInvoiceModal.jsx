@@ -37,6 +37,8 @@ const STATUS_BADGE_CONFIG = {
 function ViewInvoiceModal({ isOpen, onClose, invoice }) {
   const modalRef = useRef(null);
   const printRef = useRef(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const { entries, loading: historyLoading, error: historyError } = useAuditLog('invoice', invoice?.id);
 
   /** Close when clicking backdrop. */
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { formatCurrency } from '../utils/validators';
-import { getCategoryById } from '../data/taxCategories';
+
 
 /**
  * Malaysian individual income tax progressive rates (annual chargeable income).

@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { formatCurrency } from './validators';
 import { computeEASummary } from '../hooks/useEAForms';
 
@@ -144,7 +144,6 @@ export function generateEAFormPDF(eaFormsOrSingle, taxYear, options = {}) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageHeight = doc.internal.pageSize.height;
   const margin = 14;
-  const bottomMargin = 20;
 
   let y = margin;
 

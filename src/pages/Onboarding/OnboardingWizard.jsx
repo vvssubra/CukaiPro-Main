@@ -313,7 +313,7 @@ function StepInvite({ onNext, onSkip, finishing, finishError }) {
 export default function OnboardingWizard() {
   const navigate = useNavigate();
   const { user, profile, completeOnboarding } = useAuth();
-  const { organizations, currentOrganization, loading: orgLoading } = useOrganization();
+  const { currentOrganization, loading: orgLoading } = useOrganization();
   const [step, setStep] = useState(1);
   const [finishingOnboarding, setFinishingOnboarding] = useState(false);
   const [finishError, setFinishError] = useState('');
@@ -332,6 +332,13 @@ export default function OnboardingWizard() {
       setFinishingOnboarding(false);
     }
   };
+
+  // After "All set!" show, redirect to dashboard
+  useEffect(() => {
+    if (!allSetDone) return;
+    const t = setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
+    return () => clearTimeout(t);
+  }, [allSetDone, navigate]);
 
   if (!user) {
     return (
@@ -363,13 +370,6 @@ export default function OnboardingWizard() {
       </div>
     );
   }
-
-  // After "All set!" show, redirect to dashboard
-  useEffect(() => {
-    if (!allSetDone) return;
-    const t = setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
-    return () => clearTimeout(t);
-  }, [allSetDone, navigate]);
 
   // Use actual step so new users see 1 → 2 (organization) → 3 → 4
   const displayStep = step;
