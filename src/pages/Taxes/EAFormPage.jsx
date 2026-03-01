@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useEAForms, computeEASummary } from '../../hooks/useEAForms';
-import { useOrganization } from '../../context/OrganizationContext';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/validators';
@@ -20,7 +19,6 @@ function EAFormPage() {
   const [eaToDelete, setEaToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const { currentOrganization } = useOrganization();
   const { canUseEAForms } = useSubscription();
   const toast = useToast();
   const { eaForms, loading, error, fetchEAForms, addEAForm, updateEAForm, deleteEAForm } = useEAForms();
@@ -234,7 +232,7 @@ function EAFormPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {eaForms.map((ea) => {
-                    const { totalRemuneration, netEmploymentIncome } = computeEASummary(ea);
+                    const { netEmploymentIncome } = computeEASummary(ea);
                     const epfEmp = Number(ea.epf_employee) || 0;
                     const pcbVal = Number(ea.pcb) || 0;
                     return (

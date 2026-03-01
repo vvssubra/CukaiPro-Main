@@ -39,6 +39,20 @@ function getYear(dateStr) {
   return isNaN(d.getTime()) ? null : d.getFullYear();
 }
 
+/** Custom tooltip for the revenue/deductions bar chart. */
+function CustomTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0]?.payload;
+  if (!p) return null;
+  return (
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg px-3 py-2 text-sm">
+      <p className="font-bold text-slate-900 dark:text-white mb-1">{p.month}</p>
+      <p className="text-primary dark:text-emerald-400">Revenue: {formatCurrency(p.revenue)}</p>
+      <p className="text-amber-600 dark:text-amber-400">Deductions: {formatCurrency(p.deductions)}</p>
+    </div>
+  );
+}
+
 /**
  * Revenue & deductions chart by month.
  * @param {object} props
@@ -82,19 +96,6 @@ function RevenueDeductionsChart({ invoices = [], deductions = [], year }) {
 
     return byMonth;
   }, [invoices, deductions, year]);
-
-  const CustomTooltip = ({ active, payload }) => {
-    if (!active || !payload?.length) return null;
-    const p = payload[0]?.payload;
-    if (!p) return null;
-    return (
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg px-3 py-2 text-sm">
-        <p className="font-bold text-slate-900 dark:text-white mb-1">{p.month}</p>
-        <p className="text-primary dark:text-emerald-400">Revenue: {formatCurrency(p.revenue)}</p>
-        <p className="text-amber-600 dark:text-amber-400">Deductions: {formatCurrency(p.deductions)}</p>
-      </div>
-    );
-  };
 
   return (
     <div className="w-full h-[240px]" aria-label="Revenue and deductions by month">

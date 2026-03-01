@@ -31,7 +31,6 @@ export async function uploadReceipt(file, orgId) {
   if (file.size > MAX_FILE_SIZE) {
     return { error: 'File size must be 5MB or less.' };
   }
-  const ext = file.name.split('.').pop() || 'bin';
   const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
   const path = `${orgId}/${filename}`;
   try {

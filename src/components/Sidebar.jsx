@@ -17,9 +17,9 @@ function Sidebar() {
   useEffect(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     if (isMobile && sidebarOpen) toggleSidebar();
-  }, [location.pathname]);
+  }, [location.pathname, sidebarOpen, toggleSidebar]);
 
-  const handleNavClick = (e) => {
+  const handleNavClick = () => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     if (isMobile) toggleSidebar();
   };

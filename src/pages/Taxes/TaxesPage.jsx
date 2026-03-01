@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useDeductions } from '../../hooks/useDeductions';
@@ -11,7 +11,7 @@ const INCOME_TAX_DEADLINE = '30 June 2024';
 
 function TaxesPage() {
   const navigate = useNavigate();
-  const [taxYear, setTaxYear] = useState(currentYear);
+  const taxYear = currentYear;
   const { invoices } = useInvoices();
   const { nextDueDate, daysUntilNextDue, nextFilingPeriod } = useSstFilings();
   const { deductions, fetchDeductions } = useDeductions();
@@ -23,9 +23,7 @@ function TaxesPage() {
   const {
     sstPayable,
     revenue,
-    totalDeductions,
     byType,
-    adjustedIncome,
     chargeableIncome,
     incomeTax,
   } = useTaxCalculation(invoices, deductions, taxYear);

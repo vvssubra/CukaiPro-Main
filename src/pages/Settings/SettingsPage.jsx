@@ -17,11 +17,11 @@ const ROLE_LABELS = {
 };
 
 function TeamTab() {
-  const { currentOrganization, membershipRole, canInviteMembers } = useOrganization();
+  const { currentOrganization, canInviteMembers } = useOrganization();
   const { canAddMember: canAddMemberByPlan, memberLimitReached } = useSubscription();
   const toast = useToast();
-  const { members, loading, error, fetchMembers, removeMember, canRemoveMembers, canChangeRoles } = useTeamMembers();
-  const { invitations, loading: invLoading, fetchInvitations, sendInvitation, sendInviteEmail, cancelInvitation, canInviteMembers: canInv } = useInvitations();
+  const { members, loading, error, fetchMembers, removeMember, canRemoveMembers } = useTeamMembers();
+  const { invitations, fetchInvitations, sendInvitation, sendInviteEmail, cancelInvitation, canInviteMembers: canInv } = useInvitations();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('staff');
   const [inviteSending, setInviteSending] = useState(false);
@@ -322,7 +322,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState(tabParam || 'team');
 
   useEffect(() => {
-    if (tabParam === 'billing') setActiveTab('billing');
+    if (tabParam === 'billing') queueMicrotask(() => setActiveTab('billing'));
   }, [tabParam]);
 
   return (
