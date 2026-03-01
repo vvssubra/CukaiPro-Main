@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Design system: spacing rhythm p-6/p-8 for main content, gap-6/gap-8 for grids */
 
 @layer base {

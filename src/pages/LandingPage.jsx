@@ -10,6 +10,8 @@ import {
   useReducedMotion,
 } from 'framer-motion';
 import ParticleWave from '../components/ParticleWave';
+import ScrollProgressBar from '../components/Common/ScrollProgressBar';
+import { LandingScrollProvider } from '../context/LandingScrollContext';
 
 const trustedLogoImages = [
   'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 48"><circle cx="24" cy="24" r="20" fill="%231e3a5f"/><text x="24" y="29" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="white">MB</text><text x="70" y="30" font-family="Arial, sans-serif" font-weight="600" font-size="11" fill="%231e3a5f">MayBank</text></svg>'),
@@ -129,11 +131,11 @@ function StatItem({ stat, inView }) {
   });
 
   return (
-    <div className="text-center px-6">
-      <p className="text-4xl sm:text-5xl font-display font-extrabold gradient-text mb-2">
+    <div className="flex flex-col items-center justify-center py-6 px-4 sm:py-8 sm:px-6 flex-1 min-w-0">
+      <p className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold gradient-text mb-1.5 tabular-nums">
         {stat.prefix || ''}{count}{stat.suffix}
       </p>
-      <p className="text-sm text-white/70 font-medium">{stat.label}</p>
+      <p className="text-xs sm:text-sm text-white/70 font-medium tracking-wide text-center">{stat.label}</p>
     </div>
   );
 }
@@ -142,7 +144,17 @@ function LandingPage() {
   const shouldReduce = useReducedMotion();
   const contentRef = useRef(null);
   const statsRef = useRef(null);
+  const featuresRef = useRef(null);
+  const statsSectionRef = useRef(null);
+  const ctaRef = useRef(null);
   const statsInView = useInView(statsRef, { once: true, margin: '-80px' });
+
+  const sectionRefs = {
+    features: featuresRef,
+    stats: statsSectionRef,
+    highlight: contentRef,
+    cta: ctaRef,
+  };
 
   const { scrollYProgress: contentScroll } = useScroll({
     target: contentRef,
@@ -152,6 +164,8 @@ function LandingPage() {
 
   return (
     <div className="bg-background-dark text-white">
+      <ScrollProgressBar />
+      <LandingScrollProvider sectionRefs={sectionRefs}>
       {/* Hero */}
       <header className="relative overflow-hidden pt-20 pb-28 bg-background-dark">
         <ParticleWave className="z-0 pointer-events-none" dotColor="rgba(16, 185, 129, 0.18)" />
@@ -236,7 +250,7 @@ function LandingPage() {
       </header>
 
       {/* Trust Bar — Premium Ticker */}
-      <section className="py-16 border-y border-white/10 bg-background-dark overflow-hidden">
+      <section id="trust" className="py-16 border-y border-white/10 bg-background-dark overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-center gap-4 mb-10">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/40" />
@@ -291,7 +305,7 @@ function LandingPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-28 bg-background-dark relative overflow-hidden">
+      <section id="features" ref={featuresRef} className="py-28 bg-background-dark relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[700px] rounded-full bg-emerald-600/[0.07] blur-[150px] pointer-events-none" aria-hidden="true" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -339,7 +353,7 @@ function LandingPage() {
       </section>
 
       {/* Content Section / Mockup Display */}
-      <section ref={contentRef} className="py-24 bg-background-dark relative overflow-hidden">
+      <section ref={contentRef} id="highlight" className="py-24 bg-background-dark relative overflow-hidden">
         <div className="absolute -right-40 top-1/4 h-[400px] w-[400px] rounded-full bg-teal-600/[0.06] blur-[120px] pointer-events-none" aria-hidden="true" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4">
@@ -401,19 +415,24 @@ function LandingPage() {
       </section>
 
       {/* Stats Counter Bar */}
-      <section className="py-20 bg-background-dark relative">
+      <section id="stats" ref={statsSectionRef} className="py-20 bg-background-dark relative">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" aria-hidden="true" />
 
-        <div ref={statsRef} className="max-w-4xl mx-auto px-4">
+        <div ref={statsRef} className="max-w-5xl mx-auto px-4 sm:px-6">
           <motion.div
-            className="glass rounded-2xl py-12 px-6"
+            className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] shadow-xl shadow-black/10 backdrop-blur-xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-60px' }}
             variants={scaleIn}
+            style={{
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
+            }}
           >
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+            {/* Subtle top-edge highlight for glass effect */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" aria-hidden="true" />
+            <div className="flex flex-col divide-y divide-white/10 sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-white/10">
               {STATS.map((stat) => (
                 <StatItem key={stat.label} stat={stat} inView={statsInView} />
               ))}
@@ -423,7 +442,7 @@ function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-28 bg-background-dark">
+      <section id="cta" ref={ctaRef} className="py-28 bg-background-dark">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             className="relative rounded-3xl p-12 lg:p-20 text-center overflow-hidden"
@@ -533,6 +552,7 @@ function LandingPage() {
           </div>
         </div>
       </footer>
+      </LandingScrollProvider>
     </div>
   );
 }
