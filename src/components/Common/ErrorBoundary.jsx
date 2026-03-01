@@ -64,6 +64,9 @@ class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
+    if (typeof console !== 'undefined') {
+      console.error('[CukaiPro] ErrorBoundary:', error?.message || error, errorInfo?.componentStack);
+    }
     this.setState({ errorInfo });
     Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } });
   }
@@ -93,11 +96,12 @@ class ErrorBoundary extends Component {
               We&apos;re sorry for the inconvenience. Please try refreshing the page or contact
               support if the problem persists.
             </p>
-            {import.meta.env.DEV && this.state.error && (
+            {this.state.error && (
               <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 text-left">
                 <p className="text-sm font-mono text-red-800 dark:text-red-300 break-all">
                   {this.state.error.toString()}
                 </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Check the browser console (F12) for more details.</p>
               </div>
             )}
             <div className="flex gap-4 justify-center">
