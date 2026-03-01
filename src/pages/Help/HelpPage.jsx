@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import Sidebar from '../../components/Sidebar';
 import { FAQ_ITEMS } from '../../data/faqData';
 
 function FaqAccordionItem({ item, isOpen, onToggle }) {
@@ -74,11 +73,8 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-8">
-        <div className="max-w-3xl">
-          <div className="mb-8">
+    <div className="max-w-3xl">
+      <div className="mb-8">
             <h1 className="text-2xl font-bold text-slate-custom dark:text-white mb-2">Help & FAQ</h1>
             <p className="text-slate-600 dark:text-slate-400">
               Find answers to common questions about CukaiPro and Malaysian tax filing.
@@ -174,7 +170,5 @@ export default function HelpPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
   );
 }

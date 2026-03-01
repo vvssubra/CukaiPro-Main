@@ -28,7 +28,7 @@ function LandingPage() {
                 <span className="flex h-2 w-2 rounded-full bg-white/90"></span>
                 Now LHDN e-Invoice Compatible
               </div>
-              <h1 className="text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-white leading-[1.1] mb-6 drop-shadow-md" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-white leading-[1.1] mb-6 drop-shadow-md" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                 LHDN-Ready in <span className="text-emerald-200">Minutes</span>
               </h1>
               <p className="text-lg text-white/90 mb-10 max-w-2xl leading-relaxed drop-shadow-sm" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
@@ -191,7 +191,7 @@ function LandingPage() {
       {/* Footer */}
       <footer className="bg-white dark:bg-background-dark py-12 border-t border-primary/10 text-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-card">

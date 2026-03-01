@@ -28,7 +28,7 @@ function ContentPageLayout({ title, subtitle, children, backToHome = true }) {
             </p>
           )}
         </header>
-        <div className="prose prose-slate dark:prose-invert prose-headings:font-display prose-headings:font-bold prose-a:text-primary dark:prose-a:text-emerald-400 prose-a:no-underline hover:prose-a:underline prose-lg max-w-none rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-white/5 shadow-sm shadow-slate-200/50 dark:shadow-none p-8 sm:p-10">
+        <div className="prose prose-slate dark:prose-invert prose-headings:font-display prose-headings:font-bold prose-a:text-primary dark:prose-a:text-emerald-400 prose-a:no-underline hover:prose-a:underline prose-lg max-w-none break-words rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-white/5 shadow-sm shadow-slate-200/50 dark:shadow-none p-8 sm:p-10">
           {children}
         </div>
       </div>

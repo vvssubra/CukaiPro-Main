@@ -20,7 +20,7 @@ export default function TaxCalendarPage() {
         </p>
         <section>
           <h2 className="text-xl font-display font-bold text-slate-custom dark:text-white mb-4">Key dates</h2>
-          <div className="overflow-hidden rounded-2xl border border-primary/10 dark:border-white/10">
+          <div className="overflow-x-auto rounded-2xl border border-primary/10 dark:border-white/10">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-white/5">

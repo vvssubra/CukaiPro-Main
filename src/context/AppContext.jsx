@@ -1,7 +1,13 @@
-import { createContext, useState, useCallback, useRef } from 'react';
+import { createContext, useState, useCallback, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 export const AppContext = createContext(null);
+
+export function useApp() {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be used within AppProvider');
+  return ctx;
+}
 
 export function AppProvider({ children }) {
   const [theme, setTheme] = useState(() => {
@@ -10,7 +16,10 @@ export function AppProvider({ children }) {
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     return savedTheme;
   });
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth >= 768;
+  });
   const [notifications, setNotifications] = useState([]);
   const notificationIdRef = useRef(0);
 

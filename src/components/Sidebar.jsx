@@ -1,12 +1,28 @@
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useOrganization } from '../context/OrganizationContext';
+import { AppContext } from '../context/AppContext';
 
 function Sidebar() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { currentOrganization, membershipRole } = useOrganization();
+  const { sidebarOpen, toggleSidebar } = useContext(AppContext);
+  const location = useLocation();
+  const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
+  const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
+
+  // On mobile: close drawer when navigating to a new page
+  useEffect(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (isMobile && sidebarOpen) toggleSidebar();
+  }, [location.pathname]);
+
+  const handleNavClick = (e) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (isMobile) toggleSidebar();
+  };
 
   const handleSignOut = async () => {
     try {
@@ -16,9 +32,6 @@ function Sidebar() {
       console.error('Sign out failed', err);
     }
   };
-  const location = useLocation();
-  const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
-  const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
 
   const navItems = [
     { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
@@ -40,9 +53,14 @@ function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 fixed inset-y-0 left-0 bg-slate-custom flex flex-col border-r border-slate-700/50 shadow-nav z-50 rounded-r-xl">
+    <aside
+      className={`w-64 fixed inset-y-0 left-0 bg-slate-custom flex flex-col border-r border-slate-700/50 shadow-nav z-50 rounded-r-xl transition-transform duration-200 ease-out md:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+      aria-hidden={!sidebarOpen}
+    >
       <div className="p-6 flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-card">
             <span className="material-icons text-white text-lg">account_balance</span>
           </div>
@@ -76,6 +94,7 @@ function Sidebar() {
                         <Link
                           key={child.path}
                           to={child.path}
+                          onClick={handleNavClick}
                           className={`block py-2 px-2 rounded-lg text-sm transition-colors duration-200 ${
                             isChildActive ? 'text-primary font-medium' : 'text-slate-400 hover:text-white'
                           }`}
@@ -94,6 +113,7 @@ function Sidebar() {
             <Link
               key={item.path}
               to={item.path}
+              onClick={handleNavClick}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 ${
                 isActive ? 'bg-primary/20 text-white font-medium border border-primary/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`}

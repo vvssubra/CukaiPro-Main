@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useDeductions } from '../../hooks/useDeductions';
 import { useTaxCalculation } from '../../hooks/useTaxCalculation';
@@ -59,11 +58,8 @@ function TaxesPage() {
       : nextFilingPeriod?.dueDateStr || '15th of each month';
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Tax Management</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400">Manage your SST and Income Tax filings</p>
@@ -169,6 +165,7 @@ function TaxesPage() {
               <button type="button" onClick={handleFileSST} className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">File SST-02</button>
             </div>
             <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Filing History (last 6)</h3>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
@@ -189,6 +186,7 @@ function TaxesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Income Tax + Deductions summary */}
@@ -226,8 +224,6 @@ function TaxesPage() {
             </ul>
           </div>
         </div>
-      </main>
-    </div>
   );
 }
 

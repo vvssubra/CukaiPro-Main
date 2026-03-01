@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
 import { useOrganization } from '../../context/OrganizationContext';
 import { useToast } from '../../context/ToastContext';
 import { useTeamMembers } from '../../hooks/useTeamMembers';
@@ -187,7 +186,7 @@ function TeamTab() {
       {loading ? (
         <div className="text-slate-500 dark:text-slate-400">Loading members…</div>
       ) : (
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
             <thead className="bg-slate-50 dark:bg-slate-800/50">
               <tr>
@@ -327,11 +326,8 @@ export default function SettingsPage() {
   }, [tabParam]);
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-8">
-        <div className="max-w-4xl">
-          <h1 className="text-2xl font-bold text-slate-custom dark:text-white mb-8">Settings</h1>
+    <div className="max-w-4xl">
+      <h1 className="text-2xl font-bold text-slate-custom dark:text-white mb-8">Settings</h1>
           <div className="flex gap-4 border-b border-slate-200 dark:border-slate-700 mb-8">
             <button
               type="button"
@@ -370,8 +366,6 @@ export default function SettingsPage() {
           {activeTab === 'billing' && <BillingTab />}
           {activeTab === 'team' && <TeamTab />}
           {activeTab === 'organization' && <OrganizationTab />}
-        </div>
-      </main>
     </div>
   );
 }
