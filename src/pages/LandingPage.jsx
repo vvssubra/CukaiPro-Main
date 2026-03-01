@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  // eslint-disable-next-line no-unused-vars -- motion used as motion.div, motion.span etc in JSX
   motion,
   useMotionValue,
   useSpring,

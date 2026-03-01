@@ -45,7 +45,7 @@ function TransactionsPage() {
     [dateFrom, dateTo, typeFilter, refFilter, contactFilter, accountFilter]
   );
 
-  const { transactions, loading, error, fetchTransactions, createTransaction, deleteTransaction, TRANSACTION_TYPES } = useTransactions(filters);
+  const { transactions, loading, error, fetchTransactions: _fetchTransactions, createTransaction, deleteTransaction, TRANSACTION_TYPES } = useTransactions(filters);
   const { accounts } = useAccounts();
   const { contacts } = useContacts();
 

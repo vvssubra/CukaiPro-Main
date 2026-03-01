@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, useSpring, useReducedMotion } from 'framer-motion';
+import { useScroll, useTransform, useSpring, useReducedMotion } from 'framer-motion';
 
 function ScrollProgressBar() {
   const shouldReduce = useReducedMotion();
