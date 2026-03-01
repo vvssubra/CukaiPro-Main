@@ -10,10 +10,27 @@ For a list of screenshots to capture or refresh, see [Screenshot checklist](GUID
 
 ## Part 1: Getting started
 
+### Pricing and plans
+
+On the **landing page**, use the **Pricing** link in the navigation (or scroll down) to open the **pricing section**. There you will see:
+
+- **Start using CukaiPro for free!** – A short intro with bullets: *Cancel any time*, *No minimum contract*, *No credit card required*, and a **Start Your Free Trial** button.
+- **Choose Your Pricing Plan** – Three billing options: **Monthly**, **12 Months 65% Off**, and **24 Months 75% Off**.
+- A **comparison table** for **Free**, **Pro**, and **Enterprise** plans, with:
+  - **Best for** (e.g. Freelancers & Startups, Growing Businesses, Large Organizations)
+  - **Included users** (1 user, up to 5 users, or unlimited)
+  - **Tax & compliance** (Accounting & Reports, SST Filing, LHDN e-Invoice, EA Forms)
+  - **Support** and **Attachment** (storage)
+  - A CTA in each column: **Get Started Free**, **Start Free Trial**, or **Contact Sales**
+
+A footer note states that prices exclude SST and that all promotion offers are subject to terms and conditions.
+
+![Landing – Pricing section](public/guide/guide-landing-pricing.png)
+
 ### Create your account
 
 1. Open the CukaiPro app (e.g. your deployed URL or `http://localhost:3000`).
-2. On the **landing page**, click **Sign up** (or go to the sign-up page).
+2. On the **landing page**, click **Sign up** (or go to the sign-up page). You can also go to **Pricing** (in the nav or by scrolling) to compare plans and click **Start Your Free Trial** or **Get Started Free**.
 
    ![Landing page](public/guide/guide-landing.png)
 
@@ -191,6 +208,7 @@ If your business is SST-registered:
 | Task | Where to go |
 |------|------------------|
 | Sign up / Log in | Landing → Sign up or Sign in |
+| Compare plans / start trial | Landing → Pricing |
 | First-time setup | Onboarding (4 steps after sign-up) |
 | View overview | Dashboard |
 | Manage invoices | Invoices |
