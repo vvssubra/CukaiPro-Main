@@ -48,6 +48,12 @@
   .card-hover:hover {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
   }
+  .glass {
+    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-white via-emerald-200 to-emerald-400 bg-clip-text text-transparent;
+  }
 }
 
 @keyframes lighting-glow {
@@ -103,7 +109,7 @@
   pointer-events: none;
 }
 
-/* Trust bar ticker: infinite scroll */
+/* Trust Bar Ticker — Premium Infinite Scroll */
 @keyframes ticker-scroll {
   0% {
     transform: translateX(0);
@@ -114,8 +120,10 @@
 }
 
 .ticker-track {
-  animation: ticker-scroll 35s linear infinite;
+  animation: ticker-scroll 40s linear infinite;
+  will-change: transform;
 }
+
 .ticker-track:hover {
   animation-play-state: paused;
 }
