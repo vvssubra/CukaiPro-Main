@@ -1,18 +1,28 @@
 import { Link } from 'react-router-dom';
 import ParticleWave from '../components/ParticleWave';
 
-// Fake company logos (image only, no text) – simple SVG shapes as data URIs
+// Enterprise partner badge logos – fictional wordmark-style SVGs for demonstration purposes
 const trustedLogoImages = [
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23064E3B"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231E293B"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230ea5e9"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%236d28d9"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%23b45309"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230f766e"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%231e40af"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%234f46e5"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23047569"/></svg>'),
-  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%236b21a8"/></svg>'),
+  // NexTel – fictional telecom, bold navy blue
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 40"><rect width="110" height="40" rx="6" fill="#1A56B0"/><text x="55" y="26" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white" text-anchor="middle" letter-spacing="2">NEXTEL</text></svg>'),
+  // Goldbank – fictional bank, signature amber-yellow
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40"><rect width="120" height="40" rx="6" fill="#FDB912"/><text x="60" y="26" font-family="Georgia,serif" font-weight="700" font-size="15" fill="#1a1a1a" text-anchor="middle">Goldbank</text></svg>'),
+  // CORB – fictional banking, bold red
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 40"><rect width="90" height="40" rx="6" fill="#C8102E"/><text x="45" y="26" font-family="Arial Black,sans-serif" font-weight="900" font-size="16" fill="white" text-anchor="middle" letter-spacing="3">CORB</text></svg>'),
+  // EnerTek – fictional energy, dark green with gold
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40"><rect width="120" height="40" rx="6" fill="#0A4D2F"/><text x="60" y="26" font-family="Arial,sans-serif" font-weight="700" font-size="13" fill="#F0B429" text-anchor="middle" letter-spacing="1.5">ENERTEK</text></svg>'),
+  // GridCo – fictional utilities, deep navy
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40"><rect width="100" height="40" rx="6" fill="#1E3A8A"/><text x="50" y="18" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#93C5FD" text-anchor="middle" letter-spacing="1">GRID</text><text x="50" y="32" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="white" text-anchor="middle" letter-spacing="1">CORP</text></svg>'),
+  // NexWave – fictional telecom, vibrant purple
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 40"><rect width="110" height="40" rx="6" fill="#7C3AED"/><text x="55" y="26" font-family="Arial Black,sans-serif" font-weight="900" font-size="13" fill="white" text-anchor="middle" letter-spacing="1">NEXWAVE</text></svg>'),
+  // UniBank – fictional banking, teal
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40"><rect width="100" height="40" rx="6" fill="#0F766E"/><text x="50" y="18" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#99F6E4" text-anchor="middle" letter-spacing="1">UNI</text><text x="50" y="32" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="white" text-anchor="middle" letter-spacing="1">BANK</text></svg>'),
+  // SimeXa – fictional conglomerate, dark slate
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 40"><rect width="110" height="40" rx="6" fill="#1E293B"/><text x="55" y="18" font-family="Arial,sans-serif" font-weight="400" font-size="9" fill="#94A3B8" text-anchor="middle" letter-spacing="3">SIME</text><text x="55" y="32" font-family="Arial Black,sans-serif" font-weight="900" font-size="12" fill="white" text-anchor="middle" letter-spacing="1">XA GROUP</text></svg>'),
+  // UMV – fictional automotive, warm amber
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 40"><rect width="90" height="40" rx="6" fill="#B45309"/><text x="45" y="26" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle" letter-spacing="3">UMV</text></svg>'),
+  // Zenith – fictional hospitality, deep crimson
+  'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 40"><rect width="110" height="40" rx="6" fill="#7F1D1D"/><text x="55" y="26" font-family="Arial,sans-serif" font-weight="700" font-size="13" fill="#FCA5A5" text-anchor="middle" letter-spacing="2">ZENITH</text></svg>'),
 ];
 
 function LandingPage() {
@@ -62,22 +72,39 @@ function LandingPage() {
         </div>
       </header>
 
-      {/* Trust Bar - Ticker with fake company logos */}
-      <section className="py-12 border-y border-primary/5 bg-white dark:bg-background-dark/50 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-custom/40 dark:text-gray-500 mb-8">
-            Trusted by 500+ Malaysian SMEs and Accounting Firms
+      {/* Trust Bar – Premium infinite-scroll ticker */}
+      <section className="py-14 bg-white dark:bg-background-dark overflow-hidden animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        {/* Section label with decorative accent lines */}
+        <div className="flex items-center justify-center gap-4 px-4 mb-8">
+          <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary/20 dark:to-white/10" aria-hidden="true" />
+          <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] text-slate-custom/40 dark:text-gray-500 whitespace-nowrap">
+            Trusted by Industry Leaders
           </p>
-          <div className="relative">
-            <div className="ticker-track flex items-center gap-12 shrink-0 w-max">
+          <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary/20 dark:to-white/10" aria-hidden="true" />
+        </div>
+
+        {/* Glassmorphism ticker container */}
+        <div className="relative mx-4 sm:mx-8 lg:mx-20 rounded-2xl border border-primary/10 dark:border-white/[0.07] bg-gradient-to-b from-primary/[0.02] to-transparent dark:from-white/[0.03] dark:to-transparent overflow-hidden">
+          {/* Gradient fade edges – left then right */}
+          {['left', 'right'].map((side) => (
+            <div
+              key={side}
+              className={`absolute inset-y-0 ${side}-0 w-16 sm:w-24 z-10 pointer-events-none bg-gradient-to-${side === 'left' ? 'r' : 'l'} from-white dark:from-background-dark to-transparent`}
+              aria-hidden="true"
+            />
+          ))}
+
+          {/* Scrolling logos */}
+          <div className="py-8">
+            <div className="ticker-track flex items-center gap-14 shrink-0 w-max">
               {[...trustedLogoImages, ...trustedLogoImages].map((src, i) => (
                 <div key={i} className="shrink-0" aria-hidden="true">
                   <img
                     src={src}
                     alt=""
-                    className="h-10 w-auto object-contain opacity-70 grayscale hover:opacity-90 hover:grayscale-0 transition-all"
-                    width={80}
-                    height={40}
+                    className="h-9 w-auto object-contain opacity-50 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(6,78,59,0.4)] dark:hover:drop-shadow-[0_0_10px_rgba(52,211,153,0.35)]"
+                    width={110}
+                    height={36}
                   />
                 </div>
               ))}
