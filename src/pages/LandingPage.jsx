@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  motion,
   useMotionValue,
   useSpring,
   useTransform,
@@ -75,7 +74,7 @@ function useCountUp(end, { decimals = 0, duration = 2000, enabled = true } = {})
   const rafRef = useRef(null);
 
   useEffect(() => {
-    if (!enabled) { setValue(end); return; }
+    if (!enabled) { queueMicrotask(() => setValue(end)); return; }
     const start = performance.now();
     function tick(now) {
       const elapsed = now - start;

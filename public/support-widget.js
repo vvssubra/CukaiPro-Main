@@ -244,7 +244,7 @@
       try {
         responseText = await res.text();
         if (responseText) data = JSON.parse(responseText);
-      } catch (parseErr) {
+      } catch {
         if (res.ok) {
           hideTyping();
           appendMessage('ai', ERROR_MESSAGE, true);

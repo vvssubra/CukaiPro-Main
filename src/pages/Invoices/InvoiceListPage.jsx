@@ -51,7 +51,6 @@ function parseInvoiceDateForFilter(d) {
 function applyDateRangeFilter(invoices, range) {
   if (!range || range === 'all') return invoices;
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   let start = 0;
   if (range === 'this_month') {
     start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -157,7 +156,7 @@ StatusBadge.propTypes = {
  * Invoice Manager page (Page 4). Lists invoices from Supabase with create and delete actions.
  */
 function InvoiceListPage() {
-  const { invoices, loading, error, fetchInvoices, createInvoice, deleteInvoice } = useInvoices();
+  const { invoices, loading, error, createInvoice, deleteInvoice } = useInvoices();
   const [modalOpen, setModalOpen] = useState(false);
   const [viewInvoice, setViewInvoice] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
