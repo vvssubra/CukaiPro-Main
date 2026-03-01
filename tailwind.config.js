@@ -44,6 +44,7 @@ export default {
         modal: "0 25px 50px -12px rgb(0 0 0 / 0.2)",
         dropdown: "0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)",
         "nav": "0 1px 3px 0 rgb(0 0 0 / 0.06)",
+        "glow-emerald": "0 0 20px rgba(16,185,129,0.3), 0 0 60px rgba(16,185,129,0.15)",
       },
       transitionDuration: {
         DEFAULT: "200ms",
@@ -82,6 +83,11 @@ export default {
           "0%": { opacity: "1", transform: "translateX(0)" },
           "100%": { opacity: "0", transform: "translateX(16px)" },
         },
+        "float-blob": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(30px, -20px) scale(1.05)" },
+          "66%": { transform: "translate(-20px, 15px) scale(0.95)" },
+        },
       },
       animation: {
         "hero-ripple": "hero-ripple 4s ease-out infinite",
@@ -91,6 +97,7 @@ export default {
         "scale-in": "scale-in 0.2s ease-out forwards",
         "slide-in-right": "slide-in-right 0.25s ease-out forwards",
         "toast-exit": "toast-exit 0.2s ease-in forwards",
+        "float-blob": "float-blob 20s ease-in-out infinite",
       },
       backgroundImage: {
         "hero-grid-pattern": "linear-gradient(to right, rgb(6 78 59 / 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgb(6 78 59 / 0.08) 1px, transparent 1px)",
