@@ -138,29 +138,42 @@ function AppLayout() {
 }
 
 function App() {
-  if (!isSupabaseConfigured) {
-    return <ConfigRequired />;
-  }
   return (
     <Sentry.ErrorBoundary fallback={({ error, resetError }) => <ErrorFallback error={error} onReset={resetError} />}>
       <BrowserRouter>
         <AppProvider>
-          <AuthProvider>
-            <OrganizationProvider>
-              <ToastProvider>
+          {isSupabaseConfigured ? (
+            <AuthProvider>
+              <OrganizationProvider>
+                <ToastProvider>
+                <Suspense fallback={<Loading fullScreen />}>
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    <Route path="/onboarding" element={<OnboardingWizard />} />
+                    <Route path="/invite/:token" element={<AcceptInvitePage />} />
+                    {import.meta.env.DEV && <Route path="/debug/config" element={<ConfigDebugPage />} />}
+                    <Route path="/*" element={<AppLayout />} />
+                  </Routes>
+                </Suspense>
+                </ToastProvider>
+              </OrganizationProvider>
+            </AuthProvider>
+          ) : (
+            <ToastProvider>
               <Suspense fallback={<Loading fullScreen />}>
                 <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/onboarding" element={<OnboardingWizard />} />
-                  <Route path="/invite/:token" element={<AcceptInvitePage />} />
+                  <Route path="/login" element={<ConfigRequired />} />
+                  <Route path="/signup" element={<ConfigRequired />} />
+                  <Route path="/onboarding" element={<ConfigRequired />} />
+                  <Route path="/invite/:token" element={<ConfigRequired />} />
+                  <Route path="/dashboard/*" element={<ConfigRequired />} />
                   {import.meta.env.DEV && <Route path="/debug/config" element={<ConfigDebugPage />} />}
                   <Route path="/*" element={<AppLayout />} />
                 </Routes>
               </Suspense>
-              </ToastProvider>
-            </OrganizationProvider>
-          </AuthProvider>
+            </ToastProvider>
+          )}
         </AppProvider>
       </BrowserRouter>
     </Sentry.ErrorBoundary>
