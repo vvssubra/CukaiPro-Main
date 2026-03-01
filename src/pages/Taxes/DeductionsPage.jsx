@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import Sidebar from '../../components/Sidebar';
 import { useOrganization } from '../../context/OrganizationContext';
 import { useToast } from '../../context/ToastContext';
 import { useDeductions } from '../../hooks/useDeductions';
@@ -185,11 +184,9 @@ function DeductionsPage() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
-      <Sidebar />
-      <main className="ml-64 flex-1 min-h-screen">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <PageHeader
+    <>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <PageHeader
             title="Tax Deductions Tracker"
             subtitle={`Track all your tax-deductible expenses for ${taxYear}`}
             action={
@@ -495,8 +492,7 @@ function DeductionsPage() {
           deduction={deductionToDelete}
           isDeleting={deletingId === deductionToDelete?.id}
         />
-      </main>
-    </div>
+    </>
   );
 }
 

@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar';
 import { useInvoices } from '../../hooks/useInvoices';
 import { useDeductions } from '../../hooks/useDeductions';
 import { useTaxCalculation } from '../../hooks/useTaxCalculation';
@@ -64,11 +63,8 @@ function FilingSummaryPage() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Tax Filing Summary {year}</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400">Complete report for tax filing</p>
@@ -105,6 +101,7 @@ function FilingSummaryPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">A) Business Expenses (100% claimable)</h3>
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
@@ -129,10 +126,12 @@ function FilingSummaryPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
                 <p className="text-sm font-semibold mt-2 text-right">Subtotal: {formatCurrency(byType?.business || 0)}</p>
               </div>
               <div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">B) Capital Allowance</h3>
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
@@ -155,10 +154,12 @@ function FilingSummaryPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
                 <p className="text-sm font-semibold mt-2 text-right">Subtotal: {formatCurrency(byType?.capital || 0)}</p>
               </div>
               <div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">C) Personal Relief</h3>
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
@@ -181,6 +182,7 @@ function FilingSummaryPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
                 <p className="text-sm font-semibold mt-2 text-right">Subtotal: {formatCurrency(byType?.personal || 0)}</p>
               </div>
             </div>
@@ -232,8 +234,6 @@ function FilingSummaryPage() {
               Print Summary
             </button>
           </div>
-        </div>
-      </main>
     </div>
   );
 }

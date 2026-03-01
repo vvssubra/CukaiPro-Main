@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
 import { useEAForms, computeEASummary } from '../../hooks/useEAForms';
 import { useOrganization } from '../../context/OrganizationContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -85,11 +84,8 @@ function EAFormPage() {
 
   if (!canUseEAForms) {
     return (
-      <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
-        <Sidebar />
-        <main className="ml-64 flex-1 p-8">
-          <div className="max-w-2xl mx-auto py-16 text-center">
-            <span className="material-icons text-6xl text-primary/60 mb-4 block">workspace_premium</span>
+      <div className="max-w-2xl mx-auto py-16 text-center">
+        <span className="material-icons text-6xl text-primary/60 mb-4 block">workspace_premium</span>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">EA Forms require Pro or Enterprise</h2>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
               Upgrade your plan to manage employee remuneration and generate EA forms for LHDN e-Filing.
@@ -101,17 +97,13 @@ function EAFormPage() {
               Upgrade plan
             </Link>
           </div>
-        </main>
-      </div>
     );
   }
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen flex">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <>
+    <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white">EA Forms (Employment Information)</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -300,8 +292,7 @@ function EAFormPage() {
           variant="danger"
           loading={deleting}
         />
-      </main>
-    </div>
+    </>
   );
 }
 

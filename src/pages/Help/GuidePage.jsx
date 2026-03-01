@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
 
 /**
  * In-app user guide. Content is embedded here so clients only see the guide,
@@ -15,10 +14,7 @@ export default function GuidePage() {
   );
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-8">
-        <article className="max-w-3xl prose prose-slate dark:prose-invert prose-headings:font-bold prose-a:text-primary">
+    <article className="max-w-3xl prose prose-slate dark:prose-invert prose-headings:font-bold prose-a:text-primary">
           <h1 className="text-2xl font-bold text-slate-custom dark:text-white mb-2">
             CukaiPro – Complete user guide
           </h1>
@@ -164,7 +160,5 @@ export default function GuidePage() {
             </Link>
           </div>
         </article>
-      </main>
-    </div>
   );
 }

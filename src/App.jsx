@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { isSupabaseConfigured } from './lib/supabaseConfig';
 import { AuthProvider } from './context/AuthContext';
@@ -10,6 +10,7 @@ import ErrorBoundary, { ErrorFallback } from './components/Common/ErrorBoundary'
 import Loading from './components/Common/Loading';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Navbar from './components/Navbar';
+import DashboardLayout from './components/DashboardLayout';
 
 function ConfigRequired() {
   return (
@@ -94,121 +95,24 @@ function AppLayout() {
             element={
               <ProtectedRoute>
                 <ErrorBoundary>
-                  <Dashboard />
+                  <DashboardLayout />
                 </ErrorBoundary>
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/dashboard/invoices"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <InvoiceListPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/invoices"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <InvoiceListPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/taxes"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <TaxesPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/deductions"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <DeductionsPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/tax-filing"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <FilingSummaryPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/sst-filing"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <SSTFilingPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/taxes/ea-form"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <EAFormPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/settings"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <SettingsPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/reports"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <ReportsPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/help"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <HelpPage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/guide"
-            element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <GuidePage />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="invoices" element={<InvoiceListPage />} />
+            <Route path="taxes" element={<TaxesPage />} />
+            <Route path="deductions" element={<DeductionsPage />} />
+            <Route path="tax-filing" element={<FilingSummaryPage />} />
+            <Route path="sst-filing" element={<SSTFilingPage />} />
+            <Route path="taxes/ea-form" element={<EAFormPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="help" element={<HelpPage />} />
+            <Route path="guide" element={<GuidePage />} />
+          </Route>
+          <Route path="/invoices" element={<Navigate to="/dashboard/invoices" replace />} />
         </Routes>
       </Suspense>
     </div>
