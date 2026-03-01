@@ -16,10 +16,10 @@ export function ErrorFallback({ error, onReset }) {
           Oops! Something went wrong
         </h1>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
-          We&apos;re sorry for the inconvenience. Please try refreshing the page or contact
-          support if the problem persists.
+          We&apos;re sorry for the inconvenience. Please try refreshing the page or contact support
+          if the problem persists.
         </p>
-        {import.meta.env.DEV && error && (
+        {error && (
           <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 text-left">
             <p className="text-sm font-mono text-red-800 dark:text-red-300 break-all">
               {error.toString()}
@@ -36,10 +36,10 @@ export function ErrorFallback({ error, onReset }) {
           </button>
           <button
             type="button"
-            onClick={() => (window.location.href = '/')}
+            onClick={() => (window.location.href = '/login')}
             className="px-6 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
           >
-            Go Home
+            Go to Login
           </button>
         </div>
       </div>
@@ -65,7 +65,11 @@ class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
     if (typeof console !== 'undefined') {
-      console.error('[CukaiPro] ErrorBoundary:', error?.message || error, errorInfo?.componentStack);
+      console.error(
+        '[CukaiPro] ErrorBoundary:',
+        error?.message || error,
+        errorInfo?.componentStack
+      );
     }
     this.setState({ errorInfo });
     Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } });
@@ -101,7 +105,9 @@ class ErrorBoundary extends Component {
                 <p className="text-sm font-mono text-red-800 dark:text-red-300 break-all">
                   {this.state.error.toString()}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Check the browser console (F12) for more details.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Check the browser console (F12) for more details.
+                </p>
               </div>
             )}
             <div className="flex gap-4 justify-center">
@@ -112,10 +118,10 @@ class ErrorBoundary extends Component {
                 Try Again
               </button>
               <button
-                onClick={() => (window.location.href = '/')}
+                onClick={() => (window.location.href = '/login')}
                 className="px-6 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
               >
-                Go Home
+                Go to Login
               </button>
             </div>
           </div>
