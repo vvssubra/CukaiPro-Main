@@ -54,6 +54,15 @@ const ReportsPage = lazy(() => import('./pages/Reports/ReportsPage'));
 const HelpPage = lazy(() => import('./pages/Help/HelpPage'));
 const GuidePage = lazy(() => import('./pages/Help/GuidePage'));
 const ConfigDebugPage = lazy(() => import('./pages/Debug/ConfigDebugPage'));
+const ChartOfAccountsPage = lazy(() => import('./pages/Accounts/ChartOfAccountsPage'));
+const TransactionsPage = lazy(() => import('./pages/Transactions/TransactionsPage'));
+const BalanceSheetPage = lazy(() => import('./pages/Reports/BalanceSheetPage'));
+const ProfitLossPage = lazy(() => import('./pages/Reports/ProfitLossPage'));
+const LedgerPage = lazy(() => import('./pages/Reports/LedgerPage'));
+const JournalPage = lazy(() => import('./pages/Reports/JournalPage'));
+const TaxTransactionListingPage = lazy(() => import('./pages/Reports/TaxTransactionListingPage'));
+const SSTProcessorPage = lazy(() => import('./pages/Reports/SSTProcessorPage'));
+const BankReconciliationPage = lazy(() => import('./pages/Reports/BankReconciliationPage'));
 
 const EInvoicingPage = lazy(() => import('./pages/FooterPages/EInvoicingPage'));
 const PayrollTaxPage = lazy(() => import('./pages/FooterPages/PayrollTaxPage'));
@@ -109,6 +118,15 @@ function AppLayout() {
             <Route path="taxes/ea-form" element={<EAFormPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
+            <Route path="reports/profit-loss" element={<ProfitLossPage />} />
+            <Route path="reports/ledger" element={<LedgerPage />} />
+            <Route path="reports/journal" element={<JournalPage />} />
+            <Route path="reports/tax-transaction-listing" element={<TaxTransactionListingPage />} />
+            <Route path="reports/sst-processor" element={<SSTProcessorPage />} />
+            <Route path="reports/bank-reconciliation" element={<BankReconciliationPage />} />
+            <Route path="accounts" element={<ChartOfAccountsPage />} />
+            <Route path="transactions" element={<TransactionsPage />} />
             <Route path="help" element={<HelpPage />} />
             <Route path="guide" element={<GuidePage />} />
           </Route>
