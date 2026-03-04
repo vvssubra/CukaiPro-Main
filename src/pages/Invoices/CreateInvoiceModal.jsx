@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import PropTypes from 'prop-types';
 import { invoiceSchema } from '../../utils/validators';
 import Button from '../../components/Common/Button';
-import Input from '../../components/Common/Input';
+import ClientSelector, { ADD_NEW_VALUE } from '../../components/Common/ClientSelector';
+import { useContacts } from '../../hooks/useContacts';
 
 /**
  * Modal for creating a new invoice. Uses react-hook-form with zod validation.
@@ -15,7 +16,11 @@ import Input from '../../components/Common/Input';
  */
 function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
   const [submitError, setSubmitError] = useState('');
+  const [clientValue, setClientValue] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [clientTin, setClientTin] = useState('');
   const modalRef = useRef(null);
+  const { createContact } = useContacts();
 
   const {
     register,
@@ -25,8 +30,6 @@ function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
   } = useForm({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      clientName: '',
-      tin: '',
       amount: '',
       invoiceDate: '',
       notes: '',
@@ -62,16 +65,58 @@ function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
   useEffect(() => {
     if (isOpen) {
       reset();
+      setClientValue('');
+      setClientName('');
+      setClientTin('');
       queueMicrotask(() => setSubmitError(''));
     }
   }, [isOpen, reset]);
 
   const onSubmit = async (data) => {
     setSubmitError('');
+
+    const name = (clientName || '').trim();
+    const tinVal = (clientTin || '').trim();
+
+    if (!clientValue || clientValue === '') {
+      setSubmitError('Please select a client or add a new one.');
+      return;
+    }
+    if (clientValue === ADD_NEW_VALUE) {
+      if (name.length < 2) {
+        setSubmitError('Company/Client name must be at least 2 characters.');
+        return;
+      }
+      if (tinVal.length !== 14 || !/^\d{14}$/.test(tinVal)) {
+        setSubmitError('TIN must be exactly 14 digits.');
+        return;
+      }
+    }
+
     try {
+      let contactId = clientValue === ADD_NEW_VALUE ? null : clientValue;
+      let finalName = name;
+      let finalTin = tinVal;
+
+      if (clientValue === ADD_NEW_VALUE) {
+        const contactResult = await createContact({
+          name,
+          tin: tinVal,
+          type: 'customer',
+        });
+        if (!contactResult.success) {
+          setSubmitError(contactResult.error || 'Failed to add client.');
+          return;
+        }
+        contactId = contactResult.data.id;
+        finalName = name;
+        finalTin = tinVal;
+      }
+
       const payload = {
-        clientName: data.clientName,
-        tin: data.tin,
+        contact_id: contactId || undefined,
+        clientName: finalName,
+        tin: finalTin,
         amount: Number(data.amount),
         invoiceDate: data.invoiceDate,
         notes: data.notes || undefined,
@@ -113,46 +158,17 @@ function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Client Name <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-custom/40">
-                  <span className="material-icons-outlined text-[20px]">person</span>
-                </span>
-                <input
-                  {...register('clientName')}
-                  type="text"
-                  placeholder="e.g. TechMaju Sdn Bhd"
-                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-background-dark border border-slate-custom/10 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none text-sm text-slate-custom dark:text-white"
-                />
-              </div>
-              {errors.clientName && (
-                <p className="mt-1 text-sm text-red-500">{errors.clientName.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                TIN (14 digits) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-custom/40">
-                  <span className="material-icons-outlined text-[20px]">badge</span>
-                </span>
-                <input
-                  {...register('tin')}
-                  type="text"
-                  placeholder="12345678901234"
-                  maxLength={14}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-background-dark border border-slate-custom/10 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none text-sm text-slate-custom dark:text-white"
-                />
-              </div>
-              {errors.tin && (
-                <p className="mt-1 text-sm text-red-500">{errors.tin.message}</p>
-              )}
-            </div>
+            <ClientSelector
+              value={clientValue}
+              clientName={clientName}
+              tin={clientTin}
+              onChange={({ contactId, clientName: n, tin: t, isNewClient }) => {
+                setClientValue(isNewClient ? ADD_NEW_VALUE : (contactId || ''));
+                setClientName(n || '');
+                setClientTin(t || '');
+              }}
+              error={submitError && (submitError.includes('client') || submitError.includes('TIN')) ? submitError : undefined}
+            />
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -216,7 +232,7 @@ function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
               )}
             </div>
 
-            {submitError && (
+            {submitError && !submitError.toLowerCase().includes('client') && !submitError.includes('TIN') && (
               <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
             )}
 

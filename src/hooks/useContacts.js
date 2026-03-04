@@ -61,16 +61,41 @@ export function useContacts(filters = {}) {
       setLoading(true);
       setError(null);
       try {
+        const insertPayload = {
+          organization_id: currentOrganization.id,
+          name: payload.name,
+          type: payload.type,
+          email: payload.email || null,
+          phone: payload.phone || null,
+          tin: payload.tin || null,
+        };
+        // Add Company (Sales) extended fields – TIN/tax for LHDN/RMCD
+        if (payload.company_name !== undefined) insertPayload.company_name = payload.company_name || null;
+        if (payload.alternate_name !== undefined) insertPayload.alternate_name = payload.alternate_name || null;
+        if (payload.registration_no !== undefined) insertPayload.registration_no = payload.registration_no || null;
+        if (payload.tax_registration_no !== undefined) insertPayload.tax_registration_no = payload.tax_registration_no || null;
+        if (payload.tax_entity !== undefined) insertPayload.tax_entity = payload.tax_entity || null;
+        if (payload.tax_exemption_no !== undefined) insertPayload.tax_exemption_no = payload.tax_exemption_no || null;
+        if (payload.tax_exemption_expiry !== undefined) insertPayload.tax_exemption_expiry = payload.tax_exemption_expiry || null;
+        if (payload.billing_address !== undefined) insertPayload.billing_address = payload.billing_address || null;
+        if (payload.billing_postcode !== undefined) insertPayload.billing_postcode = payload.billing_postcode || null;
+        if (payload.delivery_address !== undefined) insertPayload.delivery_address = payload.delivery_address || null;
+        if (payload.delivery_postcode !== undefined) insertPayload.delivery_postcode = payload.delivery_postcode || null;
+        if (payload.area !== undefined) insertPayload.area = payload.area || null;
+        if (payload.phone_2 !== undefined) insertPayload.phone_2 = payload.phone_2 || null;
+        if (payload.fax !== undefined) insertPayload.fax = payload.fax || null;
+        if (payload.fax_2 !== undefined) insertPayload.fax_2 = payload.fax_2 || null;
+        if (payload.website !== undefined) insertPayload.website = payload.website || null;
+        if (payload.attention !== undefined) insertPayload.attention = payload.attention || null;
+        if (payload.business_nature !== undefined) insertPayload.business_nature = payload.business_nature || null;
+        if (payload.agent !== undefined) insertPayload.agent = payload.agent || null;
+        if (payload.currency !== undefined) insertPayload.currency = payload.currency || null;
+        if (payload.credit_term !== undefined) insertPayload.credit_term = payload.credit_term || null;
+        if (payload.tax_code !== undefined) insertPayload.tax_code = payload.tax_code || null;
+
         const { data, error: insertError } = await supabase
           .from('contacts')
-          .insert({
-            organization_id: currentOrganization.id,
-            name: payload.name,
-            type: payload.type,
-            email: payload.email || null,
-            phone: payload.phone || null,
-            tin: payload.tin || null,
-          })
+          .insert(insertPayload)
           .select()
           .single();
 
@@ -110,6 +135,29 @@ export function useContacts(filters = {}) {
         if (payload.email !== undefined) updateData.email = payload.email || null;
         if (payload.phone !== undefined) updateData.phone = payload.phone || null;
         if (payload.tin !== undefined) updateData.tin = payload.tin || null;
+        // Add Company (Sales) extended fields
+        if (payload.company_name !== undefined) updateData.company_name = payload.company_name || null;
+        if (payload.alternate_name !== undefined) updateData.alternate_name = payload.alternate_name || null;
+        if (payload.registration_no !== undefined) updateData.registration_no = payload.registration_no || null;
+        if (payload.tax_registration_no !== undefined) updateData.tax_registration_no = payload.tax_registration_no || null;
+        if (payload.tax_entity !== undefined) updateData.tax_entity = payload.tax_entity || null;
+        if (payload.tax_exemption_no !== undefined) updateData.tax_exemption_no = payload.tax_exemption_no || null;
+        if (payload.tax_exemption_expiry !== undefined) updateData.tax_exemption_expiry = payload.tax_exemption_expiry || null;
+        if (payload.billing_address !== undefined) updateData.billing_address = payload.billing_address || null;
+        if (payload.billing_postcode !== undefined) updateData.billing_postcode = payload.billing_postcode || null;
+        if (payload.delivery_address !== undefined) updateData.delivery_address = payload.delivery_address || null;
+        if (payload.delivery_postcode !== undefined) updateData.delivery_postcode = payload.delivery_postcode || null;
+        if (payload.area !== undefined) updateData.area = payload.area || null;
+        if (payload.phone_2 !== undefined) updateData.phone_2 = payload.phone_2 || null;
+        if (payload.fax !== undefined) updateData.fax = payload.fax || null;
+        if (payload.fax_2 !== undefined) updateData.fax_2 = payload.fax_2 || null;
+        if (payload.website !== undefined) updateData.website = payload.website || null;
+        if (payload.attention !== undefined) updateData.attention = payload.attention || null;
+        if (payload.business_nature !== undefined) updateData.business_nature = payload.business_nature || null;
+        if (payload.agent !== undefined) updateData.agent = payload.agent || null;
+        if (payload.currency !== undefined) updateData.currency = payload.currency || null;
+        if (payload.credit_term !== undefined) updateData.credit_term = payload.credit_term || null;
+        if (payload.tax_code !== undefined) updateData.tax_code = payload.tax_code || null;
 
         const { data, error: updateError } = await supabase
           .from('contacts')
