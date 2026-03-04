@@ -12,8 +12,10 @@ function Sidebar() {
   const location = useLocation();
   const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
   const isAccountingSection = location.pathname.startsWith('/dashboard/transactions') || location.pathname.startsWith('/dashboard/accounts') || location.pathname.startsWith('/dashboard/reports/bank-reconciliation');
+  const isSalesSection = location.pathname.startsWith('/dashboard/sales');
   const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
   const [accountingExpanded, setAccountingExpanded] = useState(isAccountingSection);
+  const [salesExpanded, setSalesExpanded] = useState(isSalesSection);
 
   // On mobile: close drawer when navigating to a new page
   useEffect(() => {
@@ -58,6 +60,20 @@ function Sidebar() {
         { path: '/dashboard/reports/bank-reconciliation', label: 'Bank Reconciliation' },
       ],
     },
+    {
+      key: 'sales',
+      icon: 'point_of_sale',
+      label: 'Sales',
+      children: [
+        { path: '/dashboard/sales/add-client', label: 'Add company/client' },
+        { path: '/dashboard/sales/quotation', label: 'Quotation' },
+        { path: '/dashboard/sales/invoices', label: 'Invoice' },
+        { path: '/dashboard/sales/credit-notes', label: 'Credit Note' },
+        { path: '/dashboard/sales/reports/monthly-analysis', label: 'Monthly Sales Analysis' },
+        { path: '/dashboard/sales/reports/profit-loss', label: 'Profit & Loss' },
+        { path: '/dashboard/sales/reports/documents', label: 'List of Documents' },
+      ],
+    },
     { path: '/dashboard/invoices', icon: 'description', label: 'Invoices' },
     { path: '/dashboard/reports', icon: 'analytics', label: 'Reports' },
     { path: '/dashboard/help', icon: 'help_outline', label: 'Help' },
@@ -83,13 +99,24 @@ function Sidebar() {
         {navItems.map((item) => {
           if (item.children) {
             const isTaxItem = item.key === 'taxes';
-            const expanded = isTaxItem ? (taxesExpanded || isTaxesSection) : (accountingExpanded || isAccountingSection);
-            const isSectionActive = isTaxItem ? isTaxesSection : isAccountingSection;
+            const isSalesItem = item.key === 'sales';
+            const expanded = isTaxItem
+              ? (taxesExpanded || isTaxesSection)
+              : isSalesItem
+                ? (salesExpanded || isSalesSection)
+                : (accountingExpanded || isAccountingSection);
+            const isSectionActive = isTaxItem ? isTaxesSection : isSalesItem ? isSalesSection : isAccountingSection;
             return (
               <div key={item.key}>
                 <button
                   type="button"
-                  onClick={() => (isTaxItem ? setTaxesExpanded(!taxesExpanded) : setAccountingExpanded(!accountingExpanded))}
+                  onClick={() =>
+                    isTaxItem
+                      ? setTaxesExpanded(!taxesExpanded)
+                      : isSalesItem
+                        ? setSalesExpanded(!salesExpanded)
+                        : setAccountingExpanded(!accountingExpanded)
+                  }
                   className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 ${
                     isSectionActive ? 'bg-primary/20 text-white font-medium border border-primary/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                   }`}

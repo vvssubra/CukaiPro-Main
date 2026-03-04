@@ -21,6 +21,7 @@ export function useInvoices() {
   const { currentOrganization } = useOrganization();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchInvoices = useCallback(async () => {
@@ -59,12 +60,16 @@ export function useInvoices() {
         return { success: false, error: 'No organization selected' };
       }
 
-      setLoading(true);
+      setCreating(true);
       setError(null);
+      const timeoutMs = 20000;
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+      });
+
       try {
-        const { data, error: insertError } = await supabase
-          .from('invoices')
-          .insert({
+        const insertPromise = (async () => {
+          const insertPayload = {
             organization_id: currentOrganization.id,
             client_name: invoiceData.clientName,
             tin: invoiceData.tin,
@@ -72,33 +77,43 @@ export function useInvoices() {
             invoice_date: invoiceData.invoiceDate,
             notes: invoiceData.notes ?? null,
             status: 'draft',
-          })
-          .select()
-          .single();
+          };
+          if (invoiceData.contact_id != null) insertPayload.contact_id = invoiceData.contact_id;
+          if (invoiceData.sst_rate != null) insertPayload.sst_rate = Number(invoiceData.sst_rate) || 6;
 
-        if (insertError) {
-          logger.error('Failed to create invoice', insertError);
-          setError(insertError.message);
-          return { success: false, error: insertError.message };
-        }
+          const { data, error: insertError } = await supabase
+            .from('invoices')
+            .insert(insertPayload)
+            .select()
+            .single();
 
-        insertAuditLog({
-          entityType: 'invoice',
-          entityId: data.id,
-          action: 'create',
-          newData: data,
-          organizationId: currentOrganization.id,
-        }).catch(() => {});
+          if (insertError) {
+            logger.error('Failed to create invoice', insertError);
+            setError(insertError.message);
+            return { success: false, error: insertError.message };
+          }
 
-        setInvoices((prev) => [data, ...prev]);
-        return { success: true, data };
+          insertAuditLog({
+            entityType: 'invoice',
+            entityId: data.id,
+            action: 'create',
+            newData: data,
+            organizationId: currentOrganization.id,
+          }).catch(() => {});
+
+          setInvoices((prev) => [data, ...prev]);
+          return { success: true, data };
+        })();
+
+        const result = await Promise.race([insertPromise, timeoutPromise]);
+        return result;
       } catch (err) {
         const errMessage = err instanceof Error ? err.message : 'Failed to create invoice';
         logger.error('Unexpected error creating invoice', err);
         setError(errMessage);
         return { success: false, error: errMessage };
       } finally {
-        setLoading(false);
+        setCreating(false);
       }
     },
     [currentOrganization]
@@ -156,6 +171,7 @@ export function useInvoices() {
   return {
     invoices,
     loading,
+    creating,
     error,
     fetchInvoices,
     createInvoice,

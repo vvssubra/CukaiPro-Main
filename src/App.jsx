@@ -79,6 +79,14 @@ const TaxTransactionListingPage = lazy(() => import('./pages/Reports/TaxTransact
 const SSTProcessorPage = lazy(() => import('./pages/Reports/SSTProcessorPage'));
 const BankReconciliationPage = lazy(() => import('./pages/Reports/BankReconciliationPage'));
 
+const SalesQuotationListPage = lazy(() => import('./pages/Sales/QuotationListPage'));
+const SalesInvoiceListPage = lazy(() => import('./pages/Sales/SalesInvoiceListPage'));
+const SalesCreditNoteListPage = lazy(() => import('./pages/Sales/CreditNoteListPage'));
+const AddClientPage = lazy(() => import('./pages/Sales/AddClientPage'));
+const MonthlySalesAnalysisPage = lazy(() => import('./pages/Sales/MonthlySalesAnalysisPage'));
+const SalesProfitLossPage = lazy(() => import('./pages/Sales/SalesProfitLossPage'));
+const SalesDocumentsPage = lazy(() => import('./pages/Sales/SalesDocumentsPage'));
+
 const EInvoicingPage = lazy(() => import('./pages/FooterPages/EInvoicingPage'));
 const PayrollTaxPage = lazy(() => import('./pages/FooterPages/PayrollTaxPage'));
 const SSTCompliancePage = lazy(() => import('./pages/FooterPages/SSTCompliancePage'));
@@ -126,6 +134,14 @@ function AppLayout() {
           >
             <Route index element={<Dashboard />} />
             <Route path="invoices" element={<InvoiceListPage />} />
+            <Route path="sales" element={<Navigate to="/dashboard/sales/quotation" replace />} />
+            <Route path="sales/add-client" element={<AddClientPage />} />
+            <Route path="sales/quotation" element={<SalesQuotationListPage />} />
+            <Route path="sales/invoices" element={<SalesInvoiceListPage />} />
+            <Route path="sales/credit-notes" element={<SalesCreditNoteListPage />} />
+            <Route path="sales/reports/monthly-analysis" element={<MonthlySalesAnalysisPage />} />
+            <Route path="sales/reports/profit-loss" element={<SalesProfitLossPage />} />
+            <Route path="sales/reports/documents" element={<SalesDocumentsPage />} />
             <Route path="taxes" element={<TaxesPage />} />
             <Route path="deductions" element={<DeductionsPage />} />
             <Route path="tax-filing" element={<FilingSummaryPage />} />
