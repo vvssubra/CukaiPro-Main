@@ -68,11 +68,11 @@ export const dateSchema = z
   .string()
   .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Date must be in DD/MM/YYYY format');
 
-// Invoice form validation schema
+// Invoice form validation schema (client can be selected via ClientSelector or new client name+TIN; validated in modal)
 /** @type {import('zod').ZodObject} */
 export const invoiceSchema = z.object({
-  clientName: z.string().min(2).max(100),
-  tin: tinSchema,
+  clientName: z.string().min(2).max(100).optional(),
+  tin: z.string().optional(),
   amount: currencySchema,
   invoiceDate: dateSchema,
   notes: z.string().optional(),
