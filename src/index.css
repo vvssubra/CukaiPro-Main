@@ -139,3 +139,26 @@ html {
   }
 }
 
+/* Print: deductions listing — hide nav/sidebar, show only the listing card */
+@media print {
+  body.print-deductions-listing * {
+    visibility: hidden;
+  }
+  body.print-deductions-listing .deductions-listing-card,
+  body.print-deductions-listing .deductions-listing-card * {
+    visibility: visible;
+  }
+  body.print-deductions-listing .deductions-listing-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+  }
+  body.print-deductions-listing .deductions-listing-card .material-icons {
+    display: none;
+  }
+}
+
