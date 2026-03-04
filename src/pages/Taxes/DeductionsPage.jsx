@@ -7,6 +7,7 @@ import { useDeductions } from '../../hooks/useDeductions';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateTotalDeductions, estimateTaxSavings } from '../../hooks/useTaxCalculation';
 import { formatCurrency } from '../../utils/validators';
+import { exportToCSV } from '../../utils/reportExport';
 import { TAX_CATEGORIES, getCategoryById } from '../../data/taxCategories';
 import Loading from '../../components/Common/Loading';
 import EmptyState from '../../components/Common/EmptyState';
@@ -57,6 +58,7 @@ function DeductionsPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [page, setPage] = useState(1);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [batchActionsOpen, setBatchActionsOpen] = useState(false);
 
   const debouncedSearch = useDebounce(searchQuery, 500);
   const { hasPermission } = useOrganization();
@@ -182,6 +184,32 @@ function DeductionsPage() {
     }
     return x;
   };
+
+  const handleExportAllCSV = useCallback(() => {
+    const headers = ['No.', 'Date', 'Category', 'Description', 'Amount (RM)', 'Claimable (RM)', 'Receipt', 'Status'];
+    const rows = filteredAndSorted.map((d, i) => [
+      i + 1,
+      displayDate(d),
+      d.category_name || '—',
+      d.description || '—',
+      Number(d.amount) || 0,
+      Number(d.claimable_amount) || 0,
+      d.has_receipt ? 'Yes' : 'No',
+      (d.status || 'pending').charAt(0).toUpperCase() + (d.status || 'pending').slice(1),
+    ]);
+    exportToCSV(headers, rows, `deductions-${taxYear}.csv`);
+    setBatchActionsOpen(false);
+    toast.success('Deductions exported to CSV.');
+  }, [filteredAndSorted, taxYear, toast]);
+
+  const handlePrintListing = useCallback(() => {
+    const prevTitle = document.title;
+    document.title = `Deductions Listing ${taxYear} - CukaiPro`;
+    document.body.classList.add('print-deductions-listing');
+    window.print();
+    document.body.classList.remove('print-deductions-listing');
+    document.title = prevTitle;
+  }, [taxYear]);
 
   return (
     <>
@@ -378,99 +406,179 @@ function DeductionsPage() {
             )}
           </div>
 
-          {/* All deductions table */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">All Deductions</h2>
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-              <div className="relative flex-grow">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-icons">search</span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by category or description..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                />
+          {/* All Deductions — card + toolbar + table */}
+          <div
+            className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom shadow-sm overflow-hidden deductions-listing-card"
+          >
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setBatchActionsOpen((v) => !v)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-sm font-medium"
+                    aria-label="Batch actions"
+                    aria-expanded={batchActionsOpen}
+                  >
+                    Batch Actions
+                    <span className="material-icons text-[18px]">expand_more</span>
+                  </button>
+                  {batchActionsOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" aria-hidden="true" onClick={() => setBatchActionsOpen(false)} />
+                      <div className="absolute left-0 top-full mt-1 z-20 min-w-[180px] py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom shadow-lg">
+                        <button
+                          type="button"
+                          onClick={handleExportAllCSV}
+                          disabled={filteredAndSorted.length === 0}
+                          className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 disabled:opacity-50 flex items-center gap-2"
+                        >
+                          <span className="material-icons text-[18px]">download</span>
+                          Export all to CSV
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handlePrintListing}
+                          className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-2"
+                        >
+                          <span className="material-icons text-[18px]">print</span>
+                          Print listing
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white"
-              >
-                <option value="">All categories</option>
-                {TAX_CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <select
-                value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
-                  const [by, order] = e.target.value.split('-');
-                  setSortBy(by);
-                  setSortOrder(order);
-                }}
-                className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white"
-              >
-                <option value="date-desc">Date: Newest</option>
-                <option value="date-asc">Date: Oldest</option>
-                <option value="amount-desc">Amount: High to Low</option>
-                <option value="amount-asc">Amount: Low to High</option>
-                <option value="category-asc">Category: A-Z</option>
-                <option value="category-desc">Category: Z-A</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrintListing}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-sm font-medium"
+                  aria-label="Print listing"
+                >
+                  <span className="material-icons text-[18px]">print</span>
+                  Print Listing
+                </button>
+              </div>
             </div>
 
-            <div className="card rounded-2xl overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase">
-                  <tr>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Date</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Category</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Description</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-right">Amount</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-right">Claimable</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Receipt</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Status</th>
-                    <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {filteredAndSorted.length === 0 && !loading && (
-                    <tr>
-                      <td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No deductions yet for {taxYear}.
-                      </td>
-                    </tr>
-                  )}
-                  {paginated.map((d) => (
-                    <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                      <td className="px-6 py-4 text-sm">{displayDate(d)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{d.category_name || '—'}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{d.description || '—'}</td>
-                      <td className="px-6 py-4 text-sm text-right font-medium">{formatCurrency(Number(d.amount) || 0)}</td>
-                      <td className="px-6 py-4 text-sm text-right">{formatCurrency(Number(d.claimable_amount) || 0)}</td>
-                      <td className="px-6 py-4">{d.has_receipt ? <span className="text-emerald-500 material-icons">check_circle</span> : <span className="text-slate-400 material-icons">cancel</span>}</td>
-                      <td className="px-6 py-4"><StatusBadge status={d.status} /></td>
-                      <td className="px-6 py-4 text-right">
-                        {d.has_receipt && <button type="button" onClick={() => setViewReceiptDeduction(d)} className="p-1 hover:text-primary" aria-label="View receipt"><span className="material-icons text-[20px]">visibility</span></button>}
-                        {canEditDeduction && <button type="button" onClick={() => { setEditDeduction(d); setAddModalOpen(true); }} className="p-1 hover:text-primary" aria-label="Edit"><span className="material-icons text-[20px]">edit</span></button>}
-                        {canDeleteDeduction && <button type="button" onClick={() => setDeductionToDelete(d)} className="p-1 hover:text-red-600" aria-label="Delete"><span className="material-icons text-[20px]">delete</span></button>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {totalPages > 1 && (
-                <div className="px-6 py-4 flex items-center justify-between border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filteredAndSorted.length)} of {filteredAndSorted.length}
-                  </p>
-                  <div className="flex gap-2">
-                    <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-50">Prev</button>
-                    <button type="button" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-50">Next</button>
-                  </div>
+            {/* Card body: filters + table */}
+            <div className="p-6 card-body">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">All Deductions</h2>
+              <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="relative flex-grow">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-icons">search</span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by category or description..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+                  />
                 </div>
-              )}
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white"
+                >
+                  <option value="">All categories</option>
+                  {TAX_CATEGORIES.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [by, order] = e.target.value.split('-');
+                    setSortBy(by);
+                    setSortOrder(order);
+                  }}
+                  className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-900 dark:text-white"
+                >
+                  <option value="date-desc">Date: Newest</option>
+                  <option value="date-asc">Date: Oldest</option>
+                  <option value="amount-desc">Amount: High to Low</option>
+                  <option value="amount-asc">Amount: Low to High</option>
+                  <option value="category-asc">Category: A-Z</option>
+                  <option value="category-desc">Category: Z-A</option>
+                </select>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase">
+                    <tr>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 w-14">No.</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Date</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Category</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Description</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-right">Amount</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-right">Claimable</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Receipt</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">Status</th>
+                      <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                    {filteredAndSorted.length === 0 && !loading && (
+                      <tr>
+                        <td colSpan={9} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                          No data
+                          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Try adjusting filters or add a deduction.</p>
+                        </td>
+                      </tr>
+                    )}
+                    {paginated.map((d, index) => (
+                      <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                        <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{(page - 1) * PAGE_SIZE + index + 1}</td>
+                        <td className="px-6 py-4 text-sm">{displayDate(d)}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{d.category_name || '—'}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{d.description || '—'}</td>
+                        <td className="px-6 py-4 text-sm text-right font-medium">{formatCurrency(Number(d.amount) || 0)}</td>
+                        <td className="px-6 py-4 text-sm text-right">{formatCurrency(Number(d.claimable_amount) || 0)}</td>
+                        <td className="px-6 py-4">{d.has_receipt ? <span className="text-emerald-500 material-icons">check_circle</span> : <span className="text-slate-400 material-icons">cancel</span>}</td>
+                        <td className="px-6 py-4"><StatusBadge status={d.status} /></td>
+                        <td className="px-6 py-4 text-right">
+                          {d.has_receipt && <button type="button" onClick={() => setViewReceiptDeduction(d)} className="p-1 hover:text-primary" aria-label="View receipt"><span className="material-icons text-[20px]">visibility</span></button>}
+                          {canEditDeduction && <button type="button" onClick={() => { setEditDeduction(d); setAddModalOpen(true); }} className="p-1 hover:text-primary" aria-label="Edit"><span className="material-icons text-[20px]">edit</span></button>}
+                          {canDeleteDeduction && <button type="button" onClick={() => setDeductionToDelete(d)} className="p-1 hover:text-red-600" aria-label="Delete"><span className="material-icons text-[20px]">delete</span></button>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination footer */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {filteredAndSorted.length === 0
+                    ? '0 deductions'
+                    : `Showing ${(page - 1) * PAGE_SIZE + 1} to ${Math.min(page * PAGE_SIZE, filteredAndSorted.length)} of ${filteredAndSorted.length} deductions`}
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => p - 1)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 disabled:opacity-50 text-sm font-medium"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 disabled:opacity-50 text-sm font-medium"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           </>
