@@ -209,7 +209,10 @@
 
   var ERROR_MESSAGE = 'Failed to send message, please try again.';
   var ERROR_NETWORK = 'Could not reach the server. Check your connection and that the webhook URL is correct.';
-  var ERROR_JWT = 'Invalid JWT — set VITE_SUPABASE_ANON_KEY in .env (and in Vercel env for production) so it matches the Supabase project that hosts the support-chat function.';
+  var ERROR_JWT = 'Invalid JWT — Support chat could not authenticate.\n\n' +
+    '• Use the anon (public) key, not the service_role key (Dashboard → Project Settings → API → anon public).\n' +
+    '• Local: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env, then restart the dev server.\n' +
+    '• Live site: set both in Vercel → Project → Environment Variables, then redeploy.';
 
   async function sendMessage() {
     var text = inputEl.value.trim();

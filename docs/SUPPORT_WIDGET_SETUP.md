@@ -151,7 +151,7 @@ Use the exact Production URL from the n8n Webhook node.
   - Network/CORS issue: wrong URL, backend down, or missing CORS headers. Verify URL in `index.html` and CORS on the backend.
 
 - **"Invalid JWT"**  
-  - Supabase Edge Functions require a valid anon key **for the same project** as the function. The app now derives the support function URL from `VITE_SUPABASE_URL`, so the URL and anon key always match. Ensure **both** `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in `.env` (and in Vercel for production), that they are for the **same** Supabase project where `support-chat` is deployed, and that the key has no extra spaces/newlines. Restart the dev server or redeploy after changing env.
+  - Supabase Edge Functions require a valid **anon (public)** key — not the service_role key. In Supabase Dashboard → Project Settings → API, use **anon public**. The app derives the support function URL from `VITE_SUPABASE_URL`, so the URL and key always match. Ensure **both** `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in `.env` (and in Vercel for production), that they are for the **same** Supabase project where `support-chat` is deployed, and that the key has no extra spaces/newlines. **Local:** restart the dev server after changing `.env`. **Production:** set both in Vercel → Environment Variables, then **redeploy** so the new build injects them.
 
 - **Supabase function 404**  
   - Deploy with `npx supabase functions deploy support-chat` and use the URL for **your** project ref in `index.html`.
