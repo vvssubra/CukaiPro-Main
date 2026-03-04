@@ -6,7 +6,7 @@ The CukaiPro support widget is the chat bubble on the site. It sends user messag
 
 ## 1. Where to set the URL
 
-The widget reads the backend URL from `window.CUKAIPRO_SUPPORT_FUNCTION_URL`, which is set in **`index.html`** before the widget script loads.
+The widget reads the backend URL from `window.CUKAIPRO_SUPPORT_FUNCTION_URL`, which is set in **`index.html`** before the widget script loads. The project derives this URL from `VITE_SUPABASE_URL` so it always matches your anon key and avoids "Invalid JWT" errors.
 
 **File:** `index.html` (in the project root)
 
@@ -48,16 +48,12 @@ You can see `<YOUR_PROJECT_REF>` in the Supabase dashboard URL or in the deploy 
 
 ### Step 2: Set the URL and anon key
 
-The widget needs the Supabase **anon key** in the request (Supabase requires it for Edge Function calls). The project injects it from your `.env` at build/dev time:
+The widget needs the Supabase **anon key** in the request (Supabase requires it for Edge Function calls). The project injects both the function URL and the key from your `.env` at build/dev time:
 
-- Ensure `.env` has `VITE_SUPABASE_ANON_KEY` (and `VITE_SUPABASE_URL`). Same as the rest of the app.
-- In `index.html`, `window.CUKAIPRO_SUPPORT_ANON_KEY` is set to `%VITE_SUPABASE_ANON_KEY%`; Vite replaces this with the value from `.env` when you run `npm run dev` or `npm run build`.
+- Ensure `.env` has **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`** (same as the rest of the app).
+- The function URL is **derived** as `VITE_SUPABASE_URL + '/functions/v1/support-chat'`, so the support widget always calls the same Supabase project as your app. Do not hardcode a different function URL in `index.html`.
 
-If your function URL uses a different project, set it in `index.html`:
-
-```html
-window.CUKAIPRO_SUPPORT_FUNCTION_URL = 'https://<YOUR_PROJECT_REF>.supabase.co/functions/v1/support-chat';
-```
+If you use a different Supabase project only for the support function, you would need to set that project’s URL and anon key in the build (not recommended; use one project for both app and support-chat).
 
 ### Step 3: Bug reports → Admin page
 
@@ -153,6 +149,9 @@ Use the exact Production URL from the n8n Webhook node.
 
 - **"Could not reach the server. Check your connection and that the webhook URL is correct."**  
   - Network/CORS issue: wrong URL, backend down, or missing CORS headers. Verify URL in `index.html` and CORS on the backend.
+
+- **"Invalid JWT"**  
+  - Supabase Edge Functions require a valid anon key **for the same project** as the function. The app now derives the support function URL from `VITE_SUPABASE_URL`, so the URL and anon key always match. Ensure **both** `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in `.env` (and in Vercel for production), that they are for the **same** Supabase project where `support-chat` is deployed, and that the key has no extra spaces/newlines. Restart the dev server or redeploy after changing env.
 
 - **Supabase function 404**  
   - Deploy with `npx supabase functions deploy support-chat` and use the URL for **your** project ref in `index.html`.

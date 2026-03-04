@@ -13,9 +13,9 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <!-- CukaiPro Support Widget: needs function URL + anon key for Supabase (injected from .env at build) -->
+    <!-- CukaiPro Support Widget: URL and anon key from .env so they always match the same Supabase project -->
     <script>
-      window.CUKAIPRO_SUPPORT_FUNCTION_URL = 'https://xkylwjlcablefymuzoie.supabase.co/functions/v1/support-chat';
+      window.CUKAIPRO_SUPPORT_FUNCTION_URL = '%VITE_SUPABASE_SUPPORT_FUNCTION_URL%';
       window.CUKAIPRO_SUPPORT_ANON_KEY = '%VITE_SUPABASE_ANON_KEY%';
     </script>
     <script src="/support-widget.js"></script>
