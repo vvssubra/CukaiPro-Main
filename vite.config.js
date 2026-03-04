@@ -15,7 +15,11 @@ export default defineConfig(({ mode }) => {
     {
       name: 'inject-support-widget-env',
       transformIndexHtml(html) {
-        return html.replace('%VITE_SUPABASE_ANON_KEY%', env.VITE_SUPABASE_ANON_KEY || '');
+        const supabaseUrl = (env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+        const supportFunctionUrl = supabaseUrl ? `${supabaseUrl}/functions/v1/support-chat` : '';
+        return html
+          .replace('%VITE_SUPABASE_ANON_KEY%', env.VITE_SUPABASE_ANON_KEY || '')
+          .replace('%VITE_SUPABASE_SUPPORT_FUNCTION_URL%', supportFunctionUrl);
       },
     },
   ],

@@ -4,7 +4,7 @@
  */
 (function () {
   var FUNCTION_URL = window.CUKAIPRO_SUPPORT_FUNCTION_URL;
-  var ANON_KEY = window.CUKAIPRO_SUPPORT_ANON_KEY || '';
+  var ANON_KEY = (window.CUKAIPRO_SUPPORT_ANON_KEY || '').trim();
   if (!FUNCTION_URL) return;
 
   var PRIMARY = '#064E3B';
@@ -209,6 +209,7 @@
 
   var ERROR_MESSAGE = 'Failed to send message, please try again.';
   var ERROR_NETWORK = 'Could not reach the server. Check your connection and that the webhook URL is correct.';
+  var ERROR_JWT = 'Invalid JWT — set VITE_SUPABASE_ANON_KEY in .env (and in Vercel env for production) so it matches the Supabase project that hosts the support-chat function.';
 
   async function sendMessage() {
     var text = inputEl.value.trim();
@@ -232,6 +233,12 @@
     if (ANON_KEY) {
       headers['Authorization'] = 'Bearer ' + ANON_KEY;
       headers['apikey'] = ANON_KEY;
+    } else if (FUNCTION_URL.indexOf('supabase.co/functions') !== -1) {
+      hideTyping();
+      appendMessage('ai', ERROR_JWT, true);
+      isTyping = false;
+      sendBtn.disabled = false;
+      return;
     }
     try {
       var res = await fetch(FUNCTION_URL, {
@@ -264,6 +271,8 @@
         }
       } else {
         var errMsg = (data && (data.error || data.message)) ? String(data.error || data.message) : ERROR_MESSAGE;
+        if (!data && responseText && (responseText.toLowerCase().indexOf('jwt') !== -1 || responseText.indexOf('Invalid JWT') !== -1)) errMsg = ERROR_JWT;
+        else if (errMsg.toLowerCase().indexOf('jwt') !== -1 || errMsg.indexOf('Invalid JWT') !== -1) errMsg = ERROR_JWT;
         appendMessage('ai', errMsg, true);
       }
     } catch (err) {

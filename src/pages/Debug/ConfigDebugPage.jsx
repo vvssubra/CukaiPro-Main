@@ -95,6 +95,22 @@ export default function ConfigDebugPage() {
           </div>
 
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom p-5">
+            <h2 className="font-semibold text-slate-900 dark:text-white mb-3">Current app origin (custom domain)</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+              Use this exact origin in Supabase when using a custom domain. Copy it to <strong>Site URL</strong> and add <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">{typeof window !== 'undefined' ? `${window.location.origin}/**` : 'https://your-domain.com/**'}</code> to <strong>Redirect URLs</strong>.
+            </p>
+            <div className="flex justify-between gap-4 text-sm items-center">
+              <span className="text-slate-500 dark:text-slate-400">Origin</span>
+              <span className="font-mono text-slate-900 dark:text-white break-all">
+                {typeof window !== 'undefined' ? window.location.origin : '—'}
+              </span>
+            </div>
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+              Full checklist: <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">docs/CUSTOM_DOMAIN_TROUBLESHOOTING.md</code> in the repo.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-custom p-5">
             <h2 className="font-semibold text-slate-900 dark:text-white mb-3">If you see &quot;Failed to fetch&quot; on Sign up / Login</h2>
             <ul className="text-sm text-slate-600 dark:text-slate-400 list-disc list-inside space-y-2">
               <li><strong>Vercel:</strong> In Supabase → Authentication → URL Configuration, set <span className="font-mono">Site URL</span> to your Vercel domain (e.g. <span className="font-mono">https://your-app.vercel.app</span>) and add it to <span className="font-mono">Redirect URLs</span>.</li>
