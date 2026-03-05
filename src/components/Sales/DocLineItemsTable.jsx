@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { formatCurrency } from '../../utils/validators';
 import Button from '../Common/Button';

@@ -65,10 +65,12 @@ function CreateInvoiceModal({ isOpen, onClose, onCreateInvoice, onSuccess }) {
   useEffect(() => {
     if (isOpen) {
       reset();
-      setClientValue('');
-      setClientName('');
-      setClientTin('');
-      queueMicrotask(() => setSubmitError(''));
+      queueMicrotask(() => {
+        setClientValue('');
+        setClientName('');
+        setClientTin('');
+        setSubmitError('');
+      });
     }
   }, [isOpen, reset]);
 

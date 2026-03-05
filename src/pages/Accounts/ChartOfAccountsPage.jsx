@@ -29,11 +29,13 @@ function ChartOfAccountsPage() {
   useEffect(() => {
     if (searchParams.get('focus') === 'bank') {
       setSearchParams({}, { replace: true });
-      setFormData({ name: '', code: '', type: 'asset', opening_balance: 0, parent_id: '' });
-      setFormError('');
-      setEditingAccount(null);
-      setBankAccountHint(true);
-      setModalOpen(true);
+      queueMicrotask(() => {
+        setFormData({ name: '', code: '', type: 'asset', opening_balance: 0, parent_id: '' });
+        setFormError('');
+        setEditingAccount(null);
+        setBankAccountHint(true);
+        setModalOpen(true);
+      });
     }
   }, [searchParams, setSearchParams]);
 

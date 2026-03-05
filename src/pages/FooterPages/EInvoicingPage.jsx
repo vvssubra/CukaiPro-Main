@@ -25,22 +25,26 @@ export default function EInvoicingPage() {
     >
       <div className="space-y-8 text-slate-custom/80 dark:text-gray-300">
         <p className="text-lg leading-relaxed">
-          Malaysia&apos;s e-Invoicing mandate requires businesses to issue invoices in a format compatible with LHDN systems. CukaiPro is built with LHDN e-Invoice compatibility in mind so you can create, manage, and submit invoices that meet regulatory standards.
+          Malaysia&apos;s e-Invoicing mandate requires businesses to issue invoices in a format compatible with LHDN systems. CukaiPro is built with LHDN e-Invoice compatibility so you can create, manage, and submit invoices that meet regulatory standards. All amounts are in RM; SST is applied per invoice from your settings.
         </p>
         <section>
           <h2 className="text-xl font-display font-bold text-slate-custom dark:text-white mb-4">What we offer</h2>
           <ul className="space-y-3 list-none">
             <li className="flex items-start gap-3">
               <span className="material-icons text-primary mt-0.5 text-xl">check_circle</span>
-              <span>Structured invoice data aligned with LHDN e-Invoice specifications</span>
+              <span>Structured invoice data aligned with LHDN e-Invoice specifications (UBL 2.1)</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="material-icons text-primary mt-0.5 text-xl">check_circle</span>
-              <span>Create and manage invoices from your dashboard with line items and tax handling</span>
+              <span>Submit to LHDN from the Sales Invoice list (admin and accountant roles)</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="material-icons text-primary mt-0.5 text-xl">check_circle</span>
-              <span>Export and track sales for SST and income reporting</span>
+              <span>Create and manage invoices with line items and SST handling</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="material-icons text-primary mt-0.5 text-xl">check_circle</span>
+              <span>Export and track sales for SST and income reporting (figures for preparation; submit via LHDN/RMCD portals for filing)</span>
             </li>
           </ul>
         </section>
@@ -51,7 +55,12 @@ export default function EInvoicingPage() {
           <section className="rounded-xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 p-6">
             <h2 className="text-xl font-display font-bold text-slate-custom dark:text-white mb-2">MyInvois connection</h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-              Verify that CukaiPro can connect to LHDN MyInvois (credentials are configured server-side). Submit to LHDN will be available in a later phase.
+              Verify that CukaiPro can connect to LHDN MyInvois (credentials are configured server-side). To submit invoices to LHDN, go to <strong>Dashboard → Sales → Invoice</strong>, select one or more invoices, and click &quot;Submit to LHDN&quot; (admin and accountant roles only).
+            </p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+              <Link to="/dashboard/sales/invoices" className="text-primary dark:text-emerald-400 hover:underline font-medium">
+                Go to Sales Invoice list →
+              </Link>
             </p>
             <Button
               type="button"
