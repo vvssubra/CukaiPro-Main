@@ -41,8 +41,8 @@ function SalesDocumentsPage() {
   const defaultTo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   const [typeFilter, setTypeFilter] = useState('');
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [fromDate, setFromDate] = useState(defaultFrom);
+  const [toDate, setToDate] = useState(defaultTo);
   const [statusFilter, setStatusFilter] = useState('');
 
   const { quotations, loading: loadingQ } = useQuotations({});

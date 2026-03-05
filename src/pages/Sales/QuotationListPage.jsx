@@ -44,7 +44,7 @@ function QuotationListPage() {
     if (!window.confirm('Delete this quotation?')) return;
     const result = await deleteQuotation(id);
     if (!result?.success) {
-      // eslint-disable-next-line no-alert
+       
       alert(result?.error || 'Failed to delete');
     }
   };

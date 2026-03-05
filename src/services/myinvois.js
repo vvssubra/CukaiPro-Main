@@ -1,12 +1,17 @@
 /**
  * MyInvois / LHDN e-Invoicing service.
  * All MyInvois API calls go through Supabase Edge Functions so credentials stay server-side.
+ * CA: Use formatCurrency for any displayed amounts; TIN 14 digits per validators.
  * @see docs/PRD_EINVOICING.md
  */
 
 import { supabase } from '../lib/supabase';
+import { tinSchema } from '../utils/validators';
 
 const FUNCTION_MYINVOIS_TOKEN = 'myinvois-token';
+const FUNCTION_MYINVOIS_VALIDATE_TIN = 'myinvois-validate-tin';
+const FUNCTION_MYINVOIS_SUBMIT = 'myinvois-submit';
+const FUNCTION_MYINVOIS_DOCUMENT_DETAILS = 'myinvois-document-details';
 
 /**
  * Test MyInvois connectivity (Login as Taxpayer). Does not expose token to client.
@@ -44,27 +49,107 @@ export async function testMyInvoisConnection() {
 }
 
 /**
- * Validate buyer TIN with MyInvois (to be implemented via Edge Function).
- * @param {string} tin - Tax Identification Number
+ * Validate buyer TIN with MyInvois (LHDN Tax Identification Number, 14 digits).
+ * Client-side format check via tinSchema; authority check via Edge Function.
+ * @param {string} tin - Tax Identification Number (14 digits)
  * @returns {Promise<{ valid: boolean; error?: string }>}
  */
 export async function validateTaxpayerTin(tin) {
-  // Placeholder: Phase 2 will add myinvois-validate-tin Edge Function
-  if (!tin || String(tin).trim().length < 9) {
-    return { valid: false, error: 'Invalid TIN format' };
+  const trimmed = (tin || '').trim();
+  const parsed = tinSchema.safeParse(trimmed);
+  if (!parsed.success) {
+    return { valid: false, error: 'TIN must be exactly 14 digits' };
   }
-  return { valid: false, error: 'TIN validation not yet implemented (Phase 2)' };
+  try {
+    const { data, error } = await supabase.functions.invoke(FUNCTION_MYINVOIS_VALIDATE_TIN, {
+      method: 'POST',
+      body: { tin: trimmed },
+    });
+
+    if (error) {
+      return { valid: false, error: error.message || 'Validation request failed' };
+    }
+
+    const body = data ?? {};
+    if (body.valid === true) {
+      return { valid: true };
+    }
+    return { valid: false, error: body.error || 'TIN invalid' };
+  } catch (err) {
+    return {
+      valid: false,
+      error: err instanceof Error ? err.message : 'TIN validation failed',
+    };
+  }
 }
 
 /**
- * Submit one or more invoices to MyInvois (to be implemented via Edge Function).
+ * Submit one or more invoices to MyInvois. Restricted to admin/accountant by UI.
  * @param {string[]} invoiceIds - CukaiPro invoice IDs
  * @returns {Promise<{ success: boolean; submission_uid?: string; accepted?: Array<{ code_number: string; uuid: string }>; rejected?: Array<{ code_number: string; error: string }>; error?: string }>}
  */
 export async function submitInvoicesToMyInvois(invoiceIds) {
   if (!Array.isArray(invoiceIds) || invoiceIds.length === 0) {
-    return { success: false, error: 'No invoice IDs provided' };
+    return { success: false, error: 'Select at least one invoice.' };
   }
-  // Placeholder: Phase 3 will add myinvois-submit Edge Function
-  return { success: false, error: 'Submit to MyInvois not yet implemented (Phase 3)' };
+  try {
+    const { data, error } = await supabase.functions.invoke(FUNCTION_MYINVOIS_SUBMIT, {
+      method: 'POST',
+      body: { invoiceIds },
+    });
+
+    if (error) {
+      return { success: false, error: error.message || 'Submit failed' };
+    }
+
+    const body = data ?? {};
+    return {
+      success: body.success === true,
+      submission_uid: body.submission_uid,
+      accepted: body.accepted ?? [],
+      rejected: body.rejected ?? [],
+      error: body.error,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Submit to MyInvois failed',
+    };
+  }
+}
+
+/**
+ * Refresh LHDN status for one submitted invoice (Get Document Details).
+ * @param {string} invoiceId - CukaiPro invoice ID (must have myinvois_uuid)
+ * @returns {Promise<{ success: boolean; lhdn_status?: string; validation_result?: object; error?: string }>}
+ */
+export async function refreshDocumentStatus(invoiceId) {
+  if (!invoiceId) {
+    return { success: false, error: 'Invoice ID required' };
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke(FUNCTION_MYINVOIS_DOCUMENT_DETAILS, {
+      method: 'POST',
+      body: { invoiceId },
+    });
+
+    if (error) {
+      return { success: false, error: error.message || 'Refresh failed' };
+    }
+
+    const body = data ?? {};
+    if (body.success === true) {
+      return {
+        success: true,
+        lhdn_status: body.lhdn_status,
+        validation_result: body.validation_result,
+      };
+    }
+    return { success: false, error: body.error || 'Refresh failed' };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Refresh status failed',
+    };
+  }
 }
