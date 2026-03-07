@@ -12,7 +12,7 @@ function Sidebar() {
   const location = useLocation();
   const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
   const isAccountingSection = location.pathname.startsWith('/dashboard/transactions') || location.pathname.startsWith('/dashboard/accounts') || location.pathname.startsWith('/dashboard/reports/bank-reconciliation');
-  const isSalesSection = location.pathname.startsWith('/dashboard/sales');
+  const isSalesSection = location.pathname.startsWith('/dashboard/sales') || location.pathname === '/e-invoicing';
   const [taxesExpanded, setTaxesExpanded] = useState(isTaxesSection);
   const [accountingExpanded, setAccountingExpanded] = useState(isAccountingSection);
   const [salesExpanded, setSalesExpanded] = useState(isSalesSection);
@@ -68,6 +68,7 @@ function Sidebar() {
         { path: '/dashboard/sales/add-client', label: 'Add company/client' },
         { path: '/dashboard/sales/quotation', label: 'Quotation' },
         { path: '/dashboard/sales/invoices', label: 'Invoice' },
+        { path: '/e-invoicing', label: 'E-Invoicing (LHDN)' },
         { path: '/dashboard/sales/credit-notes', label: 'Credit Note' },
         { path: '/dashboard/sales/reports/monthly-analysis', label: 'Monthly Sales Analysis' },
         { path: '/dashboard/sales/reports/profit-loss', label: 'Profit & Loss' },
