@@ -13,6 +13,12 @@ import {
 import ParticleWave from '../components/ParticleWave';
 import ScrollProgressBar from '../components/Common/ScrollProgressBar';
 import { LandingScrollProvider } from '../context/LandingScrollContext';
+import {
+  TiltCard3D,
+  AnimatedGradientText,
+  LayeredShadowCard,
+  PremiumButton,
+} from '../components/Landing';
 
 const trustedLogoImages = [
   'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 48"><circle cx="24" cy="24" r="20" fill="%231e3a5f"/><text x="24" y="29" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="white">MB</text><text x="70" y="30" font-family="Arial, sans-serif" font-weight="600" font-size="11" fill="%231e3a5f">MayBank</text></svg>'),
@@ -45,7 +51,7 @@ const FEATURES = [
 
 const STATS = [
   { value: 500, suffix: '+', label: 'Companies Trust Us' },
-  { value: 2.1, suffix: 'B+', prefix: 'RM ', label: 'Tax Processed', decimals: 1 },
+  { value: 3.5, suffix: 'M+', prefix: 'RM ', label: 'Tax Processed', decimals: 1 },
   { value: 99.9, suffix: '%', label: 'Platform Uptime', decimals: 1 },
   { value: 20, suffix: '+', label: 'Hours Saved / Season' },
 ];
@@ -168,37 +174,6 @@ function useCountUp(end, { decimals = 0, duration = 2000, enabled = true } = {})
   return value;
 }
 
-
-function TiltCard({ children, className = '' }) {
-  const shouldReduce = useReducedMotion();
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [8, -8]), { stiffness: 300, damping: 20 });
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-8, 8]), { stiffness: 300, damping: 20 });
-
-  function handleMouse(e) {
-    if (shouldReduce) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    x.set((e.clientX - rect.left) / rect.width - 0.5);
-    y.set((e.clientY - rect.top) / rect.height - 0.5);
-  }
-
-  return (
-    <motion.div
-      className={`[perspective:800px] ${className}`}
-      onMouseMove={handleMouse}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
-    >
-      <motion.div
-        className="[transform-style:preserve-3d]"
-        style={shouldReduce ? {} : { rotateX, rotateY }}
-      >
-        {children}
-      </motion.div>
-    </motion.div>
-  );
-}
-
 function StatItem({ stat, inView }) {
   const shouldReduce = useReducedMotion();
   const count = useCountUp(stat.value, {
@@ -209,7 +184,7 @@ function StatItem({ stat, inView }) {
 
   return (
     <div className="flex flex-col items-center justify-center py-6 px-4 sm:py-8 sm:px-6 flex-1 min-w-0">
-      <p className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold gradient-text mb-1.5 tabular-nums">
+      <p className="text-2xl sm:text-4xl lg:text-5xl font-display font-extrabold gradient-text mb-1.5 tabular-nums whitespace-nowrap">
         {stat.prefix || ''}{count}{stat.suffix}
       </p>
       <p className="text-xs sm:text-sm text-white/70 font-medium tracking-wide text-center">{stat.label}</p>
@@ -284,7 +259,7 @@ function LandingPage() {
               </motion.div>
 
               <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight leading-[1.08] mb-6">
-                <span className="gradient-text">LHDN-Ready</span>{' '}
+                <AnimatedGradientText text="LHDN-Ready" as="span" />{' '}
                 <span className="text-white">in Minutes</span>
               </motion.h1>
 
@@ -293,18 +268,15 @@ function LandingPage() {
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link
-                  to="/login"
-                  className="bg-white text-primary px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-white/90 transition-colors duration-200"
-                >
+                <PremiumButton to="/login" variant="primary">
                   Start Free Trial <span className="material-icons text-base">arrow_forward</span>
-                </Link>
-                <a
+                </PremiumButton>
+                <PremiumButton
                   href="mailto:support@cukaipro.my?subject=Demo%20request%20-%20CukaiPro"
-                  className="border border-white/30 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors duration-200 inline-flex items-center justify-center gap-2"
+                  variant="secondary"
                 >
                   Book a Demo
-                </a>
+                </PremiumButton>
               </motion.div>
 
               <motion.p variants={fadeUp} className="mt-6 text-sm text-white/60">
@@ -313,7 +285,7 @@ function LandingPage() {
             </div>
 
             <motion.div variants={scaleIn} className="flex-1 w-full max-w-2xl">
-              <TiltCard>
+              <TiltCard3D shadowVariant="glow-emerald" innerTranslateZ>
                 <div className="relative rounded-2xl border border-white/10 shadow-2xl bg-white/5 backdrop-blur-sm overflow-hidden p-2">
                   <img
                     alt="CukaiPro on dual monitors - hero section and dashboard"
@@ -323,7 +295,7 @@ function LandingPage() {
                   />
                   <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10 pointer-events-none" />
                 </div>
-              </TiltCard>
+              </TiltCard3D>
             </motion.div>
           </div>
         </motion.div>
@@ -413,7 +385,7 @@ function LandingPage() {
           >
             {FEATURES.map((feature) => (
               <motion.div key={feature.title} variants={fadeUp}>
-                <TiltCard>
+                <TiltCard3D shadowVariant="glow-emerald">
                   <motion.div
                     className="glass p-8 rounded-2xl h-full transition-colors duration-300 hover:bg-white/[0.08]"
                     whileHover={shouldReduce ? {} : { y: -6 }}
@@ -425,7 +397,7 @@ function LandingPage() {
                     <h3 className="text-xl font-display font-bold mb-3 text-white">{feature.title}</h3>
                     <p className="text-white/70 leading-relaxed">{feature.description}</p>
                   </motion.div>
-                </TiltCard>
+                </TiltCard3D>
               </motion.div>
             ))}
           </motion.div>
@@ -500,24 +472,23 @@ function LandingPage() {
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" aria-hidden="true" />
 
         <div ref={statsRef} className="max-w-5xl mx-auto px-4 sm:px-6">
-          <motion.div
-            className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] shadow-xl shadow-black/10 backdrop-blur-xl"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={scaleIn}
-            style={{
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
-            }}
-          >
-            {/* Subtle top-edge highlight for glass effect */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" aria-hidden="true" />
-            <div className="flex flex-col divide-y divide-white/10 sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-white/10">
-              {STATS.map((stat) => (
-                <StatItem key={stat.label} stat={stat} inView={statsInView} />
-              ))}
-            </div>
-          </motion.div>
+          <LayeredShadowCard className="rounded-2xl">
+            <motion.div
+              className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-xl"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-60px' }}
+              variants={scaleIn}
+            >
+              {/* Subtle top-edge highlight for glass effect */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" aria-hidden="true" />
+              <div className="flex flex-col divide-y divide-white/10 sm:flex-row sm:divide-y-0 sm:divide-x sm:divide-white/10">
+                {STATS.map((stat) => (
+                  <StatItem key={stat.label} stat={stat} inView={statsInView} />
+                ))}
+              </div>
+            </motion.div>
+          </LayeredShadowCard>
         </div>
       </section>
 
@@ -719,58 +690,57 @@ function LandingPage() {
       {/* CTA Section */}
       <section id="cta" ref={ctaRef} className="py-28 bg-background-dark">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            className="relative rounded-3xl p-12 lg:p-20 text-center overflow-hidden"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={scaleIn}
-          >
-            {/* Mesh gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-800 to-teal-900 rounded-3xl" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(16,185,129,0.3),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(20,184,166,0.2),transparent_50%)]" />
-
-            {/* Floating orbs */}
+          <LayeredShadowCard glow="emerald" className="rounded-3xl">
             <motion.div
-              className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-emerald-400/10 blur-[80px]"
-              animate={shouldReduce ? {} : { x: [0, 20, 0], y: [0, -15, 0] }}
-              transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-              aria-hidden="true"
-            />
-            <motion.div
-              className="absolute -bottom-20 -left-20 w-48 h-48 rounded-full bg-teal-400/10 blur-[60px]"
-              animate={shouldReduce ? {} : { x: [0, -15, 0], y: [0, 10, 0] }}
-              transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-              aria-hidden="true"
-            />
+              className="relative rounded-3xl p-12 lg:p-20 text-center overflow-hidden"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={scaleIn}
+            >
+              {/* Mesh gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-800 to-teal-900 rounded-3xl" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(16,185,129,0.3),transparent_50%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(20,184,166,0.2),transparent_50%)]" />
 
-            <div className="relative z-10">
-              <motion.h2
-                variants={fadeUp}
-                className="text-3xl lg:text-5xl font-display font-extrabold mb-6"
-              >
-                Ready to <span className="text-emerald-200">automate</span> your taxes?
-              </motion.h2>
-              <motion.p variants={fadeUp} className="text-white/85 text-lg mb-10 max-w-2xl mx-auto">
-                Join hundreds of Malaysian businesses saving 20+ hours every tax season with CukaiPro.
-              </motion.p>
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/login"
-                  className="bg-white text-primary px-10 py-4 rounded-xl font-bold text-lg flex items-center justify-center hover:bg-white/90 transition-colors duration-200"
+              {/* Floating orbs */}
+              <motion.div
+                className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-emerald-400/10 blur-[80px]"
+                animate={shouldReduce ? {} : { x: [0, 20, 0], y: [0, -15, 0] }}
+                transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+                aria-hidden="true"
+              />
+              <motion.div
+                className="absolute -bottom-20 -left-20 w-48 h-48 rounded-full bg-teal-400/10 blur-[60px]"
+                animate={shouldReduce ? {} : { x: [0, -15, 0], y: [0, 10, 0] }}
+                transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                aria-hidden="true"
+              />
+
+              <div className="relative z-10">
+                <motion.h2
+                  variants={fadeUp}
+                  className="text-3xl lg:text-5xl font-display font-extrabold mb-6"
                 >
-                  Start Your Free Trial
-                </Link>
-                <a
-                  href="mailto:support@cukaipro.my?subject=Contact%20Sales%20-%20CukaiPro"
-                  className="border border-white/30 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors duration-200 inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/30"
-                >
-                  Contact Sales
-                </a>
-              </motion.div>
-            </div>
-          </motion.div>
+                  Ready to <span className="text-emerald-200">automate</span> your taxes?
+                </motion.h2>
+                <motion.p variants={fadeUp} className="text-white/85 text-lg mb-10 max-w-2xl mx-auto">
+                  Join hundreds of Malaysian businesses saving 20+ hours every tax season with CukaiPro.
+                </motion.p>
+                <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <PremiumButton to="/login" variant="primary">
+                    Start Your Free Trial
+                  </PremiumButton>
+                  <PremiumButton
+                    href="mailto:support@cukaipro.my?subject=Contact%20Sales%20-%20CukaiPro"
+                    variant="secondary"
+                  >
+                    Contact Sales
+                  </PremiumButton>
+                </motion.div>
+              </div>
+            </motion.div>
+          </LayeredShadowCard>
         </div>
       </section>
 
