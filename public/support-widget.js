@@ -179,16 +179,38 @@
     if (!window.html2canvas) {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload = doCapture;
+      s.onload = function () {
+        // Some CDN scripts need a tick before exposing the global
+        setTimeout(function () {
+          if (window.html2canvas) doCapture(); else appendMessage('ai', 'Screenshot library failed to load. Try "Upload" to attach an image.', true);
+        }, 50);
+      };
+      s.onerror = function () {
+        appendMessage('ai', 'Could not load screenshot tool. Use "Upload" to attach an image.', true);
+      };
       document.head.appendChild(s);
-    } else { doCapture(); }
+    } else {
+      doCapture();
+    }
   };
   function doCapture() {
     panel.style.display = 'none';
     setTimeout(function () {
-      window.html2canvas(document.body).then(function (canvas) {
+      var promise = typeof window.html2canvas === 'function'
+        ? window.html2canvas(document.body, { useCORS: true, allowTaint: true, logging: false })
+        : Promise.reject(new Error('html2canvas not available'));
+      promise.then(function (canvas) {
         panel.style.display = '';
-        setScreenshot(canvas.toDataURL('image/png'));
+        try {
+          setScreenshot(canvas.toDataURL('image/png'));
+        } catch (e) {
+          console.warn('toDataURL failed:', e);
+          appendMessage('ai', 'Screenshot capture failed. You can use "Upload" to attach an image instead.', true);
+        }
+      }).catch(function (err) {
+        panel.style.display = '';
+        console.warn('Capture failed:', err);
+        appendMessage('ai', 'Screenshot capture failed. You can use "Upload" to attach an image instead.', true);
       });
     }, 200);
   }
