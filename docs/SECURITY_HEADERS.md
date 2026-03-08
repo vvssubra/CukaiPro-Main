@@ -18,7 +18,7 @@ The CSP is tuned for the CukaiPro stack (Vite SPA, Supabase, Stripe, Google Font
 
 - **default-src 'self'** – Only same-origin by default.
 - **connect-src** – `'self'`, `https://*.supabase.co`, `https://api.stripe.com`, `wss://*.supabase.co`, `https://*.cukaipro.com` (API / Realtime).
-- **script-src** – `'self'`, `'unsafe-inline'`, `'unsafe-eval'`, `https://fonts.googleapis.com`, `https://*.sentry.io` (Vite and Sentry may require inline/eval; tighten with nonces when possible).
+- **script-src** – `'self'`, `'unsafe-inline'`, `'unsafe-eval'`, `https://fonts.googleapis.com`, `https://*.sentry.io`, `https://cdnjs.cloudflare.com` (support widget Capture uses html2canvas from cdnjs).
 - **style-src** – `'self'`, `'unsafe-inline'`, `https://fonts.googleapis.com`, `https://fonts.gstatic.com`.
 - **img-src** – `'self'`, `data:`, `https:`, `blob:` (e.g. screenshots in bug reports admin, avatars).
 - **font-src** – `'self'`, `https://fonts.gstatic.com`.

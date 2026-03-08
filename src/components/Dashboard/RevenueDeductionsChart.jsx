@@ -99,7 +99,7 @@ function RevenueDeductionsChart({ invoices = [], deductions = [], year }) {
 
   return (
     <div className="w-full h-[240px]" aria-label="Revenue and deductions by month">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={240}>
         <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
           <XAxis
