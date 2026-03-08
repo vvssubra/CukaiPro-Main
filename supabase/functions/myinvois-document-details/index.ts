@@ -130,12 +130,25 @@ Deno.serve(async (req) => {
     const status = detailsData?.status ?? (detailsRes.ok ? 'validated' : 'rejected');
     const lhdnStatus = status === 'valid' || status === 'validated' ? 'validated' : status === 'invalid' || status === 'rejected' ? 'rejected' : 'submitted';
 
+    // Persist DIN (Document Identification Number) when returned by LHDN for validated documents
+    const din =
+      detailsData?.documentIdentificationNumber ??
+      detailsData?.din ??
+      detailsData?.validationResult?.documentIdentificationNumber ??
+      detailsData?.validationResult?.din ??
+      null;
+
+    const updatePayload = {
+      lhdn_status: lhdnStatus,
+      myinvois_validation_result: validationResult,
+    };
+    if (din != null && String(din).trim() !== '') {
+      updatePayload.din = String(din).trim();
+    }
+
     await supabaseAdmin
       .from('invoices')
-      .update({
-        lhdn_status: lhdnStatus,
-        myinvois_validation_result: validationResult,
-      })
+      .update(updatePayload)
       .eq('id', invoiceId);
 
     return new Response(
@@ -143,6 +156,7 @@ Deno.serve(async (req) => {
         success: true,
         lhdn_status: lhdnStatus,
         validation_result: validationResult,
+        din: din ?? undefined,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

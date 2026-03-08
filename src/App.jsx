@@ -79,6 +79,8 @@ const TaxTransactionListingPage = lazy(() => import('./pages/Reports/TaxTransact
 const SSTProcessorPage = lazy(() => import('./pages/Reports/SSTProcessorPage'));
 const BankReconciliationPage = lazy(() => import('./pages/Reports/BankReconciliationPage'));
 
+const BugReportsAdminPage = lazy(() => import('./pages/Admin/BugReportsAdminPage'));
+
 const SalesQuotationListPage = lazy(() => import('./pages/Sales/QuotationListPage'));
 const SalesInvoiceListPage = lazy(() => import('./pages/Sales/SalesInvoiceListPage'));
 const SalesCreditNoteListPage = lazy(() => import('./pages/Sales/CreditNoteListPage'));
@@ -156,6 +158,7 @@ function AppLayout() {
             <Route path="reports/tax-transaction-listing" element={<TaxTransactionListingPage />} />
             <Route path="reports/sst-processor" element={<SSTProcessorPage />} />
             <Route path="reports/bank-reconciliation" element={<BankReconciliationPage />} />
+            <Route path="admin/bug-reports" element={<BugReportsAdminPage />} />
             <Route path="accounts" element={<ChartOfAccountsPage />} />
             <Route path="transactions" element={<TransactionsPage />} />
             <Route path="help" element={<HelpPage />} />

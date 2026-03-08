@@ -11,6 +11,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encrypt } from '../_shared/crypto.ts';
+import { validateIdentityUrl, validateApiUrl } from '../_shared/myinvoisAllowlist.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -91,8 +92,22 @@ Deno.serve(async (req) => {
     const payload = JSON.stringify({ client_id: clientId, client_secret: clientSecret });
     const { ciphertextBase64, ivBase64 } = await encrypt(payload, encryptionKey);
 
-    const identityUrl = typeof body?.identity_url === 'string' ? body.identity_url.trim() : 'https://identity.myinvois.hasil.gov.my';
-    const apiUrl = typeof body?.api_url === 'string' ? body.api_url.trim() : 'https://api.myinvois.hasil.gov.my';
+    const identityResult = validateIdentityUrl(body?.identity_url);
+    if (!identityResult.ok) {
+      return new Response(
+        JSON.stringify({ success: false, error: identityResult.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const apiResult = validateApiUrl(body?.api_url);
+    if (!apiResult.ok) {
+      return new Response(
+        JSON.stringify({ success: false, error: apiResult.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const identityUrl = identityResult.url;
+    const apiUrl = apiResult.url;
     const sandbox = Boolean(body?.sandbox);
 
     const supabaseAdmin = createClient(

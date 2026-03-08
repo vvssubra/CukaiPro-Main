@@ -57,18 +57,20 @@ If you use a different Supabase project only for the support function, you would
 
 ### Step 3: Bug reports → Admin page
 
-Each message from the widget is saved to Supabase so you can view and manage reports in the **Bug Reports Admin** page:
+Each message from the widget is saved to Supabase so you can view and manage reports in the **Bug Reports Admin** (in-app):
 
-1. **Tables**  
-   If `bug_reports` and `bug_report_messages` already exist in your project (Table Editor), skip to step 2. Otherwise run the migration: `npx supabase db push` or apply `supabase/migrations/20250224100000_bug_reports.sql` in the SQL Editor.
+1. **Tables and RLS**  
+   If `bug_reports` and `bug_report_messages` already exist, run **`supabase/migrations/20250625000000_support_admins_and_bug_reports_rls.sql`** in the SQL Editor. Otherwise run **`supabase/migrations/20250224100000_bug_reports.sql`** first, then the support_admins migration. Add your user to `support_admins`:  
+   `INSERT INTO public.support_admins (user_id) VALUES ('<your-auth-user-uuid>');`
 
-2. **Set the Edge Function secret** so the function can write to the database:
+2. **Set the Edge Function secrets** so the function can write to the database and validate requests:
    - Supabase Dashboard → Edge Functions → `support-chat` → Secrets
    - Add `SUPABASE_SERVICE_ROLE_KEY` (from Project Settings → API → service_role key).
+   - Add `SUPABASE_ANON_KEY` (anon public key) so the function can require it in the `Authorization` header (the widget already sends it).
 
 3. **Deploy the function** (if you changed it or haven’t yet): `npx supabase functions deploy support-chat`
 
-4. **Open the admin page** to see reports: open **`docs/bug-reports-admin.html`** in your browser (or host it). It reads from the same Supabase project and shows message, page URL, screenshot, status, and chat thread. You can change status (open → in progress → resolved) from the table.
+4. **Open the admin** in the app: log in as a support admin and go to **Dashboard → Admin → Bug Reports** (or `/dashboard/admin/bug-reports`). You can view message, page URL, screenshot, status, and chat thread, and change status (open → in progress → resolved) from the table.
 
 ### Step 5: Test
 

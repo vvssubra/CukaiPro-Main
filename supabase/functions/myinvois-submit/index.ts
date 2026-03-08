@@ -43,13 +43,35 @@ function toISODate(d) {
 }
 
 /**
- * Build minimal UBL 2.1-like Invoice JSON for MyInvois. LHDN e-Invoice: SST from invoice sst_rate; 6% default per CukaiPro.
- * All amounts RM; 2 decimal places.
+ * Build UBL 2.1-like Invoice JSON for MyInvois. LHDN e-Invoice: SST from invoice sst_rate; 6% default per CukaiPro.
+ * Supports multiple line items when invoice has line_items array; otherwise single line from amount/notes.
+ * All amounts MYR; 2 decimal places. Mandatory fields aligned with Invoice v1.1 (see docs/GAP_ANALYSIS_EINVOICING_PRD.md).
  */
 function buildInvoicePayload(invoice, org, contact, codeNumber) {
-  const amount = Math.round((Number(invoice.amount) || 0) * 100) / 100;
   const sstRate = Number(invoice.sst_rate) ?? 6;
+
+  // Build line items: use invoice.line_items if present (array of { description, quantity, unit_price }), else single line
+  const rawLines = Array.isArray(invoice.line_items) && invoice.line_items.length > 0
+    ? invoice.line_items
+    : [{ description: (invoice.notes || 'Invoice line').toString().slice(0, 256), quantity: 1, unit_price: Number(invoice.amount) || 0 }];
+
+  const invoiceLines = rawLines.map((line, idx) => {
+    const qty = Number(line.quantity) || 1;
+    const unitPrice = Math.round((Number(line.unit_price) || 0) * 100) / 100;
+    const lineExtension = Math.round(qty * unitPrice * 100) / 100;
+    return {
+      'cbc:ID': String(idx + 1),
+      'cbc:InvoicedQuantity': qty,
+      'cbc:LineExtensionAmount': lineExtension.toFixed(2),
+      'cac:Item': { 'cbc:Description': (line.description || 'Line ' + (idx + 1)).toString().slice(0, 256) },
+      'cac:Price': { 'cbc:PriceAmount': unitPrice.toFixed(2) },
+    };
+  });
+
+  const lineExtensionTotal = invoiceLines.reduce((sum, line) => sum + parseFloat(line['cbc:LineExtensionAmount']), 0);
+  const amount = Math.round(lineExtensionTotal * 100) / 100;
   const sstAmount = Math.round(amount * (sstRate / 100) * 100) / 100;
+
   const buyerName = contact?.company_name || contact?.name || invoice.client_name || 'Buyer';
   const buyerTin = (contact?.tin || contact?.tax_registration_no || invoice.tin || '').toString().trim();
   const sellerName = org?.business_name || 'Supplier';
@@ -61,14 +83,22 @@ function buildInvoicePayload(invoice, org, contact, codeNumber) {
 
   const issueDate = toISODate(invoice.invoice_date);
   const issueTime = new Date().toISOString().replace('Z', 'Z');
+  // Due date: optional invoice.due_date or issue date + 30 days
+  const dueDate = invoice.due_date ? toISODate(invoice.due_date) : (() => {
+    const d = new Date(issueDate);
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().slice(0, 10);
+  })();
 
-  // Minimal UBL 2.1 Invoice JSON structure for MyInvois (element order may need to match schema)
+  // UBL 2.1 Invoice JSON for MyInvois (element order may need to match schema; mandatory fields per Invoice v1.1)
   const payload = {
     Invoice: {
       'cbc:ID': codeNumber,
       'cbc:IssueDate': issueDate,
       'cbc:IssueTime': issueTime,
-      'cbc:DocumentCurrencyCode': 'MYR',
+      'cbc:DueDate': dueDate,
+      'cbc:DocumentCurrencyCode': (invoice.currency || 'MYR').toString().trim().toUpperCase().slice(0, 3) || 'MYR',
+      'cac:OrderReference': invoice.purchase_order_no ? { 'cbc:ID': (invoice.purchase_order_no || '').toString().slice(0, 50) } : undefined,
       'cac:AccountingSupplierParty': {
         'cac:Party': {
           'cac:PartyIdentification': { 'cbc:ID': sellerTin || 'N/A' },
@@ -77,7 +107,7 @@ function buildInvoicePayload(invoice, org, contact, codeNumber) {
             'cbc:StreetName': (org?.address || '').toString() || 'N/A',
             'cbc:CityName': (org?.city || '').toString() || 'N/A',
             'cbc:PostalZone': (org?.postal_code || '').toString() || '',
-            'cac:Country': { 'cbc:IdentificationCode': 'MY' },
+            'cac:Country': { 'cbc:IdentificationCode': (org?.country_code || 'MY').toString().toUpperCase().slice(0, 2) || 'MY' },
           },
         },
       },
@@ -89,19 +119,11 @@ function buildInvoicePayload(invoice, org, contact, codeNumber) {
             'cbc:StreetName': (contact?.billing_address || '').toString() || 'N/A',
             'cbc:CityName': (contact?.area || '').toString() || 'N/A',
             'cbc:PostalZone': (contact?.billing_postcode || '').toString() || '',
-            'cac:Country': { 'cbc:IdentificationCode': 'MY' },
+            'cac:Country': { 'cbc:IdentificationCode': (contact?.country_code || 'MY').toString().toUpperCase().slice(0, 2) || 'MY' },
           },
         },
       },
-      'cac:InvoiceLine': [
-        {
-          'cbc:ID': '1',
-          'cbc:InvoicedQuantity': 1,
-          'cbc:LineExtensionAmount': amount.toFixed(2),
-          'cac:Item': { 'cbc:Description': (invoice.notes || 'Invoice line').toString().slice(0, 256) },
-          'cac:Price': { 'cbc:PriceAmount': amount.toFixed(2) },
-        },
-      ],
+      'cac:InvoiceLine': invoiceLines,
       'cac:TaxTotal': [
         {
           'cbc:TaxAmount': sstAmount.toFixed(2),
@@ -122,6 +144,11 @@ function buildInvoicePayload(invoice, org, contact, codeNumber) {
       },
     },
   };
+
+  // Remove optional empty OrderReference so payload stays clean
+  if (!payload.Invoice['cac:OrderReference']?.['cbc:ID']) {
+    delete payload.Invoice['cac:OrderReference'];
+  }
 
   return payload;
 }

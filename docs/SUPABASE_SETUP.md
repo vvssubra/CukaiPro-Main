@@ -130,24 +130,25 @@ To enable team management and invitations:
 
 ## 9. Bug reports (support widget)
 
-To have support widget messages saved and visible in the **Bug Reports Admin** page (`docs/bug-reports-admin.html`):
+To have support widget messages saved and visible in the **Bug Reports Admin** (in-app page):
 
-1. **Tables**  
-   If `bug_reports` and `bug_report_messages` already exist in your project (Table Editor), skip to step 2. Otherwise run **`supabase/migrations/20250224100000_bug_reports.sql`** in the SQL Editor to create them and their RLS policies.
+1. **Tables and RLS**
+   - If `bug_reports` and `bug_report_messages` already exist, run the **support admins and RLS** migration. Otherwise run **`supabase/migrations/20250224100000_bug_reports.sql`** first, then run **`supabase/migrations/20250625000000_support_admins_and_bug_reports_rls.sql`** in the SQL Editor. If **`npx supabase db push`** fails (e.g. remote migration mismatch), apply that migration file manually in Dashboard → SQL Editor; see [RUNBOOK_SUPPORT_ADMINS_AND_SECRETS.md](RUNBOOK_SUPPORT_ADMINS_AND_SECRETS.md).
+   - The RLS migration creates a `support_admins` table and removes anon access: only **authenticated** users who are listed in `support_admins` can SELECT/UPDATE `bug_reports` and SELECT `bug_report_messages`. The support-chat Edge Function (service_role) can still insert.
 
-2. Deploy the **support-chat** Edge Function and set its secret:
-   - `npx supabase functions deploy support-chat`
-   - In Dashboard → Edge Functions → support-chat → Secrets, add **`SUPABASE_SERVICE_ROLE_KEY`** (Project Settings → API → service_role key) so the function can insert into `bug_reports` and `bug_report_messages`.
+2. **Add your first support admin**
+   - In Supabase → SQL Editor (or Table Editor for `support_admins`), insert your user id:
+   ```sql
+   INSERT INTO public.support_admins (user_id) VALUES ('<your-auth-users-id>');
+   ```
+   Get your user id from Dashboard → Authentication → Users (copy the UUID of your user).
 
-3. Open `docs/bug-reports-admin.html` in a browser to view, filter, and update status of reports.
+3. **Edge Function**
+   - Deploy: `npx supabase functions deploy support-chat`
+   - In Dashboard → Edge Functions → support-chat → Secrets, add **both**:
+     - **`SUPABASE_SERVICE_ROLE_KEY`** (Project Settings → API → service_role key) so the function can insert into `bug_reports` and `bug_report_messages`.
+     - **`SUPABASE_ANON_KEY`** (Project Settings → API → anon public key) so the function can validate that requests come from your frontend; the widget sends `Authorization: Bearer <anon_key>`. Without this, request validation in the function may fail.
+   - Alternatively use CLI: `npx supabase secrets set SUPABASE_ANON_KEY="<anon-key>" SUPABASE_SERVICE_ROLE_KEY="<service-role-key>"` (see [RUNBOOK_SUPPORT_ADMINS_AND_SECRETS.md](RUNBOOK_SUPPORT_ADMINS_AND_SECRETS.md)).
 
-**If closing a report doesn’t persist after refresh:** the admin page uses the anon key to PATCH `bug_reports`. If the table was created without the migration, RLS may not allow anon to UPDATE. In Supabase SQL Editor run:
-
-```sql
--- Allow admin page (anon) to update status
-drop policy if exists "anon_update_bug_reports" on public.bug_reports;
-create policy "anon_update_bug_reports" on public.bug_reports
-  for update to anon using (true) with check (true);
-```
-
-Then try changing a report’s status again and refresh; it should stay closed/resolved.
+4. **Open the admin**
+   - Log in to the app as a support admin and go to **Dashboard → Admin → Bug Reports** (route: `/dashboard/admin/bug-reports`). The app uses your JWT; no keys are hardcoded.
