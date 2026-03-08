@@ -4,10 +4,12 @@
 
 import { defineConfig, devices } from '@playwright/test';
 
+const useLiveUrl = !!process.env.PLAYWRIGHT_BASE_URL;
+
 /**
  * Playwright config for CukaiPro E2E tests.
  * Run: npm run test:e2e
- * Start dev server first: npm run dev (or use webServer below)
+ * Against live site: PLAYWRIGHT_BASE_URL=https://cukaipro.vvsdigitalsolutions.com npx playwright test tests/e2e/all-features.spec.js --project=chromium
  */
 export default defineConfig({
   testDir: './tests/e2e',
@@ -17,7 +19,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -26,10 +28,14 @@ export default defineConfig({
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  ...(useLiveUrl
+    ? {}
+    : {
+        webServer: {
+          command: 'npm run dev',
+          url: 'http://localhost:3000',
+          reuseExistingServer: !process.env.CI,
+          timeout: 120 * 1000,
+        },
+      }),
 });
