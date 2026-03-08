@@ -1,17 +1,18 @@
 /**
  * Supabase Edge Function: myinvois-document-details
- * Fetches MyInvois Get Document Details for a submitted invoice and updates lhdn_status + myinvois_validation_result.
- * Requires: MYINVOIS_IDENTITY_URL, MYINVOIS_API_URL, MYINVOIS_CLIENT_ID, MYINVOIS_CLIENT_SECRET
+ * Fetches MyInvois Get Document Details for a submitted invoice. Uses per-org credentials from organization_myinvois_credentials.
+ * Requires: CREDENTIALS_ENCRYPTION_KEY in Edge Function secrets
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { loadOrgCredentials, NOT_CONFIGURED_MESSAGE } from '../_shared/loadOrgCredentials.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function getMyInvoisToken(identityUrl, clientId, clientSecret) {
+async function getMyInvoisToken(identityUrl: string, clientId: string, clientSecret: string): Promise<string> {
   const tokenUrl = `${identityUrl.replace(/\/$/, '')}/connect/token`;
   const body = new URLSearchParams({
     client_id: clientId,
@@ -99,19 +100,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    const identityUrl = Deno.env.get('MYINVOIS_IDENTITY_URL');
-    const apiUrl = Deno.env.get('MYINVOIS_API_URL');
-    const clientId = Deno.env.get('MYINVOIS_CLIENT_ID');
-    const clientSecret = Deno.env.get('MYINVOIS_CLIENT_SECRET');
-    if (!identityUrl || !apiUrl || !clientId || !clientSecret) {
+    const encryptionKey = Deno.env.get('CREDENTIALS_ENCRYPTION_KEY');
+    if (!encryptionKey) {
       return new Response(
-        JSON.stringify({ success: false, error: 'MyInvois not configured' }),
+        JSON.stringify({ success: false, error: 'Server configuration error: CREDENTIALS_ENCRYPTION_KEY not set' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const token = await getMyInvoisToken(identityUrl, clientId, clientSecret);
-    const base = apiUrl.replace(/\/$/, '');
+    const creds = await loadOrgCredentials(supabaseAdmin, invoice.organization_id, encryptionKey);
+    if (!creds) {
+      return new Response(
+        JSON.stringify({ success: false, error: NOT_CONFIGURED_MESSAGE }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = await getMyInvoisToken(creds.identityUrl, creds.clientId, creds.clientSecret);
+    const base = creds.apiUrl.replace(/\/$/, '');
     const detailsUrl = `${base}/api/v1.0/documents/${encodeURIComponent(invoice.myinvois_uuid)}`;
     const detailsRes = await fetch(detailsUrl, {
       method: 'GET',

@@ -12,15 +12,23 @@ const FUNCTION_MYINVOIS_TOKEN = 'myinvois-token';
 const FUNCTION_MYINVOIS_VALIDATE_TIN = 'myinvois-validate-tin';
 const FUNCTION_MYINVOIS_SUBMIT = 'myinvois-submit';
 const FUNCTION_MYINVOIS_DOCUMENT_DETAILS = 'myinvois-document-details';
+const FUNCTION_SAVE_MYINVOIS_CREDENTIALS = 'save-myinvois-credentials';
+const FUNCTION_GET_MYINVOIS_CREDENTIALS_STATUS = 'get-myinvois-credentials-status';
+const FUNCTION_DELETE_MYINVOIS_CREDENTIALS = 'delete-myinvois-credentials';
 
 /**
  * Test MyInvois connectivity (Login as Taxpayer). Does not expose token to client.
- * @returns {Promise<{ success: boolean; error?: string; expires_in?: number }>}
+ * @param {string} organizationId - Current organization ID (required for per-org credentials)
+ * @returns {Promise<{ success: boolean; error?: string; expires_in?: number; message?: string }>}
  */
-export async function testMyInvoisConnection() {
+export async function testMyInvoisConnection(organizationId) {
+  if (!organizationId) {
+    return { success: false, error: 'Organization is required to test MyInvois connection.' };
+  }
   try {
     const { data, error } = await supabase.functions.invoke(FUNCTION_MYINVOIS_TOKEN, {
       method: 'POST',
+      body: { organization_id: organizationId },
     });
 
     if (error) {
@@ -52,18 +60,22 @@ export async function testMyInvoisConnection() {
  * Validate buyer TIN with MyInvois (LHDN Tax Identification Number, 14 digits).
  * Client-side format check via tinSchema; authority check via Edge Function.
  * @param {string} tin - Tax Identification Number (14 digits)
+ * @param {string} organizationId - Current organization ID (required for per-org credentials)
  * @returns {Promise<{ valid: boolean; error?: string }>}
  */
-export async function validateTaxpayerTin(tin) {
+export async function validateTaxpayerTin(tin, organizationId) {
   const trimmed = (tin || '').trim();
   const parsed = tinSchema.safeParse(trimmed);
   if (!parsed.success) {
     return { valid: false, error: 'TIN must be exactly 14 digits' };
   }
+  if (!organizationId) {
+    return { valid: false, error: 'Organization is required for TIN validation.' };
+  }
   try {
     const { data, error } = await supabase.functions.invoke(FUNCTION_MYINVOIS_VALIDATE_TIN, {
       method: 'POST',
-      body: { tin: trimmed },
+      body: { tin: trimmed, organization_id: organizationId },
     });
 
     if (error) {
@@ -150,6 +162,108 @@ export async function refreshDocumentStatus(invoiceId) {
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Refresh status failed',
+    };
+  }
+}
+
+/**
+ * Get MyInvois credentials status for the organization (configured or not). Never returns actual secrets.
+ * @param {string} organizationId - Current organization ID
+ * @returns {Promise<{ configured: boolean; sandbox?: boolean; identity_url?: string; api_url?: string; error?: string }>}
+ */
+export async function getMyInvoisCredentialsStatus(organizationId) {
+  if (!organizationId) {
+    return { configured: false, error: 'Organization is required.' };
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke(FUNCTION_GET_MYINVOIS_CREDENTIALS_STATUS, {
+      method: 'POST',
+      body: { organization_id: organizationId },
+    });
+
+    if (error) {
+      return { configured: false, error: error.message };
+    }
+
+    const body = data ?? {};
+    return {
+      configured: Boolean(body.configured),
+      sandbox: body.sandbox,
+      identity_url: body.identity_url,
+      api_url: body.api_url,
+    };
+  } catch (err) {
+    return {
+      configured: false,
+      error: err instanceof Error ? err.message : 'Failed to get credentials status',
+    };
+  }
+}
+
+/**
+ * Save MyInvois Client ID and Client Secret for the organization (encrypted at rest).
+ * @param {string} organizationId - Current organization ID
+ * @param {string} clientId - MyInvois Client ID
+ * @param {string} clientSecret - MyInvois Client Secret
+ * @param {{ sandbox?: boolean; identity_url?: string; api_url?: string }} [options] - Optional settings
+ * @returns {Promise<{ success: boolean; error?: string }>}
+ */
+export async function saveMyInvoisCredentials(organizationId, clientId, clientSecret, options = {}) {
+  if (!organizationId || !clientId || !clientSecret) {
+    return { success: false, error: 'Organization, Client ID, and Client Secret are required.' };
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke(FUNCTION_SAVE_MYINVOIS_CREDENTIALS, {
+      method: 'POST',
+      body: {
+        organization_id: organizationId,
+        client_id: clientId.trim(),
+        client_secret: clientSecret.trim(),
+        sandbox: Boolean(options.sandbox),
+        identity_url: options.identity_url,
+        api_url: options.api_url,
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message || 'Save failed' };
+    }
+
+    const body = data ?? {};
+    return { success: body.success === true, error: body.error };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to save credentials',
+    };
+  }
+}
+
+/**
+ * Remove stored MyInvois credentials for the organization.
+ * @param {string} organizationId - Current organization ID
+ * @returns {Promise<{ success: boolean; error?: string }>}
+ */
+export async function deleteMyInvoisCredentials(organizationId) {
+  if (!organizationId) {
+    return { success: false, error: 'Organization is required.' };
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke(FUNCTION_DELETE_MYINVOIS_CREDENTIALS, {
+      method: 'POST',
+      body: { organization_id: organizationId },
+    });
+
+    if (error) {
+      return { success: false, error: error.message || 'Delete failed' };
+    }
+
+    const body = data ?? {};
+    return { success: body.success === true, error: body.error };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to remove credentials',
     };
   }
 }

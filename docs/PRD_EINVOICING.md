@@ -21,6 +21,7 @@ Existing CukaiPro assets: `useInvoices.js` (create with client_name, tin, amount
 **Goal:** Secure MyInvois connectivity and data model; no submit yet.
 
 - **Configuration:** MyInvois Identity URL, API URL, sandbox flag; client_id/client_secret server-side only (e.g. Supabase Edge Function secrets).
+- **Per-organization credentials (self-service):** Each organization enters their own MyInvois Client ID and Client Secret in **Settings → E-Invoicing**. Credentials are stored encrypted at rest (AES-256-GCM) in `organization_myinvois_credentials`; only Edge Functions (with `CREDENTIALS_ENCRYPTION_KEY` secret) can decrypt. Generate the key with `openssl rand -hex 32` and set it as a Supabase Edge Function secret. Users never "give" the secret to CukaiPro—they type it once in their dashboard and can change or remove it later.
 - **Database:** Add to `invoices`: `lhdn_status`, `code_number`, `myinvois_uuid`, `myinvois_submission_uid`, `submitted_at`, `myinvois_validation_result` (jsonb).
 - **Auth:** Server-side "Login as Taxpayer" (client_credentials); token reuse with refresh before 60 min; 12 RPM for login.
 

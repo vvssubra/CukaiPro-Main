@@ -1,39 +1,21 @@
 /**
- * Supabase Edge Function: myinvois-token
- * Login as Taxpayer System (MyInvois). Fetches access token server-side; never exposes token to client.
- * Uses per-org credentials from organization_myinvois_credentials.
+ * Supabase Edge Function: save-myinvois-credentials
+ * Saves per-organization MyInvois Client ID and Client Secret, encrypted at rest.
+ * Caller must be owner or admin of the organization.
  *
- * Expects POST body: { organization_id: string }
- * Requires: CREDENTIALS_ENCRYPTION_KEY in Edge Function secrets
+ * Expects POST body:
+ * { organization_id: string, client_id: string, client_secret: string, identity_url?: string, api_url?: sandbox?: boolean }
  *
- * Ref: https://sdk.myinvois.hasil.gov.my/api/07-login-as-taxpayer-system/
+ * Requires: CREDENTIALS_ENCRYPTION_KEY (hex-encoded 256-bit key) in Edge Function secrets
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { loadOrgCredentials, NOT_CONFIGURED_MESSAGE } from '../_shared/loadOrgCredentials.ts';
+import { encrypt } from '../_shared/crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-async function fetchTokenResponse(identityUrl: string, clientId: string, clientSecret: string): Promise<{ expires_in: number }> {
-  const tokenUrl = `${identityUrl.replace(/\/$/, '')}/connect/token`;
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: 'client_credentials',
-    scope: 'InvoicingAPI',
-  });
-  const res = await fetch(tokenUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error_description || data.error || 'MyInvois login failed');
-  return { expires_in: data.expires_in ?? 3600 };
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -65,25 +47,35 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const organizationId = body?.organization_id;
+    const clientId = typeof body?.client_id === 'string' ? body.client_id.trim() : '';
+    const clientSecret = typeof body?.client_secret === 'string' ? body.client_secret.trim() : '';
 
-    if (!organizationId) {
+    if (!organizationId || !clientId || !clientSecret) {
       return new Response(
-        JSON.stringify({ success: false, error: 'organization_id is required' }),
+        JSON.stringify({ success: false, error: 'organization_id, client_id, and client_secret are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const { data: membership } = await supabaseAuth
+    const { data: membership, error: memberError } = await supabaseAuth
       .from('organization_members')
-      .select('id')
+      .select('role')
       .eq('organization_id', organizationId)
       .eq('user_id', user.id)
       .eq('status', 'active')
       .single();
 
-    if (!membership) {
+    if (memberError || !membership) {
       return new Response(
         JSON.stringify({ success: false, error: 'Not a member of this organization' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const role = membership.role;
+    if (role !== 'owner' && role !== 'admin') {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Only owner or admin can save MyInvois credentials' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -96,33 +88,50 @@ Deno.serve(async (req) => {
       );
     }
 
+    const payload = JSON.stringify({ client_id: clientId, client_secret: clientSecret });
+    const { ciphertextBase64, ivBase64 } = await encrypt(payload, encryptionKey);
+
+    const identityUrl = typeof body?.identity_url === 'string' ? body.identity_url.trim() : 'https://identity.myinvois.hasil.gov.my';
+    const apiUrl = typeof body?.api_url === 'string' ? body.api_url.trim() : 'https://api.myinvois.hasil.gov.my';
+    const sandbox = Boolean(body?.sandbox);
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const creds = await loadOrgCredentials(supabaseAdmin, organizationId, encryptionKey);
-    if (!creds) {
+    const { error: upsertError } = await supabaseAdmin
+      .from('organization_myinvois_credentials')
+      .upsert(
+        {
+          organization_id: organizationId,
+          encrypted_credentials: ciphertextBase64,
+          iv: ivBase64,
+          identity_url: identityUrl || null,
+          api_url: apiUrl || null,
+          sandbox,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'organization_id' }
+      );
+
+    if (upsertError) {
       return new Response(
-        JSON.stringify({ success: false, error: NOT_CONFIGURED_MESSAGE }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: upsertError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const tokenData = await fetchTokenResponse(creds.identityUrl, creds.clientId, creds.clientSecret);
-
     return new Response(
-      JSON.stringify({
-        success: true,
-        expires_in: tokenData.expires_in,
-        message: 'MyInvois connection successful. Token is used server-side only.',
-      }),
+      JSON.stringify({ success: true }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal server error';
     return new Response(
-      JSON.stringify({ success: false, error: message }),
+      JSON.stringify({
+        success: false,
+        error: err instanceof Error ? err.message : 'Internal server error',
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

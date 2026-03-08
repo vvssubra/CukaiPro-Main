@@ -2,18 +2,21 @@ import ContentPageLayout from './ContentPageLayout';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganization } from '../../context/OrganizationContext';
 import { testMyInvoisConnection } from '../../services/myinvois';
 import Button from '../../components/Common/Button';
 
 export default function EInvoicingPage() {
   const { user } = useAuth();
+  const { currentOrganization } = useOrganization();
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
 
   const handleTestConnection = async () => {
+    if (!currentOrganization?.id) return;
     setTesting(true);
     setTestResult(null);
-    const result = await testMyInvoisConnection();
+    const result = await testMyInvoisConnection(currentOrganization.id);
     setTestResult(result);
     setTesting(false);
   };
@@ -66,11 +69,16 @@ export default function EInvoicingPage() {
               type="button"
               onClick={handleTestConnection}
               loading={testing}
-              disabled={testing}
+              disabled={testing || !currentOrganization?.id}
               className="bg-primary text-white hover:bg-primary/90"
             >
               {testing ? 'Testing…' : 'Test MyInvois connection'}
             </Button>
+            {!currentOrganization?.id && user && (
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Select an organization in the dashboard to test the connection, or configure credentials in Settings → E-Invoicing.
+              </p>
+            )}
             {testResult && (
               <div className={`mt-4 p-3 rounded-lg text-sm ${testResult.success ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-red-500/10 text-red-700 dark:text-red-400'}`}>
                 {testResult.success ? (testResult.message || 'Connection successful.') : (testResult.error || 'Connection failed.')}
