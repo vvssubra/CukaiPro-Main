@@ -148,6 +148,10 @@ export function OrganizationProvider({ children }) {
   const canInviteMembers = hasPermission('manage_members') || hasPermission('invite_users') || hasPermission('all');
   const canRemoveMembers = hasPermission('remove_members') || hasPermission('all');
 
+  const isAdmin = membershipRole === 'owner' || membershipRole === 'admin';
+  const canAccessSettings = isAdmin;
+  const canSubmitToLHDN = isAdmin;
+
   const value = {
     organizations,
     currentOrganization,
@@ -159,6 +163,9 @@ export function OrganizationProvider({ children }) {
     hasPermission,
     canInviteMembers,
     canRemoveMembers,
+    isAdmin,
+    canAccessSettings,
+    canSubmitToLHDN,
   };
 
   return (

@@ -7,7 +7,7 @@ import { AppContext } from '../context/AppContext';
 function Sidebar() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const { currentOrganization, membershipRole } = useOrganization();
+  const { currentOrganization, membershipRole, canAccessSettings } = useOrganization();
   const { sidebarOpen, toggleSidebar } = useContext(AppContext);
   const location = useLocation();
   const isTaxesSection = location.pathname.startsWith('/dashboard/taxes') || location.pathname.startsWith('/dashboard/deductions') || location.pathname.startsWith('/dashboard/tax-filing') || location.pathname.startsWith('/dashboard/sst-filing');
@@ -78,7 +78,7 @@ function Sidebar() {
     { path: '/dashboard/invoices', icon: 'description', label: 'Invoices' },
     { path: '/dashboard/reports', icon: 'analytics', label: 'Reports' },
     { path: '/dashboard/help', icon: 'help_outline', label: 'Help' },
-    { path: '/dashboard/settings', icon: 'settings', label: 'Settings' },
+    ...(canAccessSettings ? [{ path: '/dashboard/settings', icon: 'settings', label: 'Settings' }] : []),
   ];
 
   return (

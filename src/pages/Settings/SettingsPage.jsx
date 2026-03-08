@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useOrganization } from '../../context/OrganizationContext';
 import { useToast } from '../../context/ToastContext';
 import { useTeamMembers } from '../../hooks/useTeamMembers';
 import { useInvitations } from '../../hooks/useInvitations';
 import { useSubscription } from '../../hooks/useSubscription';
+import { supabase } from '../../lib/supabase';
 import BillingTab from './BillingTab';
 import EInvoicingTab from './EInvoicingTab';
 import ConfirmModal from '../../components/Common/ConfirmModal';
@@ -21,7 +22,7 @@ function TeamTab() {
   const { currentOrganization, canInviteMembers } = useOrganization();
   const { canAddMember: canAddMemberByPlan, memberLimitReached } = useSubscription();
   const toast = useToast();
-  const { members, loading, error, fetchMembers, removeMember, canRemoveMembers } = useTeamMembers();
+  const { members, loading, error, fetchMembers, removeMember, canRemoveMembers, canChangeRoles, updateMemberRole } = useTeamMembers();
   const { invitations, fetchInvitations, sendInvitation, sendInviteEmail, cancelInvitation, canInviteMembers: canInv } = useInvitations();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('staff');
@@ -194,7 +195,7 @@ function TeamTab() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Role</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Status</th>
-                {canRemoveMembers && <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>}
+                {(canRemoveMembers || canChangeRoles) && <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -205,14 +206,32 @@ function TeamTab() {
                     <p className="text-xs text-slate-500 dark:text-slate-400">{m.email}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
-                      {ROLE_LABELS[m.role] || m.role}
-                    </span>
+                    {canChangeRoles && m.role !== 'owner' ? (
+                      <select
+                        value={m.role}
+                        onChange={(e) => {
+                          const newRole = e.target.value;
+                          updateMemberRole(m.id, newRole).then((res) => {
+                            if (res.success) toast.success(`Role updated to ${ROLE_LABELS[newRole] || newRole}`);
+                            else toast.error(res.error);
+                          });
+                        }}
+                        className="text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-custom dark:text-white px-2 py-1"
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="accountant">Accountant</option>
+                        <option value="staff">Staff</option>
+                      </select>
+                    ) : (
+                      <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                        {ROLE_LABELS[m.role] || m.role}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">Active</td>
-                  {canRemoveMembers && (
+                  {(canRemoveMembers || canChangeRoles) && (
                     <td className="px-4 py-3 text-right">
-                      {m.role !== 'owner' && (
+                      {m.role !== 'owner' && canRemoveMembers && (
                         <button
                           type="button"
                           onClick={() => handleRemoveMember(m.id, m.fullName)}
@@ -292,30 +311,166 @@ function TeamTab() {
 }
 
 function OrganizationTab() {
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, canAccessSettings, reloadOrganizations } = useOrganization();
+  const toast = useToast();
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    business_name: '',
+    lhdn_status: '',
+    lhdn_tin_no: '',
+    company_email: '',
+  });
+
+  useEffect(() => {
+    if (currentOrganization) {
+      setForm({
+        business_name: currentOrganization.business_name || '',
+        lhdn_status: currentOrganization.lhdn_status || '',
+        lhdn_tin_no: currentOrganization.lhdn_tin_no || '',
+        company_email: currentOrganization.company_email || '',
+      });
+    }
+  }, [currentOrganization]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!currentOrganization?.id || !canAccessSettings) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('organizations')
+        .update({
+          business_name: form.business_name.trim() || null,
+          lhdn_status: form.lhdn_status.trim() || null,
+          lhdn_tin_no: form.lhdn_tin_no.trim() || null,
+          company_email: form.company_email.trim() || null,
+        })
+        .eq('id', currentOrganization.id);
+
+      if (error) throw error;
+      await reloadOrganizations();
+      setEditing(false);
+      toast.success('Organization updated.');
+    } catch (err) {
+      toast.error(err?.message || 'Failed to update organization.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-xl font-bold text-slate-custom dark:text-white">Organization</h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Basic information about your organization.
+          Basic information and company details for LHDN e-Invoicing.
         </p>
       </div>
       <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 max-w-md">
-        <dl className="space-y-4">
-          <div>
-            <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">Business name</dt>
-            <dd className="mt-1 text-slate-custom dark:text-white">{currentOrganization?.business_name || '—'}</dd>
-          </div>
-        </dl>
+        {editing && canAccessSettings ? (
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label htmlFor="org-business_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Business name</label>
+              <input
+                id="org-business_name"
+                type="text"
+                value={form.business_name}
+                onChange={(e) => setForm((f) => ({ ...f, business_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-custom dark:text-white"
+              />
+            </div>
+            <div>
+              <label htmlFor="org-lhdn_tin_no" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">LHDN TIN no.</label>
+              <input
+                id="org-lhdn_tin_no"
+                type="text"
+                value={form.lhdn_tin_no}
+                onChange={(e) => setForm((f) => ({ ...f, lhdn_tin_no: e.target.value }))}
+                placeholder="e.g. C12345678901234"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-custom dark:text-white"
+              />
+            </div>
+            <div>
+              <label htmlFor="org-company_email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Company email</label>
+              <input
+                id="org-company_email"
+                type="email"
+                value={form.company_email}
+                onChange={(e) => setForm((f) => ({ ...f, company_email: e.target.value }))}
+                placeholder="billing@company.com"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-custom dark:text-white"
+              />
+            </div>
+            <div>
+              <label htmlFor="org-lhdn_status" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">LHDN status</label>
+              <input
+                id="org-lhdn_status"
+                type="text"
+                value={form.lhdn_status}
+                onChange={(e) => setForm((f) => ({ ...f, lhdn_status: e.target.value }))}
+                placeholder="e.g. registered"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-custom dark:text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
+              >
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                disabled={saving}
+                className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <dl className="space-y-4">
+              <div>
+                <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">Business name</dt>
+                <dd className="mt-1 text-slate-custom dark:text-white">{currentOrganization?.business_name || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">LHDN TIN no.</dt>
+                <dd className="mt-1 text-slate-custom dark:text-white">{currentOrganization?.lhdn_tin_no || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">Company email</dt>
+                <dd className="mt-1 text-slate-custom dark:text-white">{currentOrganization?.company_email || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">LHDN status</dt>
+                <dd className="mt-1 text-slate-custom dark:text-white">{currentOrganization?.lhdn_status || '—'}</dd>
+              </div>
+            </dl>
+            {canAccessSettings && (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="mt-4 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium"
+              >
+                Edit organization
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { canAccessSettings } = useOrganization();
   const tabFromUrl = searchParams.get('tab');
   const tabParam = tabFromUrl === 'billing' || searchParams.get('billing')
     ? 'billing'
@@ -325,9 +480,20 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState(tabParam || 'team');
 
   useEffect(() => {
+    if (!canAccessSettings) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+  }, [canAccessSettings, navigate]);
+
+  useEffect(() => {
     if (tabParam === 'billing') queueMicrotask(() => setActiveTab('billing'));
     if (tabParam === 'einvoicing') queueMicrotask(() => setActiveTab('einvoicing'));
   }, [tabParam]);
+
+  if (!canAccessSettings) {
+    return null;
+  }
 
   return (
     <div className="max-w-4xl">

@@ -111,8 +111,7 @@ function LhdnStatusBadge({ lhdnStatus }) {
  */
 function SalesInvoiceListPage() {
   const { invoices, loading, error, createInvoice, deleteInvoice, fetchInvoices } = useInvoices();
-  const { hasPermission, membershipRole } = useOrganization();
-  const canSubmitToLHDN = hasPermission('manage_invoices') || hasPermission('all') || membershipRole === 'accountant';
+  const { canSubmitToLHDN } = useOrganization();
 
   const [period, setPeriod] = useState('365');
   const [modalOpen, setModalOpen] = useState(false);
