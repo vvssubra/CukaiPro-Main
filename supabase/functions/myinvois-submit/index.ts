@@ -1,19 +1,19 @@
 /**
  * Supabase Edge Function: myinvois-submit
- * Submits one or more invoices to LHDN MyInvois. Builds UBL 2.1 Invoice JSON, assigns code_number
- * if missing, hashes and base64-encodes, POSTs to documentsubmissions, updates DB. Token server-side only.
- * Requires: MYINVOIS_IDENTITY_URL, MYINVOIS_API_URL, MYINVOIS_CLIENT_ID, MYINVOIS_CLIENT_SECRET
+ * Submits one or more invoices to LHDN MyInvois. Uses per-org credentials from organization_myinvois_credentials.
+ * Builds UBL 2.1 Invoice JSON, assigns code_number if missing, hashes and base64-encodes, POSTs to documentsubmissions.
  * MyInvois: max 300 KB per document; 100 docs/batch, 5 MB total; 100 RPM.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { loadOrgCredentials, NOT_CONFIGURED_MESSAGE } from '../_shared/loadOrgCredentials.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function getMyInvoisToken(identityUrl, clientId, clientSecret) {
+async function getMyInvoisToken(identityUrl: string, clientId: string, clientSecret: string): Promise<string> {
   const tokenUrl = `${identityUrl.replace(/\/$/, '')}/connect/token`;
   const body = new URLSearchParams({
     client_id: clientId,
@@ -163,23 +163,42 @@ Deno.serve(async (req) => {
       );
     }
 
-    const identityUrl = Deno.env.get('MYINVOIS_IDENTITY_URL');
-    const apiUrl = Deno.env.get('MYINVOIS_API_URL');
-    const clientId = Deno.env.get('MYINVOIS_CLIENT_ID');
-    const clientSecret = Deno.env.get('MYINVOIS_CLIENT_SECRET');
-    if (!identityUrl || !apiUrl || !clientId || !clientSecret) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'MyInvois not configured' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const token = await getMyInvoisToken(identityUrl, clientId, clientSecret);
+    const encryptionKey = Deno.env.get('CREDENTIALS_ENCRYPTION_KEY');
+    if (!encryptionKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Server configuration error: CREDENTIALS_ENCRYPTION_KEY not set' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { data: firstInvoice, error: firstInvErr } = await supabaseAdmin
+      .from('invoices')
+      .select('organization_id')
+      .eq('id', invoiceIds[0])
+      .single();
+
+    if (firstInvErr || !firstInvoice) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invoice not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const creds = await loadOrgCredentials(supabaseAdmin, firstInvoice.organization_id, encryptionKey);
+    if (!creds) {
+      return new Response(
+        JSON.stringify({ success: false, error: NOT_CONFIGURED_MESSAGE }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = await getMyInvoisToken(creds.identityUrl, creds.clientId, creds.clientSecret);
+    const apiUrl = creds.apiUrl;
     const accepted = [];
     const rejected = [];
     let submissionUid = null;
@@ -197,6 +216,10 @@ Deno.serve(async (req) => {
       }
 
       const orgId = invoice.organization_id;
+      if (orgId !== firstInvoice.organization_id) {
+        rejected.push({ code_number: invoice.code_number || null, error: 'All invoices must belong to the same organization' });
+        continue;
+      }
       const { data: membership } = await supabaseAdmin
         .from('organization_members')
         .select('id')

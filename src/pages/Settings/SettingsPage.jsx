@@ -7,6 +7,7 @@ import { useTeamMembers } from '../../hooks/useTeamMembers';
 import { useInvitations } from '../../hooks/useInvitations';
 import { useSubscription } from '../../hooks/useSubscription';
 import BillingTab from './BillingTab';
+import EInvoicingTab from './EInvoicingTab';
 import ConfirmModal from '../../components/Common/ConfirmModal';
 
 const ROLE_LABELS = {
@@ -318,11 +319,14 @@ export default function SettingsPage() {
   const tabFromUrl = searchParams.get('tab');
   const tabParam = tabFromUrl === 'billing' || searchParams.get('billing')
     ? 'billing'
-    : tabFromUrl;
+    : tabFromUrl === 'einvoicing'
+      ? 'einvoicing'
+      : tabFromUrl;
   const [activeTab, setActiveTab] = useState(tabParam || 'team');
 
   useEffect(() => {
     if (tabParam === 'billing') queueMicrotask(() => setActiveTab('billing'));
+    if (tabParam === 'einvoicing') queueMicrotask(() => setActiveTab('einvoicing'));
   }, [tabParam]);
 
   return (
@@ -353,6 +357,17 @@ export default function SettingsPage() {
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('einvoicing')}
+              className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'einvoicing'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-custom dark:hover:text-white'
+              }`}
+            >
+              E-Invoicing
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('billing')}
               className={`pb-3 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'billing'
@@ -364,6 +379,7 @@ export default function SettingsPage() {
             </button>
           </div>
           {activeTab === 'billing' && <BillingTab />}
+          {activeTab === 'einvoicing' && <EInvoicingTab />}
           {activeTab === 'team' && <TeamTab />}
           {activeTab === 'organization' && <OrganizationTab />}
     </div>

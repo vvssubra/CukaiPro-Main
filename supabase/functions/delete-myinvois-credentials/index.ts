@@ -1,39 +1,17 @@
 /**
- * Supabase Edge Function: myinvois-token
- * Login as Taxpayer System (MyInvois). Fetches access token server-side; never exposes token to client.
- * Uses per-org credentials from organization_myinvois_credentials.
+ * Supabase Edge Function: delete-myinvois-credentials
+ * Removes stored MyInvois credentials for the organization.
+ * Caller must be owner or admin of the organization.
  *
  * Expects POST body: { organization_id: string }
- * Requires: CREDENTIALS_ENCRYPTION_KEY in Edge Function secrets
- *
- * Ref: https://sdk.myinvois.hasil.gov.my/api/07-login-as-taxpayer-system/
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { loadOrgCredentials, NOT_CONFIGURED_MESSAGE } from '../_shared/loadOrgCredentials.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-async function fetchTokenResponse(identityUrl: string, clientId: string, clientSecret: string): Promise<{ expires_in: number }> {
-  const tokenUrl = `${identityUrl.replace(/\/$/, '')}/connect/token`;
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: 'client_credentials',
-    scope: 'InvoicingAPI',
-  });
-  const res = await fetch(tokenUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error_description || data.error || 'MyInvois login failed');
-  return { expires_in: data.expires_in ?? 3600 };
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -73,26 +51,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: membership } = await supabaseAuth
+    const { data: membership, error: memberError } = await supabaseAuth
       .from('organization_members')
-      .select('id')
+      .select('role')
       .eq('organization_id', organizationId)
       .eq('user_id', user.id)
       .eq('status', 'active')
       .single();
 
-    if (!membership) {
+    if (memberError || !membership) {
       return new Response(
         JSON.stringify({ success: false, error: 'Not a member of this organization' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const encryptionKey = Deno.env.get('CREDENTIALS_ENCRYPTION_KEY');
-    if (!encryptionKey) {
+    const role = membership.role;
+    if (role !== 'owner' && role !== 'admin') {
       return new Response(
-        JSON.stringify({ success: false, error: 'Server configuration error: CREDENTIALS_ENCRYPTION_KEY not set' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'Only owner or admin can delete MyInvois credentials' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -101,28 +79,28 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const creds = await loadOrgCredentials(supabaseAdmin, organizationId, encryptionKey);
-    if (!creds) {
+    const { error: deleteError } = await supabaseAdmin
+      .from('organization_myinvois_credentials')
+      .delete()
+      .eq('organization_id', organizationId);
+
+    if (deleteError) {
       return new Response(
-        JSON.stringify({ success: false, error: NOT_CONFIGURED_MESSAGE }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: deleteError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const tokenData = await fetchTokenResponse(creds.identityUrl, creds.clientId, creds.clientSecret);
-
     return new Response(
-      JSON.stringify({
-        success: true,
-        expires_in: tokenData.expires_in,
-        message: 'MyInvois connection successful. Token is used server-side only.',
-      }),
+      JSON.stringify({ success: true }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal server error';
     return new Response(
-      JSON.stringify({ success: false, error: message }),
+      JSON.stringify({
+        success: false,
+        error: err instanceof Error ? err.message : 'Internal server error',
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
