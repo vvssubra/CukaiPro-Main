@@ -8,6 +8,7 @@ create table if not exists public.support_admins (
 alter table public.support_admins enable row level security;
 
 -- Authenticated users can only check if they themselves are in the table (for the in-app admin page).
+drop policy if exists "support_admins_select_own" on public.support_admins;
 create policy "support_admins_select_own"
   on public.support_admins for select to authenticated
   using (user_id = auth.uid());
@@ -20,12 +21,14 @@ drop policy if exists "anon_update_bug_reports" on public.bug_reports;
 drop policy if exists "anon_select_bug_report_messages" on public.bug_report_messages;
 
 -- Authenticated support admins: SELECT and UPDATE bug_reports, SELECT bug_report_messages.
+drop policy if exists "support_admin_select_bug_reports" on public.bug_reports;
 create policy "support_admin_select_bug_reports"
   on public.bug_reports for select to authenticated
   using (
     exists (select 1 from public.support_admins where support_admins.user_id = auth.uid())
   );
 
+drop policy if exists "support_admin_update_bug_reports" on public.bug_reports;
 create policy "support_admin_update_bug_reports"
   on public.bug_reports for update to authenticated
   using (
@@ -35,6 +38,7 @@ create policy "support_admin_update_bug_reports"
     exists (select 1 from public.support_admins where support_admins.user_id = auth.uid())
   );
 
+drop policy if exists "support_admin_select_bug_report_messages" on public.bug_report_messages;
 create policy "support_admin_select_bug_report_messages"
   on public.bug_report_messages for select to authenticated
   using (

@@ -9,6 +9,7 @@ import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary, { ErrorFallback } from './components/Common/ErrorBoundary';
 import Loading from './components/Common/Loading';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
+import AdminOnlyRoute from './components/Auth/AdminOnlyRoute';
 import Navbar from './components/Navbar';
 
 const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
@@ -149,7 +150,7 @@ function AppLayout() {
             <Route path="tax-filing" element={<FilingSummaryPage />} />
             <Route path="sst-filing" element={<SSTFilingPage />} />
             <Route path="taxes/ea-form" element={<EAFormPage />} />
-            <Route path="settings" element={<SettingsPage />} />
+            <Route path="settings" element={<AdminOnlyRoute><SettingsPage /></AdminOnlyRoute>} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
             <Route path="reports/profit-loss" element={<ProfitLossPage />} />

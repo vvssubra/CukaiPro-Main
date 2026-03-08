@@ -75,7 +75,7 @@ function buildInvoicePayload(invoice, org, contact, codeNumber) {
   const buyerName = contact?.company_name || contact?.name || invoice.client_name || 'Buyer';
   const buyerTin = (contact?.tin || contact?.tax_registration_no || invoice.tin || '').toString().trim();
   const sellerName = org?.business_name || 'Supplier';
-  const sellerTin = (org?.tin || org?.tax_registration_no || '').toString().trim();
+  const sellerTin = (org?.lhdn_tin_no || org?.tin || org?.tax_registration_no || '').toString().trim();
 
   if (!buyerTin || buyerTin.length !== 14) {
     throw new Error('Buyer TIN is required for e-Invoice and must be 14 digits');
@@ -213,6 +213,21 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ success: false, error: 'Invoice not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Only owner or admin can submit e-invoices to LHDN
+    const { data: callerMembership } = await supabaseAdmin
+      .from('organization_members')
+      .select('role')
+      .eq('organization_id', firstInvoice.organization_id)
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (!callerMembership || !['owner', 'admin'].includes(callerMembership.role)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Only organization owner or admin can submit e-invoices to LHDN' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

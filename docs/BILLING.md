@@ -67,7 +67,7 @@ Run the billing migration in Supabase SQL Editor:
 supabase db push
 ```
 
-Or paste the contents of `supabase/migrations/20250222_billing_subscriptions.sql` into the SQL Editor and run it.
+Or paste the contents of `supabase/migrations/20250222020000_billing_subscriptions.sql` into the SQL Editor and run it.
 
 ### 2.2 Edge Function Secrets
 

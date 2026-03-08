@@ -29,7 +29,7 @@ User clicks "Send invite"
 Ensure the `invitations` table has the `email_sent_at` column:
 
 - **New setup**: `supabase/phase3_invitations.sql` already includes `email_sent_at`
-- **Existing setup**: Run `supabase/migrations/20250222_add_email_sent_at_to_invitations.sql` in Supabase SQL Editor
+- **Existing setup**: Run `supabase/migrations/20250222010000_add_email_sent_at_to_invitations.sql` in Supabase SQL Editor
 
 ### 2. Resend account
 
