@@ -6,9 +6,13 @@
  * - Free: 1 member, no EA forms, basic SST
  * - Pro: 5 members, EA forms
  * - Enterprise: unlimited members, all features
+ *
+ * Testing: set VITE_UNLOCK_SUBSCRIPTION_EMAIL to a comma-separated list of emails
+ * (e.g. vvssubra87@gmail.com) to grant enterprise limits for those users. Remove when locking pro.
  */
 
 import { useOrganization } from '../context/OrganizationContext';
+import { useAuth } from '../context/AuthContext';
 
 export const PLAN_LIMITS = {
   free: { maxMembers: 1, hasEAForms: false },
@@ -16,10 +20,18 @@ export const PLAN_LIMITS = {
   enterprise: { maxMembers: null, hasEAForms: true },
 };
 
+const UNLOCK_EMAILS = (import.meta.env.VITE_UNLOCK_SUBSCRIPTION_EMAIL || '')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 export function useSubscription() {
   const { currentOrganization } = useOrganization();
+  const { user, profile } = useAuth();
+  const userEmail = (user?.email || profile?.email || '').toLowerCase();
+  const isUnlockedForTesting = UNLOCK_EMAILS.length > 0 && userEmail && UNLOCK_EMAILS.includes(userEmail);
 
-  const plan = currentOrganization?.plan ?? 'free';
+  const plan = isUnlockedForTesting ? 'enterprise' : (currentOrganization?.plan ?? 'free');
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
 
   const canUseEAForms = limits.hasEAForms;
