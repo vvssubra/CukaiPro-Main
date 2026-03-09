@@ -59,6 +59,25 @@ html {
   .gradient-text {
     @apply bg-gradient-to-r from-white via-emerald-200 to-emerald-400 bg-clip-text text-transparent;
   }
+  .gradient-text-aurora {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      110deg,
+      #34d399 0%,
+      #6ee7b7 20%,
+      #a5f3fc 48%,
+      #38bdf8 68%,
+      #6ee7b7 84%,
+      #34d399 100%
+    );
+    background-size: 220% auto;
+    animation: aurora-sweep 7s ease-in-out infinite;
+  }
+}
+
+@keyframes aurora-sweep {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
 }
 
 @keyframes lighting-glow {

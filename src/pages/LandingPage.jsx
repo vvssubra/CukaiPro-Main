@@ -258,9 +258,9 @@ function LandingPage() {
                 Now LHDN e-Invoice Compatible
               </motion.div>
 
-              <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight leading-[1.08] mb-6">
-                <AnimatedGradientText text="LHDN-Ready" as="span" />{' '}
-                <span className="text-white">in Minutes</span>
+              <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight leading-[1.15] overflow-visible mb-6">
+                <AnimatedGradientText text="LHDN-Ready" as="span" gradientClass="gradient-text-aurora" />{' '}
+                <span className="text-white/90 font-light tracking-normal">in Minutes</span>
               </motion.h1>
 
               <motion.p variants={fadeUp} className="text-lg text-white/80 mb-10 max-w-2xl leading-relaxed">
