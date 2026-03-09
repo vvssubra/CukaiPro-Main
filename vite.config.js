@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
         const supportFunctionUrl = supabaseUrl ? `${supabaseUrl}/functions/v1/support-chat` : '';
         return html
           .replace('%VITE_SUPABASE_ANON_KEY%', env.VITE_SUPABASE_ANON_KEY || '')
-          .replace('%VITE_SUPABASE_SUPPORT_FUNCTION_URL%', supportFunctionUrl);
+          .replace('%SUPPORT_FUNCTION_URL%', supportFunctionUrl);
       },
     },
   ],
